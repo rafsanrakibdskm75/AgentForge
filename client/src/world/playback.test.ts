@@ -24,7 +24,7 @@ describe('timelapse no mundo', () => {
       recent: [],
       shells: [{ id: 'j', label: 'Build', startedAt: 800, background: true, kind: 'shell' }],
     } as unknown as AgentInfo;
-    const snap = { rev: 1, serverTime: 2_000, rooms: [], agents: [agent], accounts: [], meta: { demo: false, sources: [], startedAt: 0, version: 't' } } as OfficeSnapshot;
+    const snap = { rev: 1, serverTime: 2_000, rooms: [], agents: [agent], teams: [], accounts: [], meta: { demo: false, sources: [], startedAt: 0, version: 't' } } as OfficeSnapshot;
     const out = rebaseSnapshot(snap, 10_000);
     expect(out.serverTime).toBe(12_000);
     expect(out.agents[0].statusSince).toBe(11_000);

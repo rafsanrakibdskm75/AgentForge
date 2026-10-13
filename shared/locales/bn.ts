@@ -2544,6 +2544,11 @@ export const BN: Readonly<Record<string, string>> = {
   "nenhuma pasta do Antigravity encontrada (defina AGENTFORGE_ANTIGRAVITY_DIRS)": "কোনো Antigravity ফোল্ডার পাওয়া যায়নি (AGENTFORGE_ANTIGRAVITY_DIRS সেট করুন)",
   "desligado (AGENTFORGE_ANTIGRAVITY=0)": "বন্ধ আছে (AGENTFORGE_ANTIGRAVITY=0)",
 
+  // client/src/ui/team.ts
+  "Equipe": "টিম",
+  "{0} trabalhando juntos": "{0} একসাথে কাজ করছে",
+  "{0} ({1}) — {2}: {3}": "{0} ({1}) — {2}: {3}",
+
   // server/index.ts (Antigravity)
   "   Antigravity: {0}.": "   Antigravity: {0}.",
 };

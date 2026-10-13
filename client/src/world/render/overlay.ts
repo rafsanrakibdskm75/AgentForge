@@ -6,6 +6,7 @@
 // só o ícone ou é descartado) e DESENHADOS em ordem crescente (o mais importante fica por cima).
 import { TILE } from '../../art/api';
 import type { WorldOptions } from '../api';
+import type { Provider } from '../../../../shared/types';
 import type { Camera } from '../camera';
 import { COL_W, CORRIDOR_Y, SOUTH_Y } from '../constants';
 import type { Character } from '../sim/character';
@@ -13,6 +14,7 @@ import { shellAgeKey, shellBubbleAlpha, shellBubbleText, STORM_LIFT, unitHash } 
 import type { Sim } from '../sim/sim';
 import { buildAnim } from './anim';
 import { drawFxBanner } from './github-fx';
+import { drawTeamBadge, drawTeamDots, teamDotsWidth } from '../team';
 import type { HeadInfo, Renderer } from './renderer';
 import { tr } from '../../../../shared/i18n';
 
@@ -419,13 +421,14 @@ export class Overlay {
       const rect = this.renderer.signRect(vis);
       const text = room ? room.info.name : vis.id === 'core:recepcao' ? 'AgentForge' : null;
       const readable = !!rect && rect.h * zoom >= SIGN_MIN_PX;
+      const team = room ? this.sim.teamProviders.get(room.id) ?? [] : [];
       if (readable && rect && text && (!anim || anim.sign >= 1)) {
         const ax = this.sx(rect.x);
         const ay = this.sy(rect.y);
         const w = rect.w * zoom;
         const h = rect.h * zoom;
         if (ax + w > 0 && ax < vw && ay + h > 0 && ay < vh) {
-          this.drawSignText(text, ax, ay, w, h, this.renderer.signIsDark(vis), room?.accounts ?? []);
+          this.drawSignText(text, ax, ay, w, h, this.renderer.signIsDark(vis), room?.accounts ?? [], team);
           this.place(ax, ay, w, h);
         }
       }
@@ -436,7 +439,7 @@ export class Overlay {
       if (room) {
         // endereço antigo de uma mudança: o nome já está na sala nova
         if (!room.present || room.ghost || (anim && anim.walls < 0.6)) continue;
-        this.drawRoomPill(room.info.name, cx, cy, colW - 8, room.accounts, this.countIn(room.id), room.theme.accent, room.lightOn);
+        this.drawRoomPill(room.info.name, cx, cy, colW - 8, room.accounts, this.countIn(room.id), room.theme.accent, room.lightOn, team);
       } else if (CORE_NAMES[vis.id]) {
         this.drawCorePill(CORE_NAMES[vis.id], cx, cy, colW - 8);
       }
@@ -472,7 +475,7 @@ export class Overlay {
     return n;
   }
 
-  private drawSignText(text: string, x: number, y: number, w: number, h: number, dark: boolean, accounts: string[]): void {
+  private drawSignText(text: string, x: number, y: number, w: number, h: number, dark: boolean, accounts: string[], team: readonly Provider[] = []): void {
     const { ctx } = this;
     // encolhe a fonte até 7px; abaixo disso, corta com reticências
     let size = Math.min(18, Math.max(7, Math.floor(h * 0.72)));
@@ -505,16 +508,24 @@ export class Overlay {
       ctx.stroke();
       dx += r * 2 + 2;
     }
+    // equipe (Team view): insígnia discreta com as bolinhas das ferramentas, acima da placa
+    if (team.length) {
+      const b = drawTeamBadge(ctx, cx, y - 4, team);
+      this.place(b.x, b.y, b.w, b.h);
+    }
   }
 
-  private drawRoomPill(name: string, cx: number, cy: number, maxW: number, accounts: string[], count: number, accent: string, lit: boolean): void {
+  private drawRoomPill(name: string, cx: number, cy: number, maxW: number, accounts: string[], count: number, accent: string, lit: boolean, team: readonly Provider[] = []): void {
     const { ctx } = this;
     let dots = accounts.filter((a) => this.sim.accounts.has(a));
     let countText = count > 0 ? String(count) : '';
     let cw = countText ? this.measure(LABEL_FONT, countText) + 14 : 0;
+    // equipe (Team view): bolinhas sobrepostas das ferramentas, no fim da pílula
+    const teamW = team.length ? teamDotsWidth(team.length, 3.5) + 10 : 0;
+    let showTeam = team.length > 0;
     // nome cortado para caber na largura da coluna; com pouco espaço, o nome vale mais que a
     // contagem e as bolinhas; sem espaço nem para 3 letras, pílula compacta (só contagem)
-    let text = this.fit(ROOM_FONT, name, Math.min(180, maxW - (18 + dots.length * 10 + cw)));
+    let text = this.fit(ROOM_FONT, name, Math.min(180, maxW - (18 + dots.length * 10 + cw + teamW)));
     if (text.length < Math.min(7, name.length)) {
       const alone = this.fit(ROOM_FONT, name, maxW - 18);
       if (alone.length >= 4) {
@@ -522,9 +533,11 @@ export class Overlay {
         dots = [];
         countText = '';
         cw = 0;
+        // na pílula compacta a equipe some (a insígnia volta na placa com zoom)
+        showTeam = false;
       }
     }
-    const extras = 18 + dots.length * 10 + cw;
+    const extras = 18 + dots.length * 10 + cw + (showTeam ? teamW : 0);
     // Só vira pílula compacta quando o nome precisou ser cortado (nomes curtos como "app" cabem inteiros).
     const compact = text !== name && text.length < 4;
     const tw = compact ? 0 : this.measure(ROOM_FONT, text);
@@ -565,7 +578,9 @@ export class Overlay {
       ctx.font = LABEL_FONT;
       ctx.fillStyle = '#dfe5f2';
       ctx.fillText(countText, dx + 7, y + h / 2 + 0.5);
+      dx += cw;
     }
+    if (showTeam) drawTeamDots(ctx, dx + teamW / 2, y + h / 2 + 0.5, 3.5, team);
     ctx.restore();
     this.place(x, y, w, h);
   }

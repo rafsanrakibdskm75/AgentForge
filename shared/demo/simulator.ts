@@ -20,6 +20,7 @@ import { describeGitHubEvent, GITHUB_TOOL, RoomEffects } from '../github';
 import { hash32, mulberry32 } from '../hash';
 import { describeMessage, MESSAGE_TOOL } from '../messages';
 import { pickName } from '../names';
+import { computeTeams } from '../teams';
 import { demoGitHubEvent } from './github';
 import { demoCodexPermission, demoPermission, type DemoPermissionKind } from './permission';
 import { tr } from '../i18n';
@@ -356,6 +357,10 @@ export class DemoSimulator {
         return effect ? { ...r, effect: { ...effect } } : { ...r };
       }),
       agents: [...this.agents.values()].map((a) => structuredCloneAgent(a.info)),
+      teams: computeTeams(
+        [...this.agents.values()].map((a) => a.info),
+        (roomId) => this.rooms.get(roomId)?.name ?? roomId,
+      ),
       accounts: [
         ...this.accounts.map((acc) => {
           const u = this.usage.get(acc.id)!;

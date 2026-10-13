@@ -70,6 +70,7 @@ function snap(rooms: RoomInfo[], agents: AgentInfo[], serverTime = T0, rev = 1):
     serverTime,
     rooms,
     agents,
+    teams: [],
     accounts: [{ id: '.claude', short: 'C', name: 'Conta C', color: '#f08a3c', configDir: '~/.claude', sessions: 1, usageStatus: 'ok' }],
     meta: { demo: true, sources: [], startedAt: T0, version: 't' },
   };

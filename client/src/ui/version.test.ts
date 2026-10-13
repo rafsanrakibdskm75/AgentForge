@@ -6,7 +6,7 @@ const NOW = Date.parse('2026-10-08T15:00:00Z');
 const HOUR = 3_600_000;
 
 function snap(version: string, updates?: UpdateStatus): OfficeSnapshot {
-  return { rev: 1, serverTime: NOW, rooms: [], agents: [], accounts: [], meta: { demo: false, sources: [], startedAt: 0, version, updates } };
+  return { rev: 1, serverTime: NOW, rooms: [], agents: [], teams: [], accounts: [], meta: { demo: false, sources: [], startedAt: 0, version, updates } };
 }
 
 const ok = (patch: Partial<UpdateStatus> = {}): UpdateStatus => ({ state: 'ok', repo: 'marmottajr/habblaud', checkedAt: NOW - 2 * HOUR, available: false, ...patch });

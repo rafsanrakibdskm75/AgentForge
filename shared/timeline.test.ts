@@ -57,7 +57,7 @@ const account = (id: string, five = 10): AccountInfo => ({
 });
 
 function snap(agents: AgentInfo[], rooms: RoomInfo[] = [room('/p/loja')], accounts: AccountInfo[] = [account('.claude')]): OfficeSnapshot {
-  return { rev: 1, serverTime: T0, rooms, agents, accounts, meta: { demo: false, sources: [], startedAt: T0, version: 't' } };
+  return { rev: 1, serverTime: T0, rooms, agents, teams: [], accounts, meta: { demo: false, sources: [], startedAt: T0, version: 't' } };
 }
 
 /** Frame -> objeto comparável (Maps viram listas ordenadas). */

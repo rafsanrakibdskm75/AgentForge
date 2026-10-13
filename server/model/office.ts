@@ -21,6 +21,7 @@ import type {
   ShellJob,
   SourceInfo,
   TaskItem,
+  TeamInfo,
   UpdateStatus,
 } from '../../shared/types';
 import { SHELL_WAIT_TOOL, SPECIAL, type ShellOutcome } from '../../shared/activity';
@@ -190,6 +191,10 @@ class NameSet extends Set<string> {
 }
 
 const byStart = (a: ShellJob, b: ShellJob) => a.startedAt - b.startedAt || a.id.localeCompare(b.id);
+
+/** Re-export: Teams view helper (pure, lives in shared/ so the demo simulator can use it too). */
+import { computeTeams } from '../../shared/teams';
+export { computeTeams };
 
 export class Office {
   private agents = new Map<string, AgentRecord>();
@@ -983,11 +988,13 @@ export class Office {
     const sessions = new Map<string, number>();
     for (const a of real) if (a.kind === 'main' && a.status !== 'offline') sessions.set(a.account, (sessions.get(a.account) ?? 0) + 1);
     const ptys = this.deps.ptys?.();
+    const finalAgents = [...real, ...demoAgents].map(trim);
     return {
       rev: this.rev,
       serverTime: now,
       rooms,
-      agents: [...real, ...demoAgents].map(trim),
+      agents: finalAgents,
+      teams: computeTeams(finalAgents, (id) => this.roomName(id)),
       accounts: [...this.deps.accounts(sessions), ...(this.demoSnap?.accounts ?? [])],
       ...(ptys ? { ptys: ptys.list } : {}),
       meta: {

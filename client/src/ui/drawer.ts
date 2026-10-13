@@ -45,6 +45,7 @@ import { accountChipLabel, accountProvider, CODEX_LIVE_HINT, codexApprovalLabel,
 import { ptyControllable } from './ptyapi';
 import { createAgentRow, updateAgentRow } from './rows';
 import { SocialSection } from './social';
+import { TeamPanel, teamForRoom } from './team';
 import { TERMINAL_UNAVAILABLE_HINT, type TerminalControl } from './terminal';
 import { Movable } from './movable';
 import type { PtyControl } from './pty';
@@ -808,6 +809,8 @@ class RoomView {
   private agents: KeyedList<AgentInfo>;
   private agentsSec: ReturnType<typeof section>;
   private agentsEmpty: HTMLElement;
+  /** Equipe multi-provider da sala (ui/team.ts): só aparece quando a sala tem uma. */
+  private teamPanel: TeamPanel;
   private tasksSec: ReturnType<typeof section>;
   private tasksBar: HTMLElement;
   private tasks: KeyedList<{ task: TaskItem; owner: string; key: string }>;
@@ -866,6 +869,7 @@ class RoomView {
     const tasksList = h('ul', { class: 'ui-tasks' });
     this.tasksSec = section(tr('Tarefas'), this.tasksBar, tasksList);
     this.tasks = new KeyedList(tasksList, { key: (t) => t.key, create: createTaskItem, update: (li, t) => updateTaskItem(li, t.task, t.owner) });
+    this.teamPanel = new TeamPanel(ctx);
 
     const feedList = h('ol', { class: 'ui-timeline' });
     this.feedSec = section(tr('Atividade recente'), feedList);
@@ -884,6 +888,7 @@ class RoomView {
       h('div', { class: 'ui-status' }, accsEl, h('span', { class: 'ui-status__actions' }, this.newBtn, centerBtn)),
       this.newMsg,
       this.agentsSec.el,
+      this.teamPanel.el,
       this.tasksSec.el,
       this.feedSec.el,
     );
@@ -939,6 +944,9 @@ class RoomView {
     setText(this.agentsSec.extra, agents.length ? String(agents.length) : '');
     setHidden(this.agentsEmpty, agents.length > 0);
     this.agents.sync(ordered);
+
+    // Equipe multi-provider da sala (ui/team.ts): a seção some quando a sala não tem equipe.
+    this.teamPanel.render(teamForRoom(snap?.teams, r.id));
 
     const tp = aggregateTasks(agents);
     setHidden(this.tasksSec.el, tp.total === 0);

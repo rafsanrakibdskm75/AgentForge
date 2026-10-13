@@ -330,12 +330,32 @@ export interface AccountInfo {
   usageStatus: 'ok' | 'stale' | 'disabled';
 }
 
+/** Um membro principal de uma equipe multi-provider (ver TeamInfo). */
+export interface TeamMemberInfo {
+  id: string;
+  name: string;
+  provider: Provider;
+  status: AgentStatus;
+  activityText?: string;
+  activityIcon?: string;
+}
+
+/** Equipe = sala com 2+ agentes principais de 2+ providers distintos. */
+export interface TeamInfo {
+  roomId: string;
+  roomName: string;
+  providers: Provider[];
+  members: TeamMemberInfo[];
+}
+
 export interface OfficeSnapshot {
   /** Incrementa a cada mudança. */
   rev: number;
   serverTime: number;
   rooms: RoomInfo[];
   agents: AgentInfo[];
+  /** Salas com 2+ agentes principais de 2+ providers (Team view). */
+  teams: TeamInfo[];
   /** Terminais interativos abertos pelo AgentForge (Claude Code rodando dentro do navegador). */
   ptys?: PtyInfo[];
   /** Contas do Claude detectadas (com uso de 5h/semanal quando disponível). */

@@ -35,6 +35,7 @@ import { RoomState } from './room-state';
 import { countShells, latestShellDone, shellLabel, shellStage, shellWaitSince, spinDir, spinPhase, yawnPhase } from './shell';
 import { SpotRegistry } from './spots';
 import type { Step } from './steps';
+import { teamProvidersOf } from '../team';
 import { tr } from '../../../../shared/i18n';
 
 /**
@@ -105,6 +106,8 @@ export class Sim {
   readonly hiddenRooms = new Set<string>();
   /** Contas do snapshot (id -> cor/letra/ferramenta) para etiquetas: a do Codex ganha chip vazado e o selo. */
   accounts = new Map<string, { short: string; color: string; name: string; provider?: Provider }>();
+  /** Times do snapshot (Team view): roomId -> ferramentas da equipe na sala. Rebuild a cada snapshot. */
+  teamProviders = new Map<string, Provider[]>();
   /** Depuração: salas/agentes extras mesclados a cada snapshot (sessões simuladas). */
   injected: { rooms: RoomInfo[]; agents: AgentInfo[] } = { rooms: [], agents: [] };
   /** Depuração: campos sobrepostos a agentes reais do snapshot (ex.: shells forçados). */
@@ -146,6 +149,7 @@ export class Sim {
     const first = !this.initialized;
     this.initialized = true;
     this.accounts = new Map(snap.accounts.map((a) => [a.id, { short: a.short, color: a.color, name: a.name, ...(a.provider === 'codex' ? { provider: a.provider } : {}) }]));
+    this.teamProviders = teamProvidersOf(snap);
 
     // ---- salas
     let layoutDirty = false;

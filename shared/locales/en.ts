@@ -2673,6 +2673,11 @@ export const EN: Readonly<Record<string, string>> = {
   "nenhuma pasta do Antigravity encontrada (defina AGENTFORGE_ANTIGRAVITY_DIRS)": "no Antigravity folder found (set AGENTFORGE_ANTIGRAVITY_DIRS)",
   "desligado (AGENTFORGE_ANTIGRAVITY=0)": "disabled (AGENTFORGE_ANTIGRAVITY=0)",
 
+  // client/src/ui/team.ts
+  "Equipe": "Team",
+  "{0} trabalhando juntos": "{0} working together",
+  "{0} ({1}) — {2}: {3}": "{0} ({1}) — {2}: {3}",
+
   // server/index.ts (Antigravity)
   "   Antigravity: {0}.": "   Antigravity: {0}.",
 };

@@ -17,6 +17,7 @@ import {
   type TimelineFrame,
   type TimelineRecord,
 } from '../../../shared/timeline';
+import { computeTeams } from '../../../shared/teams';
 import { tr } from '../../../shared/i18n';
 
 export interface TimelineDayInfo {
@@ -176,6 +177,7 @@ export class TimelineReplay {
       serverTime: t,
       rooms: rooms.sort((a, b) => a.slot - b.slot),
       agents,
+      teams: computeTeams(agents, (roomId) => rooms.find((r) => r.id === roomId)?.name ?? roomId),
       accounts,
       meta: {
         demo: agents.some((a) => this.frame.agents.get(a.id)?.demo),

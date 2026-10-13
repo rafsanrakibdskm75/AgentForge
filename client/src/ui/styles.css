@@ -2384,6 +2384,99 @@
   margin: 0 -6px;
 }
 
+/* Equipe multi-provider (ui/team.ts): atividade compartilhada — o que cada colega está fazendo agora. */
+.ui-tm__sub {
+  margin: 0 0 7px;
+  font-size: 12px;
+  color: var(--ui-faint);
+}
+
+.ui-tm {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 -6px;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-tm__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 5px 8px 5px 6px;
+  border-radius: 8px;
+}
+
+.ui-tm__row:not(.is-disabled):hover {
+  background: var(--ui-bg-hover);
+}
+
+.ui-tm__row.is-disabled {
+  cursor: default;
+}
+
+/* O colega já saiu do escritório desde que o snapshot chegou: esmaece, sem navegar. */
+.ui-tm__item.is-offline {
+  opacity: 0.55;
+}
+
+.ui-tm__main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ui-tm__top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-tm__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ui-tm__provider {
+  margin-left: auto;
+  flex: none;
+  font-size: 11px;
+  color: var(--ui-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ui-tm__act {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--ui-muted);
+}
+
+.ui-tm__icon {
+  flex: none;
+  width: 16px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.ui-tm__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .ui-timeline {
   display: flex;
   flex-direction: column;

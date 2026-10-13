@@ -213,6 +213,7 @@ const snap = (rev: number, build?: string): OfficeSnapshot => ({
   serverTime: 0,
   rooms: [],
   agents: [],
+  teams: [],
   accounts: [],
   meta: { demo: false, sources: [], startedAt: 1, version: '0.1.0', build },
 });
