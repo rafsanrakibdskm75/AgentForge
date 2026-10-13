@@ -1,7 +1,7 @@
 // Integration of the OpenCode source: a temporary OpenCode data dir (synthetic SQLite database),
 // the AccountsService and the Office. The accounts and terminal modules are built in parallel, so the
 // test stubs their exact contracts with vi.mock; source.ts keeps the real imports.
-import { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync, describeSqlite } from './sqlite-test';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgentInfo, Notice } from '../../../shared/types';
@@ -218,7 +218,7 @@ function setup() {
   };
 }
 
-describe('fonte do OpenCode: presença pelo time_updated', () => {
+describeSqlite('fonte do OpenCode: presença pelo time_updated', () => {
   it('boot com uma sessão nova: principal entra working, com título, stats e transcript', () => {
     const ctx = setup();
     const t0 = ctx.now();
@@ -405,7 +405,7 @@ describe('fonte do OpenCode: presença pelo time_updated', () => {
   });
 });
 
-describe('fonte do OpenCode: subagentes', () => {
+describeSqlite('fonte do OpenCode: subagentes', () => {
   it('sessão com parent_id entra como sub do pai', () => {
     const ctx = setup();
     const t0 = ctx.now();

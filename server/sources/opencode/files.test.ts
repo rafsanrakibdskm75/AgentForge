@@ -4,7 +4,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync, describeSqlite } from './sqlite-test';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   defaultOpencodeDataDir,
@@ -211,7 +211,7 @@ function fixtureHome(): FixtureHome & { close: () => void } {
   return { dir, db: dbPath, close: () => db.close() };
 }
 
-describe('defaultOpencodeDataDir', () => {
+describeSqlite('defaultOpencodeDataDir', () => {
   it('uses XDG_DATA_HOME when set', () => {
     expect(defaultOpencodeDataDir({ XDG_DATA_HOME: '/xdg/data' }, '/home/u')).toBe(join('/xdg/data', 'opencode'));
   });
@@ -224,7 +224,7 @@ describe('defaultOpencodeDataDir', () => {
   });
 });
 
-describe('looksLikeOpencodeDir', () => {
+describeSqlite('looksLikeOpencodeDir', () => {
   it('true when opencode.db exists', () => {
     const fx = fixtureHome();
     try {
@@ -247,7 +247,7 @@ describe('looksLikeOpencodeDir', () => {
   });
 });
 
-describe('listSessions', () => {
+describeSqlite('listSessions', () => {
   it('returns sessions newest first with tokens and cost mapped', () => {
     const fx = fixtureHome();
     try {
@@ -301,7 +301,7 @@ describe('listSessions', () => {
   });
 });
 
-describe('readSessionMessages', () => {
+describeSqlite('readSessionMessages', () => {
   it('returns user and assistant messages in chronological order with text from text parts', () => {
     const fx = fixtureHome();
     try {
@@ -336,7 +336,7 @@ describe('readSessionMessages', () => {
   });
 });
 
-describe('readSessionParts', () => {
+describeSqlite('readSessionParts', () => {
   it('maps tool calls in order, with input/output/status; failed calls use state.error', () => {
     const fx = fixtureHome();
     try {
@@ -372,7 +372,7 @@ describe('readSessionParts', () => {
   });
 });
 
-describe('readSessionTodos', () => {
+describeSqlite('readSessionTodos', () => {
   it('returns todos ordered by position with status and priority', () => {
     const fx = fixtureHome();
     try {

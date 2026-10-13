@@ -3,7 +3,7 @@
 import { mkdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync, describeSqlite } from './sqlite-test';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TerminalEntry } from '../../../shared/types';
 import { createOpencodeTerminalParser, materializeTranscript } from './terminal';
@@ -81,7 +81,7 @@ function parseAll(text: string): TerminalEntry[] {
   return text.split('\n').flatMap((line) => parser.push(line));
 }
 
-describe('materializeTranscript', () => {
+describeSqlite('materializeTranscript', () => {
   it('writes the exact line format, records merged chronologically', () => {
     const { home, dataDir } = fixture();
     const path = materializeTranscript(home, dataDir, SES);
@@ -152,7 +152,7 @@ describe('materializeTranscript', () => {
   });
 });
 
-describe('createOpencodeTerminalParser', () => {
+describeSqlite('createOpencodeTerminalParser', () => {
   it('round-trips a materialized transcript into entries, tool paired with its result', () => {
     const { home, dataDir } = fixture();
     const entries = parseAll(readFileSync(materializeTranscript(home, dataDir, SES)!, 'utf8'));

@@ -3,7 +3,7 @@
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync, describeSqlite } from './sqlite-test';
 import { afterEach, describe, expect, it } from 'vitest';
 import { OpenCodeHistory } from './history';
 
@@ -85,7 +85,7 @@ function historyOf(homes: Homes, dataDir: string) {
   });
 }
 
-describe('OpenCodeHistory.list', () => {
+describeSqlite('OpenCodeHistory.list', () => {
   it('lists recent sessions newest-first, without children or stale ones', async () => {
     const homes = fixtureHomes();
     const list = await historyOf(homes, tempDir('agentforge-opencode-hist-data')).list();
@@ -125,7 +125,7 @@ describe('OpenCodeHistory.list', () => {
   });
 });
 
-describe('OpenCodeHistory.resolve', () => {
+describeSqlite('OpenCodeHistory.resolve', () => {
   it('400 on a bad session id', () => {
     const homes = fixtureHomes();
     const h = historyOf(homes, tempDir('agentforge-opencode-hist-data'));
