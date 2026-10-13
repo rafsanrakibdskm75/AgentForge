@@ -1,6 +1,6 @@
 {
   "name": "agentforge",
-  "version": "0.10.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Animated virtual office that shows, in real time, what your Claude Code, Codex and Gemini CLI agents are doing.",
   "author": "N-Studio",

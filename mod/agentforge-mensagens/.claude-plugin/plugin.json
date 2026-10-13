@@ -1,7 +1,7 @@
 {
   "name": "agentforge-mensagens",
   "displayName": "AgentForge: mensagens pelo escritório",
-  "version": "0.10.0",
+  "version": "1.0.1",
   "description": "Leva para a sessão do Claude Code as mensagens que você digita no AgentForge (painel do agente ou terminal), como se você as tivesse digitado no terminal.",
   "author": { "name": "Márcio Junior", "url": "https://github.com/marmottajr" },
   "homepage": "https://github.com/marmottajr/habblaud#readme",

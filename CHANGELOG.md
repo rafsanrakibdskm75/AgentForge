@@ -68,6 +68,25 @@ do meio (0.**3**.0).
 - Um arquivo de conversa reescrito no mesmo lugar (em vez de só crescer) volta a ser lido do começo; antes o
   conteúdo novo era ignorado ou lido a partir do meio.
 
+## [1.0.1] - 2026-10-13
+
+### Added
+
+- **Rebrand to AgentForge by N-Studio:** new name, logo and app icons throughout; `HABBLAUD_*` env vars become
+  `AGENTFORGE_*`, `~/.habblaud` becomes `~/.agentforge`, Docker and mod names follow. Upgrades migrate automatically
+  from both CodeTown and Habblaud (state dir, env warnings, Docker volumes, mod marketplace).
+- **English + Bangla interface:** the whole UI is now available in English and বাংলা (2,398 strings each), with
+  Bangla auto-detect. Portuguese stays as the internal lookup key only.
+- **Gemini CLI support:** sessions from `~/.muse` appear as agents, with accounts, history and terminal view.
+- **OpenCode support:** sessions from `~/.local/share/opencode` (SQLite), with accounts, history and a materialized
+  terminal transcript.
+- **Antigravity support (catalog level):** conversations from `~/.muse/antigravity` appear with title, workspace and
+  presence. Full message transcripts need protobuf decoding (not yet).
+- **Phone alerts ("Needs you"):** the server sends an ntfy push notification when an agent raises its hand
+  (waiting for permission, a question or a choice). Configure the topic in Settings; one alert per waiting episode.
+- **Team view:** a room with 2+ main agents from 2+ providers shows as a collaborating team — provider dots on the
+  room badge and a member list with live activity in the room drawer.
+
 ## [0.10.0] - 2026-10-13
 
 Para atualizar: `git pull` e `npm run docker:up`. A interface segue o idioma do navegador (ou Configurações › Idioma).
