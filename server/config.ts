@@ -54,6 +54,10 @@ export interface ServerConfig {
   codex: boolean;
   /** Observa as sessões do Gemini CLI (sources/gemini/); AGENTFORGE_GEMINI=0 desliga. */
   gemini: boolean;
+  /** Observa as sessões do OpenCode (sources/opencode/); AGENTFORGE_OPENCODE=0 desliga. */
+  opencode: boolean;
+  /** Observa o catálogo do Antigravity (sources/antigravity/); AGENTFORGE_ANTIGRAVITY=0 desliga. */
+  antigravity: boolean;
   /** Segunda porta, com login, para o celular na rede local (http/remote.ts); ausente = desligada. */
   remote?: RemoteConfig;
   /** Por que o acesso remoto ficou desligado quando as variáveis estão incompletas. */
@@ -179,6 +183,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, argv: string[] 
     updateCheck: !env.AGENTFORGE_UPDATE_CHECK?.trim() || isTruthy(env.AGENTFORGE_UPDATE_CHECK),
     codex: !env.AGENTFORGE_CODEX?.trim() || isTruthy(env.AGENTFORGE_CODEX),
     gemini: !env.AGENTFORGE_GEMINI?.trim() || isTruthy(env.AGENTFORGE_GEMINI),
+    opencode: !env.AGENTFORGE_OPENCODE?.trim() || isTruthy(env.AGENTFORGE_OPENCODE),
+    antigravity: !env.AGENTFORGE_ANTIGRAVITY?.trim() || isTruthy(env.AGENTFORGE_ANTIGRAVITY),
     remote: remote.config,
     remoteWarning: remote.warning,
   };

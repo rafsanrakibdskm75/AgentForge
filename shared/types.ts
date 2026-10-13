@@ -14,8 +14,10 @@ export type AgentKind = 'main' | 'sub';
  * - claude: Claude Code;
  * - codex: OpenAI Codex (CLI `codex` e o app desktop, que gravam no mesmo CODEX_HOME).
  * - gemini: Google Gemini CLI (grava em ~/.muse/tmp/<projeto>/chats/).
+ * - opencode: OpenCode (grava em ~/.local/share/opencode/opencode.db, SQLite).
+ * - antigravity: Google Antigravity (catálogo SQLite em ~/.muse/antigravity/).
  */
-export type Provider = 'claude' | 'codex' | 'gemini';
+export type Provider = 'claude' | 'codex' | 'gemini' | 'opencode' | 'antigravity';
 
 /**
  * Estado de alto nível de um agente — é o que dirige o comportamento do personagem.

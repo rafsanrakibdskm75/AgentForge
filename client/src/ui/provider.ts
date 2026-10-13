@@ -8,7 +8,7 @@ import { shortcutHint } from './model';
 import { tr } from '../../../shared/i18n';
 
 /** Nome de cada ferramenta como aparece nos textos. */
-export const PROVIDER_NAME: Record<Provider, string> = { claude: 'Claude Code', codex: 'Codex', gemini: 'Gemini CLI' };
+export const PROVIDER_NAME: Record<Provider, string> = { claude: 'Claude Code', codex: 'Codex', gemini: 'Gemini CLI', opencode: 'OpenCode', antigravity: 'Antigravity' };
 
 /** Ferramenta de um agente, conta, sessão ou pedido (ausente = Claude Code). */
 export function providerOf(x: { provider?: Provider } | null | undefined): Provider {
@@ -42,23 +42,25 @@ export function fallbackShort(id: string, provider: Provider = accountProvider(u
   const rest = id
     .replace(/^.*:/, '')
     .replace(/~\d+$/, '')
-    .replace(/^\.?(?:claude|codex|gemini)(?=[-_.]|$)[-_.]?/i, '');
+    .replace(/^\.?(?:claude|codex|gemini|opencode|antigravity)(?=[-_.]|$)[-_.]?/i, '');
   const letter = /[\p{L}\p{N}]/u.exec(rest)?.[0];
   if (letter) return letter.toUpperCase();
-  return provider === 'codex' ? 'X' : provider === 'gemini' ? 'G' : '?';
+  return provider === 'codex' ? 'X' : provider === 'gemini' ? 'G' : provider === 'opencode' ? 'O' : provider === 'antigravity' ? 'A' : '?';
 }
 
 /** O selo da ferramenta ao lado do nome da conta (não repete quando o nome já a diz). */
 export function showsProviderTag(provider: Provider, accountName = ''): boolean {
   if (provider === 'codex') return !/codex/i.test(accountName);
   if (provider === 'gemini') return !/gemini/i.test(accountName);
+  if (provider === 'opencode') return !/opencode/i.test(accountName);
+  if (provider === 'antigravity') return !/antigravity/i.test(accountName);
   return false;
 }
 
 /** Rótulo do chip da conta (dica e leitores de tela): "Conta C (dev@x.com)", "Codex · plano Team", "Gemini CLI". */
 export function accountChipLabel(account: Pick<AccountInfo, 'name' | 'email' | 'plan' | 'provider'> | undefined, fallbackId: string, provider: Provider): string {
   if (!account) {
-    const tag = provider === 'codex' ? ' · Codex' : provider === 'gemini' ? ' · Gemini CLI' : '';
+    const tag = provider === 'codex' ? ' · Codex' : provider === 'gemini' ? ' · Gemini CLI' : provider === 'opencode' ? ' · OpenCode' : provider === 'antigravity' ? ' · Antigravity' : '';
     return fallbackId ? `${fallbackId}${tag}` : tr('Conta desconhecida');
   }
   if (provider === 'codex') {
@@ -67,6 +69,14 @@ export function accountChipLabel(account: Pick<AccountInfo, 'name' | 'email' | '
   }
   if (provider === 'gemini') {
     const tag = showsProviderTag(provider, account.name) ? ' · Gemini CLI' : '';
+    return `${account.name}${tag}`;
+  }
+  if (provider === 'opencode') {
+    const tag = showsProviderTag(provider, account.name) ? ' · OpenCode' : '';
+    return `${account.name}${tag}`;
+  }
+  if (provider === 'antigravity') {
+    const tag = showsProviderTag(provider, account.name) ? ' · Antigravity' : '';
     return `${account.name}${tag}`;
   }
   return `${account.name}${account.email ? ` (${account.email})` : ''}`;

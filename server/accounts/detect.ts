@@ -223,6 +223,16 @@ const ALIAS_TOOLS: Record<Provider, { invokes: RegExp; dir: RegExp }> = {
     invokes: /(?:^|[\s;&|(])(?:[\w.~/-]*\/)?gemini(?=$|[\s;&|)])/,
     dir: /\bGEMINI_HOME=(?:"([^"]*)"|'([^']*)'|([^\s;&|]+))/,
   },
+  opencode: {
+    invokes: /(?:^|[\s;&|(])(?:[\w.~/-]*\/)?opencode(?=$|[\s;&|)])/,
+    // OpenCode has no standard data-dir env var (it follows XDG: ~/.local/share/opencode); this never matches.
+    dir: /\bOPENCODE_DATA_DIR=(?:"([^"]*)"|'([^']*)'|([^\s;&|]+))/,
+  },
+  antigravity: {
+    invokes: /(?:^|[\s;&|(])(?:[\w.~/-]*\/)?antigravity(?=$|[\s;&|)])/,
+    // Antigravity stores under ~/.muse/antigravity* with no standard home env var; this never matches.
+    dir: /\bANTIGRAVITY_HOME=(?:"([^"]*)"|'([^']*)'|([^\s;&|]+))/,
+  },
 };
 
 /**

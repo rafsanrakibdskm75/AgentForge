@@ -635,6 +635,15 @@ there is no explicit "working" flag, so the character shows as working while the
 afterwards. Subagents (`kind: "subagent"`) are linked to the main session whose tool call spawned them.
 `AGENTFORGE_GEMINI=0` turns Gemini off; `AGENTFORGE_GEMINI_DIRS` overrides the folder discovery.
 
+### Antigravity
+
+Antigravity conversations appear as characters with their title, workspace and live status. AgentForge reads only the
+conversation catalog (`conversation_summaries.db` under `~/.muse/antigravity*`) — never credentials, and never the
+protobuf message blobs. A conversation counts as open while it was updated in the last 10 minutes; the character shows
+as working while the conversation is fresh and idle afterwards. Per-message transcripts are not available at this level:
+opening one from the history shows the catalog facts (title, workspace, timestamps) instead of the messages.
+`AGENTFORGE_ANTIGRAVITY=0` turns Antigravity off; `AGENTFORGE_ANTIGRAVITY_DIRS` overrides the folder discovery.
+
 ### GitHub in the office
 
 What the agents do on GitHub livens up the project's room, with no token and no internet access: AgentForge reads the

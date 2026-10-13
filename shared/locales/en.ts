@@ -2590,12 +2590,23 @@ export const EN: Readonly<Record<string, string>> = {
   "Gemini: sessão {0} ilegível.": "Gemini: session {0} unreadable.",
   "Nova instrução": "New instruction",
 
+  // server/sources/opencode/source.ts
+  "Agente principal (OpenCode)": "Main agent (OpenCode)",
+  "Subagente (OpenCode)": "Subagent (OpenCode)",
+  "OpenCode: falha no ciclo de leitura: {0}": "OpenCode: read cycle failed: {0}",
+  "OpenCode: sessão {0}: {1}": "OpenCode: session {0}: {1}",
+
   // server/index.ts
   "   Gemini: {0} conta(s), {1} sessão(ões) aberta(s).": "   Gemini: {0} account(s), {1} open session(s).",
   "   Conta {0} do Gemini ({1}): {2}": "   Gemini account {0} ({1}): {2}",
   "   Gemini: {0}.": "   Gemini: {0}.",
   "nenhuma pasta do Gemini encontrada (defina AGENTFORGE_GEMINI_DIRS)": "no Gemini folder found (set AGENTFORGE_GEMINI_DIRS)",
+  "   OpenCode: {0} conta(s), {1} sessão(ões) aberta(s).": "   OpenCode: {0} account(s), {1} open session(s).",
+  "   Conta {0} do OpenCode ({1}): {2}": "   OpenCode account {0} ({1}): {2}",
+  "   OpenCode: {0}.": "   OpenCode: {0}.",
+  "nenhuma pasta do OpenCode encontrada (defina AGENTFORGE_OPENCODE_DIRS)": "no OpenCode folder found (set AGENTFORGE_OPENCODE_DIRS)",
   "desligado (AGENTFORGE_GEMINI=0)": "disabled (AGENTFORGE_GEMINI=0)",
+  "desligado (AGENTFORGE_OPENCODE=0)": "disabled (AGENTFORGE_OPENCODE=0)",
 
   // server/alerts/* + client/src/ui/alerts-settings.ts
   "não foi possível avisar que {0} precisa de você ({1})": "Couldn't notify that {0} needs you ({1})",
@@ -2641,4 +2652,27 @@ export const EN: Readonly<Record<string, string>> = {
   "Removendo o container {0} ({1}, o nome antigo)…": "Removing the container {0} ({1}, the old name)…",
   "{0} o container, ainda parado, para receber os dados do nome antigo…": "{0} the container, still stopped, to receive the old name's data…",
   "  Sobrou do nome antigo; depois de conferir o escritório, apague com: {0}": "  Left over from the old name; after checking the office, delete with: {0}",
+
+  // server/sources/antigravity/* + server/index.ts (Antigravity)
+  "Agente principal (Antigravity)": "Main agent (Antigravity)",
+  "Antigravity {0}": "Antigravity {0}",
+  "Antigravity": "Antigravity",
+  "Antigravity: conversa {0}: {1}": "Antigravity: conversation {0}: {1}",
+  "Antigravity: falha no ciclo de leitura: {0}": "Antigravity: read cycle failed: {0}",
+  "Atualizada em": "Updated at",
+  "Conversa": "Conversation",
+  "Criada em": "Created at",
+  "Espaço de trabalho": "Workspace",
+  "ID": "ID",
+  "Subagente (Antigravity)": "Subagent (Antigravity)",
+  "id de conversa inválido": "invalid conversation id",
+  "conversa não encontrada": "conversation not found",
+  "A transcrição completa desta conversa não está disponível: o Antigravity grava as mensagens em protobuf e esta integração lê só o catálogo.": "The full transcript of this conversation is not available: Antigravity stores messages as protobuf and this integration only reads the catalog.",
+  "   Antigravity: {0} conta(s), {1} conversa(s) aberta(s).": "   Antigravity: {0} account(s), {1} open conversation(s).",
+  "   Conta {0} do Antigravity ({1}): {2}": "   Antigravity account {0} ({1}): {2}",
+  "nenhuma pasta do Antigravity encontrada (defina AGENTFORGE_ANTIGRAVITY_DIRS)": "no Antigravity folder found (set AGENTFORGE_ANTIGRAVITY_DIRS)",
+  "desligado (AGENTFORGE_ANTIGRAVITY=0)": "disabled (AGENTFORGE_ANTIGRAVITY=0)",
+
+  // server/index.ts (Antigravity)
+  "   Antigravity: {0}.": "   Antigravity: {0}.",
 };

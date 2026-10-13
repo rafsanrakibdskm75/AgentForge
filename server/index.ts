@@ -42,6 +42,12 @@ import { CodexSource } from './sources/codex/source';
 import { discoverGeminiDirs } from './sources/gemini/accounts';
 import { GeminiHistory } from './sources/gemini/history';
 import { GeminiSource } from './sources/gemini/source';
+import { discoverOpencodeDirs } from './sources/opencode/accounts';
+import { OpenCodeHistory } from './sources/opencode/history';
+import { OpenCodeSource } from './sources/opencode/source';
+import { discoverAntigravityDirs } from './sources/antigravity/accounts';
+import { AntigravityHistory } from './sources/antigravity/history';
+import { AntigravitySource } from './sources/antigravity/source';
 import { createBuildReader } from './build';
 import { UpdateChecker } from './updates/checker';
 import { tr } from '../shared/i18n';
@@ -147,6 +153,16 @@ const geminiDirs = config.gemini ? discoverGeminiDirs(process.env, config.home) 
 const gemini = geminiDirs.length ? new GeminiSource({ accounts, office, dirs: geminiDirs, env: process.env, home: config.home }) : undefined;
 if (gemini) agents.add(gemini);
 if (history && gemini) history.add(new GeminiHistory({ accounts: () => accounts.entriesOf('gemini'), openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) }));
+// OpenCode: sessões no SQLite ~/.local/share/opencode/opencode.db (AGENTFORGE_OPENCODE=0 desliga), com o histórico no HistorySet.
+const opencodeDirs = config.opencode ? discoverOpencodeDirs(process.env, config.home) : [];
+const opencode = opencodeDirs.length ? new OpenCodeSource({ accounts, office, dirs: opencodeDirs, dataDir: config.dataDir, env: process.env, home: config.home }) : undefined;
+if (opencode) agents.add(opencode);
+if (history && opencode) history.add(new OpenCodeHistory({ accounts: () => accounts.entriesOf('opencode'), dataDir: config.dataDir, openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) }));
+// Antigravity: catálogo em ~/.muse/antigravity*/conversation_summaries.db (AGENTFORGE_ANTIGRAVITY=0 desliga), com o histórico no HistorySet.
+const antigravityDirs = config.antigravity ? discoverAntigravityDirs(process.env, config.home) : [];
+const antigravity = antigravityDirs.length ? new AntigravitySource({ accounts, office, dirs: antigravityDirs, env: process.env, home: config.home }) : undefined;
+if (antigravity) agents.add(antigravity);
+if (history && antigravity) history.add(new AntigravityHistory({ accounts: () => accounts.entriesOf('antigravity'), dataDir: config.dataDir, openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) }));
 // Entregas: o fim de cada pedido, lido dos transcripts do histórico (mesma trava do terminal). Os arquivos entregues
 // são lidos aqui (Node, ou pasta de conta montada no Docker) ou pelo auxiliar do host.
 const deliveries = history
@@ -450,6 +466,26 @@ server.listen(config.port, config.host, () => {
     }
   } else {
     log.info(tr('   Gemini: {0}.', [config.gemini ? tr('nenhuma pasta do Gemini encontrada (defina AGENTFORGE_GEMINI_DIRS)') : tr('desligado (AGENTFORGE_GEMINI=0)')]));
+  }
+  if (opencode) {
+    const opencodeAccounts = opencode.accountEntries();
+    const open = opencode.sources().reduce((n, s) => n + s.sessions, 0);
+    log.info(tr('   OpenCode: {0} conta(s), {1} sessão(ões) aberta(s).', [opencodeAccounts.length, open]));
+    for (const a of opencodeAccounts) {
+      log.info(tr('   Conta {0} do OpenCode ({1}): {2}', [a.detected.short, a.id, a.detected.configDir]));
+    }
+  } else {
+    log.info(tr('   OpenCode: {0}.', [config.opencode ? tr('nenhuma pasta do OpenCode encontrada (defina AGENTFORGE_OPENCODE_DIRS)') : tr('desligado (AGENTFORGE_OPENCODE=0)')]));
+  }
+  if (antigravity) {
+    const antigravityAccounts = antigravity.accountEntries();
+    const open = antigravity.sources().reduce((n, s) => n + s.sessions, 0);
+    log.info(tr('   Antigravity: {0} conta(s), {1} conversa(s) aberta(s).', [antigravityAccounts.length, open]));
+    for (const a of antigravityAccounts) {
+      log.info(tr('   Conta {0} do Antigravity ({1}): {2}', [a.detected.short, a.id, a.detected.configDir]));
+    }
+  } else {
+    log.info(tr('   Antigravity: {0}.', [config.antigravity ? tr('nenhuma pasta do Antigravity encontrada (defina AGENTFORGE_ANTIGRAVITY_DIRS)') : tr('desligado (AGENTFORGE_ANTIGRAVITY=0)')]));
   }
   if (office.isDemo()) log.info(tr('   Modo demonstração ligado (agentes simulados misturados aos reais).'));
   if (config.terminal) log.info(tr('   Terminal: ligado (acesso só local).'));

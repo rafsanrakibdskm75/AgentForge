@@ -2461,12 +2461,23 @@ export const BN: Readonly<Record<string, string>> = {
   "Gemini: sessão {0} ilegível.": "Gemini: সেশন {0} পড়া যায়নি।",
   "Nova instrução": "নতুন নির্দেশনা",
 
+  // server/sources/opencode/source.ts
+  "Agente principal (OpenCode)": "প্রধান এজেন্ট (OpenCode)",
+  "Subagente (OpenCode)": "সাবএজেন্ট (OpenCode)",
+  "OpenCode: falha no ciclo de leitura: {0}": "OpenCode: পড়ার চক্র ব্যর্থ হয়েছে: {0}",
+  "OpenCode: sessão {0}: {1}": "OpenCode: সেশন {0}: {1}",
+
   // server/index.ts
   "   Gemini: {0} conta(s), {1} sessão(ões) aberta(s).": "   Gemini: {0}টি অ্যাকাউন্ট, {1}টি খোলা সেশন।",
   "   Conta {0} do Gemini ({1}): {2}": "   Gemini অ্যাকাউন্ট {0} ({1}): {2}",
   "   Gemini: {0}.": "   Gemini: {0}।",
   "nenhuma pasta do Gemini encontrada (defina AGENTFORGE_GEMINI_DIRS)": "কোনো Gemini ফোল্ডার পাওয়া যায়নি (AGENTFORGE_GEMINI_DIRS সেট করুন)",
+  "   OpenCode: {0} conta(s), {1} sessão(ões) aberta(s).": "   OpenCode: {0}টি অ্যাকাউন্ট, {1}টি খোলা সেশন।",
+  "   Conta {0} do OpenCode ({1}): {2}": "   OpenCode অ্যাকাউন্ট {0} ({1}): {2}",
+  "   OpenCode: {0}.": "   OpenCode: {0}।",
+  "nenhuma pasta do OpenCode encontrada (defina AGENTFORGE_OPENCODE_DIRS)": "কোনো OpenCode ফোল্ডার পাওয়া যায়নি (AGENTFORGE_OPENCODE_DIRS সেট করুন)",
   "desligado (AGENTFORGE_GEMINI=0)": "বন্ধ আছে (AGENTFORGE_GEMINI=0)",
+  "desligado (AGENTFORGE_OPENCODE=0)": "বন্ধ আছে (AGENTFORGE_OPENCODE=0)",
 
   // server/alerts/* + client/src/ui/alerts-settings.ts
   "não foi possível avisar que {0} precisa de você ({1})": "{0}-এর আপনাকে প্রয়োজন ({1}) — এই বিজ্ঞপ্তি পাঠানো যায়নি",
@@ -2512,4 +2523,27 @@ export const BN: Readonly<Record<string, string>> = {
   "Removendo o container {0} ({1}, o nome antigo)…": "কন্টেইনার {0} ({1}, পুরনো নাম) সরানো হচ্ছে…",
   "{0} o container, ainda parado, para receber os dados do nome antigo…": "{0} কন্টেইনার, এখনও বন্ধ, পুরনো নামের ডেটা নেওয়ার জন্য…",
   "  Sobrou do nome antigo; depois de conferir o escritório, apague com: {0}": "  পুরনো নামের অবশিষ্টাংশ; অফিস পরীক্ষা করে {0} দিয়ে মুছুন",
+
+  // server/sources/antigravity/* + server/index.ts (Antigravity)
+  "Agente principal (Antigravity)": "প্রধান এজেন্ট (Antigravity)",
+  "Antigravity {0}": "Antigravity {0}",
+  "Antigravity": "Antigravity",
+  "Antigravity: conversa {0}: {1}": "Antigravity: কথোপকথন {0}: {1}",
+  "Antigravity: falha no ciclo de leitura: {0}": "Antigravity: পড়ার চক্র ব্যর্থ হয়েছে: {0}",
+  "Atualizada em": "আপডেট হয়েছে",
+  "Conversa": "কথোপকথন",
+  "Criada em": "তৈরি হয়েছে",
+  "Espaço de trabalho": "ওয়ার্কস্পেস",
+  "ID": "ID",
+  "Subagente (Antigravity)": "সাবএজেন্ট (Antigravity)",
+  "id de conversa inválido": "অবৈধ কথোপকথন আইডি",
+  "conversa não encontrada": "কথোপকথন পাওয়া যায়নি",
+  "A transcrição completa desta conversa não está disponível: o Antigravity grava as mensagens em protobuf e esta integração lê só o catálogo.": "এই কথোপকথনের সম্পূর্ণ ট্রান্সক্রিপ্ট উপলব্ধ নেই: Antigravity বার্তাগুলো protobuf হিসেবে সংরক্ষণ করে এবং এই ইন্টিগ্রেশন শুধু ক্যাটালগ পড়ে।",
+  "   Antigravity: {0} conta(s), {1} conversa(s) aberta(s).": "   Antigravity: {0}টি অ্যাকাউন্ট, {1}টি খোলা কথোপকথন।",
+  "   Conta {0} do Antigravity ({1}): {2}": "   Antigravity অ্যাকাউন্ট {0} ({1}): {2}",
+  "nenhuma pasta do Antigravity encontrada (defina AGENTFORGE_ANTIGRAVITY_DIRS)": "কোনো Antigravity ফোল্ডার পাওয়া যায়নি (AGENTFORGE_ANTIGRAVITY_DIRS সেট করুন)",
+  "desligado (AGENTFORGE_ANTIGRAVITY=0)": "বন্ধ আছে (AGENTFORGE_ANTIGRAVITY=0)",
+
+  // server/index.ts (Antigravity)
+  "   Antigravity: {0}.": "   Antigravity: {0}.",
 };
