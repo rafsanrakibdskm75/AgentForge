@@ -1,5 +1,5 @@
 // Simulador de escritório para demonstração e desenvolvimento.
-// Puro (sem Node/DOM): roda no servidor (HABBLAUD_DEMO=1) e no navegador (?mock=1).
+// Puro (sem Node/DOM): roda no servidor (AGENTFORGE_DEMO=1) e no navegador (?mock=1).
 //
 // Gera sessões fictícias com ciclos realistas: prompt -> trabalho -> (permissão ou pergunta, com pedido
 // fictício para responder pelo escritório) -> (subagentes)
@@ -148,7 +148,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   { id: '.claude', short: 'C', name: 'Conta C', email: 'dev@empresa.example', organization: tr('Empresa'), plan: 'Max', color: '#f08a3c', configDir: '~/.claude' },
   { id: '.claude-conta2', short: 'D', name: 'Conta D', email: 'dev@pessoal.example', plan: 'Max', color: '#4aa8e8', configDir: '~/.claude-conta2' },
 ];
-/** Conta do Codex (um CODEX_HOME): sem e-mail (o Habblaud não lê credenciais), com o plano dos `rate_limits`. */
+/** Conta do Codex (um CODEX_HOME): sem e-mail (o AgentForge não lê credenciais), com o plano dos `rate_limits`. */
 const DEMO_CODEX_ACCOUNT: DemoAccount = { id: '.codex', provider: 'codex', short: 'X', name: 'Codex', plan: 'Team', color: '#a77bf3', configDir: '~/.codex' };
 const MERGED_ACCOUNTS: Array<Pick<DemoAccount, 'short' | 'name' | 'color'>> = [
   { short: 'X', name: 'Demo X', color: '#5cc97b' },
@@ -306,7 +306,7 @@ export class DemoSimulator {
 
   /**
    * Mensagem mandada pelo escritório a um agente principal (fictícia: nada vai a uma sessão de verdade): a
-   * atividade "Mensagem pelo Habblaud" e, se ele estava à toa, o próximo turno começa logo, como se respondesse.
+   * atividade "Mensagem pelo AgentForge" e, se ele estava à toa, o próximo turno começa logo, como se respondesse.
    * false = agente desconhecido, subagente ou que já saiu.
    */
   receiveMessage(agentId: string, text: string, now = Date.now()): boolean {
@@ -434,11 +434,11 @@ export class DemoSimulator {
       return true;
     }
     if (answers) {
-      this.activity(a, now, { kind: 'other', icon: '💬', text: tr('Respondido no Habblaud'), detail: answerSummary(p.questions ?? [], answers), tool: 'PermissionRequest' });
+      this.activity(a, now, { kind: 'other', icon: '💬', text: tr('Respondido no AgentForge'), detail: answerSummary(p.questions ?? [], answers), tool: 'PermissionRequest' });
     } else if (d.behavior === 'allow') {
-      this.activity(a, now, { kind: 'other', icon: '✅', text: d.suggestion !== undefined ? tr('Aprovado no Habblaud (sempre permitir)') : tr('Aprovado no Habblaud'), detail: title, tool: 'PermissionRequest' });
+      this.activity(a, now, { kind: 'other', icon: '✅', text: d.suggestion !== undefined ? tr('Aprovado no AgentForge (sempre permitir)') : tr('Aprovado no AgentForge'), detail: title, tool: 'PermissionRequest' });
     } else {
-      this.activity(a, now, { kind: 'wait', icon: '🚫', text: tr('Recusado no Habblaud'), detail: d.message ? `${title} — ${d.message}` : title, tool: 'PermissionRequest' });
+      this.activity(a, now, { kind: 'wait', icon: '🚫', text: tr('Recusado no AgentForge'), detail: d.message ? `${title} — ${d.message}` : title, tool: 'PermissionRequest' });
     }
     this.resumeFromWaiting(a, now);
     return true;

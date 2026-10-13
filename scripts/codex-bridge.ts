@@ -1,20 +1,20 @@
-// Auxiliar do Habblaud para as mensagens ao Codex quando o Habblaud roda no Docker. Roda no HOST (Mac), com tsx:
+// Auxiliar do AgentForge para as mensagens ao Codex quando o AgentForge roda no Docker. Roda no HOST (Mac), com tsx:
 //
 //   npm run codex:bridge     (opções: --port <n>, --once)
 //
 // As mensagens ao Codex entram na sessão por `codex queue --thread <threadId> --message <texto>`, que precisa rodar no
 // Mac (é aqui que estão o Codex e as pastas das contas); no Docker o servidor não alcança o binário. Este processo, a
-// cada 2 s, pergunta ao Habblaud se há mensagens para as sessões do Codex (POST /api/codex/bridge/poll), roda o
+// cada 2 s, pergunta ao AgentForge se há mensagens para as sessões do Codex (POST /api/codex/bridge/poll), roda o
 // comando para cada uma, na ordem, com o CODEX_HOME da conta, e confirma o resultado (POST /api/codex/bridge/ack).
-// Enquanto ele roda, o escritório deixa mandar mensagens aos agentes do Codex (o Habblaud o considera presente por até
+// Enquanto ele roda, o escritório deixa mandar mensagens aos agentes do Codex (o AgentForge o considera presente por até
 // 10 s depois da última rodada). Fora do Docker não precisa dele: o próprio servidor roda o comando.
 //
-// Binário: HABBLAUD_CODEX_BIN ou `codex` do PATH. Nunca roda o Codex com -c, --enable, --disable nem --no-daemon, e
+// Binário: AGENTFORGE_CODEX_BIN ou `codex` do PATH. Nunca roda o Codex com -c, --enable, --disable nem --no-daemon, e
 // confere cada mensagem antes (id de thread, pasta do Codex que existe). O texto das mensagens nunca vai para a tela.
-// Também começa os agentes novos pedidos no escritório (com HABBLAUD_PTY=1 no Habblaud; anexos gravados em
-// ~/.habblaud/attachments/), lê os arquivos das entregas (só de pastas de projeto conhecidas, da pasta temporária e dos
+// Também começa os agentes novos pedidos no escritório (com AGENTFORGE_PTY=1 no AgentForge; anexos gravados em
+// ~/.agentforge/attachments/), lê os arquivos das entregas (só de pastas de projeto conhecidas, da pasta temporária e dos
 // anexos) e transcreve o ditado com o Whisper local (whisper-cli + ffmpeg + modelo; ver server/dictation/whisper.ts).
-// Arquivos e ditado usam rodadas com espera: o Habblaud só responde quando chega trabalho (ou a cada 20 s).
+// Arquivos e ditado usam rodadas com espera: o AgentForge só responde quando chega trabalho (ou a cada 20 s).
 // Ctrl+C para parar.
 import { statSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
@@ -34,12 +34,12 @@ import { readFileSync } from 'node:fs';
 export const DEFAULT_PORT = 4747;
 /** Intervalo entre as rodadas. */
 export const POLL_MS = 2_000;
-/** Pausa mínima entre rodadas com espera (Habblaud antigo, que responde na hora) e depois de uma recusa. */
+/** Pausa mínima entre rodadas com espera (AgentForge antigo, que responde na hora) e depois de uma recusa. */
 export const WAIT_ROUND_MIN_MS = 500;
 export const REFUSED_RETRY_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 5_000;
 
-const USAGE = tr('Uso: npm run codex:bridge [-- opções]\n\nEntrega as mensagens do escritório às sessões do Codex quando o Habblaud roda no Docker (deixe rodando no computador).\n\nOpções:\n  --port <n>   porta do Habblaud (padrão: HABBLAUD_PORT ou {0})\n  --once       faz uma rodada só e sai\n  -h, --help   mostra esta ajuda\n\nBinário do Codex: HABBLAUD_CODEX_BIN ou `codex` do PATH.', [DEFAULT_PORT]);
+const USAGE = tr('Uso: npm run codex:bridge [-- opções]\n\nEntrega as mensagens do escritório às sessões do Codex quando o AgentForge roda no Docker (deixe rodando no computador).\n\nOpções:\n  --port <n>   porta do AgentForge (padrão: AGENTFORGE_PORT ou {0})\n  --once       faz uma rodada só e sai\n  -h, --help   mostra esta ajuda\n\nBinário do Codex: AGENTFORGE_CODEX_BIN ou `codex` do PATH.', [DEFAULT_PORT]);
 
 export interface BridgeMessage {
   id: string;
@@ -67,7 +67,7 @@ function rec(v: unknown): Rec | undefined {
 class FatalError extends Error {}
 
 export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env): { port: number; once: boolean } | 'help' {
-  const envPort = Number.parseInt(env.HABBLAUD_PORT ?? '', 10);
+  const envPort = Number.parseInt(env.AGENTFORGE_PORT ?? '', 10);
   let port = Number.isInteger(envPort) && envPort > 0 && envPort < 65_536 ? envPort : DEFAULT_PORT;
   let once = false;
   for (let i = 0; i < argv.length; i++) {
@@ -91,7 +91,7 @@ function isDir(p: string): boolean {
 }
 
 /**
- * Confere uma mensagem vinda do Habblaud antes de rodar o comando: id, texto, id de thread (UUID) e uma pasta do
+ * Confere uma mensagem vinda do AgentForge antes de rodar o comando: id, texto, id de thread (UUID) e uma pasta do
  * Codex que existe neste computador (nunca uma do Claude Code). Devolve a mensagem ou o motivo da recusa.
  */
 export function checkMessage(raw: unknown): BridgeMessage | { id?: string; error: string } {
@@ -105,7 +105,7 @@ export function checkMessage(raw: unknown): BridgeMessage | { id?: string; error
   return { id, account: typeof r.account === 'string' ? r.account : '', codexHome: resolve(home), thread: r.thread, text: r.text };
 }
 
-/** POST JSON ao Habblaud local; null = fora do ar, tempo esgotado ou resposta ilegível. */
+/** POST JSON ao AgentForge local; null = fora do ar, tempo esgotado ou resposta ilegível. */
 export type Post = (path: string, body: unknown) => Promise<{ status: number; json: unknown } | null>;
 
 export function httpPost(port: number, timeoutMs = REQUEST_TIMEOUT_MS): Post {
@@ -113,7 +113,7 @@ export function httpPost(port: number, timeoutMs = REQUEST_TIMEOUT_MS): Post {
     try {
       const res = await fetch(`http://127.0.0.1:${port}${path}`, {
         method: 'POST',
-        // O guard do Habblaud exige JSON em todo POST da API (mesmo o corpo vazio da rodada).
+        // O guard do AgentForge exige JSON em todo POST da API (mesmo o corpo vazio da rodada).
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(timeoutMs),
@@ -172,7 +172,7 @@ export async function round(post: Post, run: CodexQueueRunner, log: (line: strin
   return { state: 'ok', results };
 }
 
-/** Anexos de um pedido vindo do Habblaud: nomes seguros, base64 válido, tamanho e quantidade no limite. */
+/** Anexos de um pedido vindo do AgentForge: nomes seguros, base64 válido, tamanho e quantidade no limite. */
 export function checkFiles(raw: unknown): Attachment[] | { error: string } {
   if (raw === undefined) return [];
   if (!Array.isArray(raw) || raw.length > ATTACHMENTS_PER_SPAWN) return { error: tr('anexos inválidos') };
@@ -346,10 +346,10 @@ async function main(): Promise<void> {
   const log = (line: string) => console.log(`[codex-bridge] ${line}`);
   log(
     bin
-      ? tr('Entregando as mensagens do Habblaud (http://127.0.0.1:{0}) às sessões do Codex com {1}, e começando os agentes novos pedidos no escritório. Ctrl+C para parar.', [parsed.port, bin])
-      : tr('Sem o Codex (codex no PATH ou HABBLAUD_CODEX_BIN): só começo os agentes novos pedidos no Habblaud (http://127.0.0.1:{0}). Ctrl+C para parar.', [parsed.port]),
+      ? tr('Entregando as mensagens do AgentForge (http://127.0.0.1:{0}) às sessões do Codex com {1}, e começando os agentes novos pedidos no escritório. Ctrl+C para parar.', [parsed.port, bin])
+      : tr('Sem o Codex (codex no PATH ou AGENTFORGE_CODEX_BIN): só começo os agentes novos pedidos no AgentForge (http://127.0.0.1:{0}). Ctrl+C para parar.', [parsed.port]),
   );
-  log(cli ? tr('Agentes novos rodam em segundo plano com {0} --bg (pasta confiável; senão, no app do Claude).', [claudeBin]) : tr('Sem o claude no PATH (ou HABBLAUD_CLAUDE_BIN): agentes novos abrem no app do Claude e esperam o Enter.'));
+  log(cli ? tr('Agentes novos rodam em segundo plano com {0} --bg (pasta confiável; senão, no app do Claude).', [claudeBin]) : tr('Sem o claude no PATH (ou AGENTFORGE_CLAUDE_BIN): agentes novos abrem no app do Claude e esperam o Enter.'));
   const whisper = findWhisper(process.env);
   let transcribe: Transcriber | undefined;
   if ('missing' in whisper) log(tr('Ditado desligado: falta {0}.', [whisper.missing]));
@@ -370,7 +370,7 @@ async function main(): Promise<void> {
     }
   }
   let last = '';
-  // Agentes novos desligados no Habblaud (sem HABBLAUD_PTY=1): pergunta de novo só a cada minuto.
+  // Agentes novos desligados no AgentForge (sem AGENTFORGE_PTY=1): pergunta de novo só a cada minuto.
   let spawnRetryAt = 0;
   let spawned: RoundResult = { state: 'ok', results: [] };
   for (;;) {
@@ -381,12 +381,12 @@ async function main(): Promise<void> {
     const r = run ? await round(post, run, log) : spawned;
     const state =
       r.state === 'down'
-        ? tr('Habblaud fora do ar em http://127.0.0.1:{0}; tentando de novo a cada {1} s.', [parsed.port, POLL_MS / 1_000])
+        ? tr('AgentForge fora do ar em http://127.0.0.1:{0}; tentando de novo a cada {1} s.', [parsed.port, POLL_MS / 1_000])
         : r.state === 'refused'
-          ? tr('o Habblaud recusou ({0}{1}).', [r.status, r.error ? `: ${r.error}` : ''])
+          ? tr('o AgentForge recusou ({0}{1}).', [r.status, r.error ? `: ${r.error}` : ''])
           : run
             ? tr('conectado: os agentes do Codex já recebem mensagens pelo escritório.')
-            : tr('conectado ao Habblaud.');
+            : tr('conectado ao AgentForge.');
     if (state !== last) log(state);
     last = state;
     if (parsed.once) {

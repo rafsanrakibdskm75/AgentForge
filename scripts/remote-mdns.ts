@@ -1,4 +1,4 @@
-// npm run remote:mdns — anuncia <HABBLAUD_REMOTE_NAME>.local na rede local (mDNS), apontando para o IP deste
+// npm run remote:mdns — anuncia <AGENTFORGE_REMOTE_NAME>.local na rede local (mDNS), apontando para o IP deste
 // computador, para o celular abrir https://<nome>.local sem decorar IP. O container não consegue fazer isso (no
 // Docker Desktop ele não está na rede do Wi-Fi), então este processo roda no host — o `npm run remote:setup` o deixa
 // como serviço (LaunchAgent no macOS, serviço de usuário do systemd no Linux).
@@ -19,7 +19,7 @@ const CHECK_MS = 20_000;
 /** Comando que anuncia `host` -> `ip` (undefined = sistema sem suporte). */
 export function mdnsCommand(platform: NodeJS.Platform, name: string, ip: string, port: number): { cmd: string; args: string[] } | undefined {
   const host = `${name}.local`;
-  if (platform === 'darwin') return { cmd: 'dns-sd', args: ['-P', `Habblaud (${name})`, '_https._tcp', 'local', String(port), host, ip] };
+  if (platform === 'darwin') return { cmd: 'dns-sd', args: ['-P', `AgentForge (${name})`, '_https._tcp', 'local', String(port), host, ip] };
   if (platform === 'linux') return { cmd: 'avahi-publish', args: ['-a', '-R', host, ip] };
   return undefined;
 }
@@ -31,15 +31,15 @@ function readSettings(): { name?: string; port: number } {
   } catch {
     // sem .env: sem nome
   }
-  const name = (process.env.HABBLAUD_REMOTE_NAME ?? readEnvValue(env, 'HABBLAUD_REMOTE_NAME'))?.trim().toLowerCase();
-  const port = Number.parseInt(process.env.HABBLAUD_REMOTE_PORT ?? readEnvValue(env, 'HABBLAUD_REMOTE_PORT') ?? '', 10);
+  const name = (process.env.AGENTFORGE_REMOTE_NAME ?? readEnvValue(env, 'AGENTFORGE_REMOTE_NAME'))?.trim().toLowerCase();
+  const port = Number.parseInt(process.env.AGENTFORGE_REMOTE_PORT ?? readEnvValue(env, 'AGENTFORGE_REMOTE_PORT') ?? '', 10);
   return { name, port: Number.isInteger(port) && port > 0 && port < 65536 ? port : 4748 };
 }
 
 function main(): void {
   const { name, port } = readSettings();
   if (!name || !isValidName(name)) {
-    console.error(tr('[remote-mdns] sem HABBLAUD_REMOTE_NAME válido no .env: rode npm run remote:setup.'));
+    console.error(tr('[remote-mdns] sem AGENTFORGE_REMOTE_NAME válido no .env: rode npm run remote:setup.'));
     process.exit(1);
   }
   let child: ChildProcess | undefined;

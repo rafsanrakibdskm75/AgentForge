@@ -9,7 +9,7 @@ afterEach(() => dirs.splice(0).forEach((d) => rmSync(d, { recursive: true, force
 
 describe('createBuildReader', () => {
   it('lê o nome do bundle do index.html e acompanha um build novo', () => {
-    const root = mkdtempSync(join(tmpdir(), 'habblaud-build-'));
+    const root = mkdtempSync(join(tmpdir(), 'agentforge-build-'));
     dirs.push(root);
     const read = createBuildReader(root);
     expect(read()).toBeUndefined();

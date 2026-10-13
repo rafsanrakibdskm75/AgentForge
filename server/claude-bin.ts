@@ -30,11 +30,11 @@ export function findExecutable(name: string, env: NodeJS.ProcessEnv = process.en
 }
 
 /**
- * O executável do Claude Code: HABBLAUD_CLAUDE_BIN (um caminho, ou um nome procurado
+ * O executável do Claude Code: AGENTFORGE_CLAUDE_BIN (um caminho, ou um nome procurado
  * no PATH) ou o `claude` do PATH. undefined se não achar.
  */
 export function claudeBinFrom(env: NodeJS.ProcessEnv = process.env, platform: NodeJS.Platform = process.platform): string | undefined {
-  const set = env.HABBLAUD_CLAUDE_BIN?.trim();
+  const set = env.AGENTFORGE_CLAUDE_BIN?.trim();
   if (!set) return findExecutable('claude', env, platform);
   return /[\\/]/.test(set) ? resolve(set) : findExecutable(set, env, platform);
 }

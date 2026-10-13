@@ -83,7 +83,7 @@ export function parseSeed(raw: unknown): number | null {
 
 /** Chave para comparar nomes: "ana" e "Ana" (ou "Júlia" em NFD e em NFC) são o mesmo nome. */
 export function nameKey(name: string): string {
-  return name.normalize('NFC').toLocaleLowerCase('pt-BR');
+  return name.normalize('NFC').toLocaleLowerCase('en');
 }
 
 /** Assinatura estável de `parts` (cache de avatares e detecção de mudança). */

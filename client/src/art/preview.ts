@@ -171,7 +171,7 @@ function sampleScene(): void {
       ctx.font = '8px "Pixelify Sans", monospace';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
-      ctx.fillText('habblaud', ox + r.x + r.w / 2, oy + r.y + r.h / 2 + 0.5);
+      ctx.fillText('agentforge', ox + r.x + r.w / 2, oy + r.y + r.h / 2 + 0.5);
       ctx.textAlign = 'left';
     });
     wall('door_frame', 10);

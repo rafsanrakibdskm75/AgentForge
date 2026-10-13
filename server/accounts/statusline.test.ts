@@ -122,7 +122,7 @@ describe('AccountsService com a fonte statusline', () => {
   beforeEach(() => {
     tmp = tempDir();
     home = tmp.dir;
-    usageDir = join(home, '.habblaud', 'usage');
+    usageDir = join(home, '.agentforge', 'usage');
     now = NOW;
     mkdirSync(join(home, '.claude', 'projects'), { recursive: true });
     mkdirSync(join(home, '.claude-conta2', 'projects'), { recursive: true });
@@ -167,9 +167,9 @@ describe('AccountsService com a fonte statusline', () => {
     expect(svc.list(new Map())[0].usage).toMatchObject({ source: 'statusline', fiveHour: { utilization: 42 } });
   });
 
-  it('no Docker: casa pelo caminho do HOST (HABBLAUD_ACCOUNTS.configDir), não pelo da montagem', () => {
+  it('no Docker: casa pelo caminho do HOST (AGENTFORGE_ACCOUNTS.configDir), não pelo da montagem', () => {
     const env = {
-      HABBLAUD_ACCOUNTS: JSON.stringify([{ id: '.claude-conta2', configDir: '/Users/fulano/.claude-conta2', mountDir: join(home, '.claude-conta2') }]),
+      AGENTFORGE_ACCOUNTS: JSON.stringify([{ id: '.claude-conta2', configDir: '/Users/fulano/.claude-conta2', mountDir: join(home, '.claude-conta2') }]),
     };
     writeFileSync(join(usageDir, '.claude-conta2.json'), JSON.stringify(record()));
     const svc = new AccountsService({ dirs: [join(home, '.claude-conta2')], home, env, onChange: () => {}, usageDir, now: () => now });

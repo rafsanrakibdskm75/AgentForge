@@ -3,15 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { overviewFrame } from '../camera';
 import { rationBubbles, waitBubbleText } from './overlay';
 
-describe('balões', () => {
-  it('espera: só o motivo, sem o prefixo redundante', () => {
+describe('bubbles', () => {
+  it('wait: only the reason, without the redundant prefix', () => {
     expect(waitBubbleText('aprovar uma permissão')).toBe('Aprovar uma permissão');
     expect(waitBubbleText('Precisa de você: escolher uma opção')).toBe('Escolher uma opção');
-    expect(waitBubbleText(undefined)).toBe('Responder no terminal');
-    expect(waitBubbleText('   ')).toBe('Responder no terminal');
+    expect(waitBubbleText(undefined)).toBe('Answer in terminal');
+    expect(waitBubbleText('   ')).toBe('Answer in terminal');
   });
 
-  it('visão geral: no máximo 1 balão com texto por área e 4 na tela (mais recentes primeiro)', () => {
+  it('overview: at most 1 bubble with text per area and 4 on screen (newest first)', () => {
     const items = [
       { room: 'a', prio: 50, changedAt: 10 },
       { room: 'a', prio: 50, changedAt: 30 },
@@ -29,10 +29,10 @@ describe('balões', () => {
   });
 });
 
-describe('visão geral', () => {
+describe('overview', () => {
   const building = { x: 0, y: 0, w: 4 * 16 * 16, h: 29 * 16 };
 
-  it('enquadra o prédio na área livre (fora dos painéis), com folga para as placas acima', () => {
+  it('frames the building in the free area (outside the panels), with room for the signs above', () => {
     const free = overviewFrame(building, 1440, 900, { top: 0, right: 0, bottom: 0, left: 0 });
     const ui = overviewFrame(building, 1440, 900, { top: 64, right: 0, bottom: 200, left: 320 });
     expect(ui.zoom).toBeLessThan(free.zoom);

@@ -84,7 +84,7 @@ export class Movable {
     return this.box !== null;
   }
 
-  /** Ocupando a tela toda do Habblaud (por cima de tudo; não arrasta). */
+  /** Ocupando a tela toda do AgentForge (por cima de tudo; não arrasta). */
   get maximized(): boolean {
     return this.max;
   }

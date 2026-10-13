@@ -25,6 +25,16 @@ function startsWithText(text: string, key: string): boolean {
   return text.startsWith(key.split('{0}')[0]) || text.startsWith(tr(key, ['\u0000']).split('\u0000')[0]);
 }
 
+/**
+ * Extrai a duração de "Concluiu em 2min 10s" (ou o equivalente no idioma ativo): monta a regex a
+ * partir do modelo traduzido, então a demonstração funciona em qualquer idioma.
+ */
+function tookOf(text: string): string | undefined {
+  const [before, after] = tr('Concluiu em {0}', ['\u0000']).split('\u0000');
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^${esc(before)}(.+)${esc(after)}$`).exec(text)?.[1];
+}
+
 type ToolEntry = Extract<TerminalEntry, { kind: 'tool' }>;
 
 interface Ctx {
@@ -382,7 +392,7 @@ function entriesFor(a: Activity, i: number, ctx: Ctx, out: TerminalEntry[]): voi
     case 'done': {
       const text = ctx.agent.kind === 'sub' && ctx.agent.title ? tr('Entrega: {0}. Resumo enviado ao agente principal.', [ctx.agent.title]) : pick(SUMMARIES, seed);
       out.push({ kind: 'assistant', id: `${a.id}:a`, at: a.at, text });
-      const took = /Concluiu em (.+)$/.exec(a.text)?.[1];
+      const took = tookOf(a.text);
       if (took) out.push({ kind: 'system', id: `${a.id}:s`, at: a.at, text: tr('Turno concluído em {0}', [took]), level: 'info' });
       return;
     }

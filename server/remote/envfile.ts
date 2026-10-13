@@ -33,7 +33,7 @@ export function readEnvValue(content: string, key: string): string | undefined {
   return undefined;
 }
 
-/** Junta nomes a uma lista separada por vírgula (HABBLAUD_ALLOWED_HOSTS), sem repetir. */
+/** Junta nomes a uma lista separada por vírgula (AGENTFORGE_ALLOWED_HOSTS), sem repetir. */
 export function addToList(current: string | undefined, ...names: string[]): string {
   const list = (current ?? '')
     .split(',')

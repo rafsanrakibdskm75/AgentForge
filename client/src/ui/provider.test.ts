@@ -13,8 +13,8 @@ import {
   showsProviderTag,
 } from './provider';
 
-describe('ferramenta (Claude Code ou Codex)', () => {
-  it('provider ausente = Claude Code', () => {
+describe('provider (Claude Code or Codex)', () => {
+  it('missing provider = Claude Code', () => {
     expect(providerOf(undefined)).toBe('claude');
     expect(providerOf({})).toBe('claude');
     expect(providerOf({ provider: 'codex' })).toBe('codex');
@@ -23,10 +23,10 @@ describe('ferramenta (Claude Code ou Codex)', () => {
     expect(isCodex(null)).toBe(false);
   });
 
-  it('id com cara de pasta do Codex (só quando a conta já não está no snapshot)', () => {
+  it('id that looks like a Codex folder (only when the account is not in the snapshot)', () => {
     for (const id of ['.codex', 'demo:.codex', '.codex-trabalho', '.codex~2', '/Users/ana/.codex', 'codex']) expect(looksLikeCodexId(id), id).toBe(true);
     for (const id of ['.claude', '.claude-conta2', 'demo:.claude', 'meucodex', '.codexy', '']) expect(looksLikeCodexId(id), id).toBe(false);
-    // Com a conta à mão, vale o provider dela; sem ela, a dica de quem chamou e, por fim, o id.
+    // With the account at hand, its provider wins; without it, the caller's hint and, lastly, the id.
     expect(accountProvider({ provider: 'codex' }, '.claude')).toBe('codex');
     expect(accountProvider({}, '.codex')).toBe('claude');
     expect(accountProvider(undefined, '.claude', 'codex')).toBe('codex');
@@ -34,7 +34,7 @@ describe('ferramenta (Claude Code ou Codex)', () => {
     expect(accountProvider(undefined, 'x')).toBe('claude');
   });
 
-  it('letra do chip sem a conta no snapshot: nunca "." nem vazio', () => {
+  it('chip letter without the account in the snapshot: never "." nor empty', () => {
     expect(fallbackShort('.claude-conta2')).toBe('C');
     expect(fallbackShort('.claude')).toBe('?');
     expect(fallbackShort('.codex')).toBe('X');
@@ -46,32 +46,32 @@ describe('ferramenta (Claude Code ou Codex)', () => {
     expect(fallbackShort('...', 'codex')).toBe('X');
   });
 
-  it('selo "Codex": só no Codex, e sem repetir o nome da conta', () => {
+  it('"Codex" tag: only on Codex, and without repeating the account name', () => {
     expect(showsProviderTag('codex', 'Conta X')).toBe(true);
     expect(showsProviderTag('codex', 'Codex')).toBe(false);
     expect(showsProviderTag('codex', 'Demo Codex')).toBe(false);
     expect(showsProviderTag('claude', 'Conta C')).toBe(false);
   });
 
-  it('rótulo do chip: e-mail no Claude Code; ferramenta e plano no Codex', () => {
+  it('chip label: e-mail on Claude Code; tool and plan on Codex', () => {
     expect(accountChipLabel({ name: 'Conta C', email: 'a@b.c' }, '.claude', 'claude')).toBe('Conta C (a@b.c)');
-    expect(accountChipLabel({ name: 'Conta X', plan: 'Team', provider: 'codex' }, '.codex', 'codex')).toBe('Conta X · Codex · plano Team');
-    expect(accountChipLabel({ name: 'Codex', plan: 'Team', provider: 'codex' }, '.codex', 'codex')).toBe('Codex · plano Team');
+    expect(accountChipLabel({ name: 'Conta X', plan: 'Team', provider: 'codex' }, '.codex', 'codex')).toBe('Conta X · Codex · Team plan');
+    expect(accountChipLabel({ name: 'Codex', plan: 'Team', provider: 'codex' }, '.codex', 'codex')).toBe('Codex · Team plan');
     expect(accountChipLabel(undefined, '.codex', 'codex')).toBe('.codex · Codex');
-    expect(accountChipLabel(undefined, '', 'claude')).toBe('Conta desconhecida');
+    expect(accountChipLabel(undefined, '', 'claude')).toBe('Unknown account');
   });
 
-  it('escritório vazio: atalhos só das contas do Claude Code; o Codex entra quando há conta dele', () => {
+  it('empty office: shortcuts only from Claude Code accounts; Codex joins when it has an account', () => {
     const c = { short: 'C' };
     const d = { short: 'D' };
     const x = { short: 'X', provider: 'codex' as const };
-    expect(emptyOfficeHint([c, d])).toBe('Abra o Claude Code em qualquer projeto (atalhos c ou d) e veja seu agente chegar.');
-    expect(emptyOfficeHint([c, d, x])).toBe('Abra o Claude Code (atalhos c ou d) ou o Codex em qualquer projeto e veja seu agente chegar.');
-    expect(emptyOfficeHint([x])).toBe('Abra o Claude Code ou o Codex em qualquer projeto e veja seu agente chegar.');
-    expect(emptyOfficeHint([])).toBe('Abra o Claude Code em qualquer projeto e veja seu agente chegar.');
+    expect(emptyOfficeHint([c, d])).toBe('Open Claude Code in any project (shortcuts c or d) and watch your agent arrive.');
+    expect(emptyOfficeHint([c, d, x])).toBe('Open Claude Code (shortcuts c or d) or Codex in any project and watch your agent arrive.');
+    expect(emptyOfficeHint([x])).toBe('Open Claude Code or Codex in any project and watch your agent arrive.');
+    expect(emptyOfficeHint([])).toBe('Open Claude Code in any project and watch your agent arrive.');
   });
 
-  it('relógio de 1 s enquanto há pedido do Codex esperando', () => {
+  it('1 s clock while a Codex request is waiting', () => {
     const agent = (permission?: AgentInfo['permission'], status: AgentInfo['status'] = 'waiting') => ({ status, permission }) as AgentInfo;
     const p = { id: 'p', tool: 'Bash', title: 'Bash(ls)', text: 'Listando', icon: '💻', createdAt: 0, expiresAt: 25_000 };
     const snap = (agents: AgentInfo[]) => ({ agents }) as Pick<OfficeSnapshot, 'agents'>;
@@ -81,9 +81,9 @@ describe('ferramenta (Claude Code ou Codex)', () => {
     expect(hasCodexPermission(null)).toBe(false);
   });
 
-  it('aprovações do Codex em português (valor desconhecido passa como veio)', () => {
-    expect(codexApprovalLabel('on-request')).toBe('Pergunta quando precisa');
-    expect(codexApprovalLabel('never')).toBe('Nunca pergunta');
+  it('Codex approvals in English (unknown value passes through as-is)', () => {
+    expect(codexApprovalLabel('on-request')).toBe('Asks when needed');
+    expect(codexApprovalLabel('never')).toBe('Never asks');
     expect(codexApprovalLabel('outra')).toBe('outra');
     expect(codexApprovalLabel(undefined)).toBe('—');
   });

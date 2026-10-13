@@ -1,5 +1,5 @@
-// Ditado: botão de microfone que grava no navegador (MediaRecorder), manda o áudio ao Habblaud (POST /api/dictation)
-// e devolve o texto transcrito pelo Whisper local do Mac, com o idioma detectado sozinho (português ou inglês; ver
+// Ditado: botão de microfone que grava no navegador (MediaRecorder), manda o áudio ao AgentForge (POST /api/dictation)
+// e devolve o texto transcrito pelo Whisper local do Mac, com o idioma detectado sozinho (inglês ou bengali; ver
 // server/dictation/whisper.ts). Fica no "Novo agente" e na caixa de mensagem (gaveta e terminal). O microfone só existe
 // em página segura (HTTPS ou localhost): fora disso o botão some.
 import { tr } from '../../../shared/i18n';
@@ -14,9 +14,8 @@ const MIME_TYPES = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/
 
 /** Aviso de ditado pronto, com o idioma reconhecido (uma frase inteira por idioma, para traduzir). */
 export function dictationDone(lang: string | undefined): string {
-  if (lang === 'pt') return tr('Ditado em português: confira o texto.');
+  if (lang === 'bn') return tr('Ditado em bengali: confira o texto.');
   if (lang === 'en') return tr('Ditado em inglês: confira o texto.');
-  if (lang === 'es') return tr('Ditado em espanhol: confira o texto.');
   return tr('Ditado pronto: confira o texto.');
 }
 
@@ -75,7 +74,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(path, { credentials: 'same-origin', cache: 'no-store', ...init });
   } catch {
-    throw new Error(tr('o Habblaud não respondeu'));
+    throw new Error(tr('o AgentForge não respondeu'));
   }
   const body = (await res.json().catch(() => ({}))) as T & { error?: string };
   if (!res.ok) throw new Error(body.error ?? tr('erro {0}', [res.status]));
@@ -124,7 +123,7 @@ export class DictationButton {
     this.el = h('button', {
       class: `ui-btn ui-dictate${opts.compact ? ' ui-dictate--compact' : ''}`,
       type: 'button',
-      attrs: { 'aria-pressed': 'false', 'aria-label': tr('Ditar'), title: tr('Ditar (português ou inglês, o idioma é detectado sozinho)') },
+      attrs: { 'aria-pressed': 'false', 'aria-label': tr('Ditar'), title: tr('Ditar (inglês ou bengali, o idioma é detectado sozinho)') },
       on: { click: () => void this.toggle() },
     });
     const icon = h('span', { class: 'ui-dictate__icon', attrs: { 'aria-hidden': 'true' } });
@@ -174,7 +173,7 @@ export class DictationButton {
     this.startedAt = Date.now();
     this.opts.onStart?.();
     this.set('recording');
-    this.say(this.opts.compact ? tr('Gravando… toque no microfone de novo para parar.') : tr('Gravando… fale em português ou inglês e toque em Parar.'));
+    this.say(this.opts.compact ? tr('Gravando… toque no microfone de novo para parar.') : tr('Gravando… fale em inglês ou bengali e toque em Parar.'));
     this.timer = setInterval(() => {
       const ms = Date.now() - this.startedAt;
       const s = Math.floor(ms / 1000);

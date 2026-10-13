@@ -26,7 +26,7 @@ function home() {
 }
 
 describe('contas do Codex', () => {
-  it('descoberta: ~/.codex* com cara de Codex (a padrão primeiro), CODEX_HOME e HABBLAUD_CODEX_DIRS', () => {
+  it('descoberta: ~/.codex* com cara de Codex (a padrão primeiro), CODEX_HOME e AGENTFORGE_CODEX_DIRS', () => {
     const h = home();
     const main = h.codex('.codex');
     const work = h.codex('.codex-trabalho', 'year');
@@ -36,7 +36,7 @@ describe('contas do Codex', () => {
     const other = h.codex('outra-pasta');
     expect(discoverCodexDirs({ CODEX_HOME: other }, h.dir)).toEqual([other, main, work]);
     // A lista explícita vale como veio (só precisa existir).
-    expect(discoverCodexDirs({ HABBLAUD_CODEX_DIRS: `~/.codex-vazia, ${other}, /nao/existe` }, h.dir)).toEqual([join(h.dir, '.codex-vazia'), other]);
+    expect(discoverCodexDirs({ AGENTFORGE_CODEX_DIRS: `~/.codex-vazia, ${other}, /nao/existe` }, h.dir)).toEqual([join(h.dir, '.codex-vazia'), other]);
   });
 
   it('letra pelo alias de shell (CODEX_HOME), derivada sem colidir com o Claude Code; cor sem repetir', () => {
@@ -67,7 +67,7 @@ describe('contas do Codex', () => {
     const h = home();
     const mounted = h.codex('.codex');
     const env = {
-      HABBLAUD_ACCOUNTS: JSON.stringify([
+      AGENTFORGE_ACCOUNTS: JSON.stringify([
         { id: '.claude', configDir: '/Users/fulano/.claude', mountDir: '/claude/.claude', short: 'C', name: 'Conta C', color: '#111111' },
         { id: '.codex', provider: 'codex', configDir: '/Users/fulano/.codex', mountDir: mounted, short: 'CX', name: 'Codex', color: '#222222', plan: 'Plus' },
       ]),
@@ -77,7 +77,7 @@ describe('contas do Codex', () => {
     ]);
     // As contas do Claude Code não pegam o override do Codex (nem pela pasta montada).
     expect(discoverClaudeDirs(env, h.dir)).not.toContain(mounted);
-    expect(detectAccounts([join(h.dir, '.codex-claude')], { home: h.dir, env: { HABBLAUD_ACCOUNTS: JSON.stringify([{ id: '.codex-claude', provider: 'codex', name: 'Codex' }]) } })[0].name).toBe('Conta A');
+    expect(detectAccounts([join(h.dir, '.codex-claude')], { home: h.dir, env: { AGENTFORGE_ACCOUNTS: JSON.stringify([{ id: '.codex-claude', provider: 'codex', name: 'Codex' }]) } })[0].name).toBe('Account A');
   });
 
   it('plano do rate_limits para exibir', () => {

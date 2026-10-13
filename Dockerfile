@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 #
-# Habblaud em container: escritório virtual dos agentes do Claude Code.
+# AgentForge em container: escritório virtual dos agentes do Claude Code.
 #
 # Use `npm run docker:up` (scripts/docker-up.ts): ele detecta as contas do Claude Code no host,
 # gera o docker-compose.override.yml com as montagens SOMENTE LEITURA de <conta>/projects,
-# <conta>/sessions e ~/.habblaud/usage e sobe o serviço. Este Dockerfile sozinho não monta nada do host.
+# <conta>/sessions e ~/.agentforge/usage e sobe o serviço. Este Dockerfile sozinho não monta nada do host.
 
 # ---------------------------------------------------------------------------------------------
 # Estágio 1: compila o cliente (Vite) e empacota o servidor (esbuild) em dist/.
@@ -27,20 +27,20 @@ RUN npm run build
 # ---------------------------------------------------------------------------------------------
 FROM node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS runtime
 
-# HABBLAUD_USAGE_DIR: onde o docker-up monta (somente leitura) o uso capturado pelo tap de statusline.
+# AGENTFORGE_USAGE_DIR: onde o docker-up monta (somente leitura) o uso capturado pelo tap de statusline.
 ENV NODE_ENV=production \
-    HABBLAUD_HOST=0.0.0.0 \
-    HABBLAUD_PORT=4747 \
-    HABBLAUD_IN_DOCKER=1 \
-    HABBLAUD_DATA_DIR=/data \
-    HABBLAUD_USAGE_DIR=/usage
+    AGENTFORGE_HOST=0.0.0.0 \
+    AGENTFORGE_PORT=4747 \
+    AGENTFORGE_IN_DOCKER=1 \
+    AGENTFORGE_DATA_DIR=/data \
+    AGENTFORGE_USAGE_DIR=/usage
 
 WORKDIR /app
 
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/dist ./dist
 
-# Estado do Habblaud (nomes persistidos). O volume nomeado herda este dono na primeira montagem.
+# Estado do AgentForge (nomes persistidos). O volume nomeado herda este dono na primeira montagem.
 RUN mkdir -p /data && chown node:node /data
 
 # Usuário sem privilégios (já existe na imagem oficial do Node). O código fica com dono root,

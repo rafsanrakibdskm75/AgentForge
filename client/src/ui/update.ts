@@ -40,13 +40,13 @@ export class UpdateBanner {
       this.reload();
       return;
     }
-    setText(this.text, tr('O Habblaud foi atualizado. Recarregando em {0} s…', [this.left]));
+    setText(this.text, tr('O AgentForge foi atualizado. Recarregando em {0} s…', [this.left]));
     this.left--;
   }
 
   private postpone(): void {
     this.stop();
-    setText(this.text, tr('O Habblaud foi atualizado. Recarregue a página quando quiser.'));
+    setText(this.text, tr('O AgentForge foi atualizado. Recarregue a página quando quiser.'));
   }
 
   private stop(): void {

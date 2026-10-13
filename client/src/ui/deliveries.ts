@@ -17,7 +17,7 @@ import type { TerminalControl } from './terminal';
 
 export const DELIVERIES_URL = '/api/deliveries';
 const POLL_MS = 30_000;
-const SEEN_KEY = 'habblaud.deliveries.seen';
+const SEEN_KEY = 'agentforge.deliveries.seen';
 const TOAST_MS = 9_000;
 
 // ---------------------------------------------------------------- modelo (puro)

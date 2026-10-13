@@ -12,7 +12,7 @@ setQuiet(true);
 describe('demo-timeline', () => {
   let tmp: { dir: string; cleanup: () => void };
   beforeEach(() => {
-    tmp = tempDir('habblaud-demotl-');
+    tmp = tempDir('agentforge-demotl-');
   });
   afterEach(() => tmp.cleanup());
 

@@ -1,5 +1,5 @@
 // O que esta página pode fazer, segundo o servidor (GET /api/access, ver AccessInfo). Lido antes de conectar e de novo a
-// cada reconexão (app.ts): HABBLAUD_REMOTE_ALLOW pode mudar com o servidor reiniciado e a página do celular continua aberta.
+// cada reconexão (app.ts): AGENTFORGE_REMOTE_ALLOW pode mudar com o servidor reiniciado e a página do celular continua aberta.
 // Sem resposta (servidor antigo, rede), cai na regra de antes: só a página aberta pelo próprio computador age, e nunca
 // o Novo agente (opt-in no servidor). Login vencido na porta remota (401): volta à tela de entrada.
 import type { AccessInfo } from '../../../shared/types';

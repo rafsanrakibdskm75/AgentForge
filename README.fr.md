@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="client/public/assets/brand/logo-mark@4x.png" width="96" alt="Logo de Habblaud : un petit immeuble en pixel art" />
+  <img src="client/public/assets/brand/logo-mark@4x.png" width="96" alt="Logo de AgentForge : un petit immeuble en pixel art" />
 </p>
 
-<h1 align="center">Habblaud</h1>
+<h1 align="center">AgentForge</h1>
 
 <p align="center">
   <b>Le bureau virtuel de vos agents Claude Code (et Codex).</b><br />
@@ -20,13 +20,13 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/office.gif" width="820" alt="Animation d'une salle de Habblaud : des personnages qui tapent à leur bureau, des sous-agents avec un badge et des bulles d'activité" />
+  <img src="docs/screenshots/office.gif" width="820" alt="Animation d'une salle de AgentForge : des personnages qui tapent à leur bureau, des sous-agents avec un badge et des bulles d'activité" />
 </p>
 
 ---
 
 Vous ouvrez Claude Code dans plusieurs projets, lancez des sous-agents, laissez des tâches tourner… et vous ne savez plus
-qui fait quoi. **Habblaud** transforme tout ça en un bureau qu'on comprend d'un coup d'œil : qui est en train de taper,
+qui fait quoi. **AgentForge** transforme tout ça en un bureau qu'on comprend d'un coup d'œil : qui est en train de taper,
 qui a levé la main parce qu'il **a besoin de vous**, qui a rendu son travail et est parti, qui est allé prendre un café
 en attendant la prochaine instruction — et combien vous avez déjà consommé de chaque compte sur la session de 5 heures
 et sur la semaine.
@@ -36,7 +36,7 @@ personnalité, et ils regardent le foot ensemble au salon, jouent aux jeux vidé
 se recoiffent devant le miroir et parient des pièces au chifoumi. Voir [Vie sociale](#vie-sociale).
 
 Tout tourne sur votre machine, en lisant les fichiers que Claude Code écrit déjà lui-même (et seulement les lignes
-`alias` de votre shell, pour attribuer une lettre à chaque compte). Rien ne quitte l'ordinateur : Habblaud ne lit
+`alias` de votre shell, pour attribuer une lettre à chaque compte). Rien ne quitte l'ordinateur : AgentForge ne lit
 aucun identifiant et ne fait aucun appel externe.
 
 ## Sommaire
@@ -60,7 +60,7 @@ aucun identifiant et ne fait aucun appel externe.
 qui a une session ouverte reçoit sa salle le long du couloir. En haut, les compteurs et l'utilisation de chaque compte ;
 à gauche, les salles et les agents ; en bas, le fil d'activité.
 
-![Vue d'ensemble de Habblaud : immeuble avec accueil, cuisine, toilettes, salon et salles de projet ; barre latérale avec les salles et les agents ; utilisation des comptes en haut ; fil d'activité en bas](docs/screenshots/overview.png)
+![Vue d'ensemble de AgentForge : immeuble avec accueil, cuisine, toilettes, salon et salles de projet ; barre latérale avec les salles et les agents ; utilisation des comptes en haut ; fil d'activité en bas](docs/screenshots/overview.png)
 
 <table>
   <tr>
@@ -115,7 +115,7 @@ l'immeuble ne garde pas de trous et rétrécit tout seul.
 
 <table>
   <tr>
-    <td width="34%"><img src="docs/screenshots/mobile.png" alt="Habblaud sur un téléphone, avec l'utilisation des comptes en haut" /></td>
+    <td width="34%"><img src="docs/screenshots/mobile.png" alt="AgentForge sur un téléphone, avec l'utilisation des comptes en haut" /></td>
     <td>
       <b>Aussi sur téléphone.</b> L'interface s'adapte aux petits écrans : l'utilisation des comptes reste en haut, la
       liste des salles devient un panneau coulissant et les détails s'ouvrent de bas en haut. Pour autoriser l'accès
@@ -139,14 +139,14 @@ l'immeuble ne garde pas de trous et rétrécit tout seul.
 
 ```bash
 git clone https://github.com/marmottajr/habblaud.git
-cd habblaud
+cd agentforge
 npm install
 ```
 
-> `npm install` ne télécharge que des outils de compilation (Vite, TypeScript, tsx…). Le serveur de Habblaud n'a
+> `npm install` ne télécharge que des outils de compilation (Vite, TypeScript, tsx…). Le serveur de AgentForge n'a
 > aucune dépendance d'exécution : il n'utilise que les modules natifs de Node.
 
-### 2. Lancez Habblaud
+### 2. Lancez AgentForge
 
 **Option A — Docker (recommandé pour le laisser toujours allumé)**
 
@@ -168,7 +168,7 @@ Ouvrez **http://localhost:4747**. Pour développer, utilisez `npm run dev` (serv
 
 Ouvrez maintenant Claude Code dans n'importe quel projet et regardez votre agent arriver par l'ascenseur. 🎉
 
-### 3. Installez le mod Habblaud dans Claude Code (recommandé)
+### 3. Installez le mod AgentForge dans Claude Code (recommandé)
 
 ```bash
 npm run mod:install                        # o mod e os plugins de permissões e de mensagens, em cada conta
@@ -176,20 +176,20 @@ npm run mod:install -- --sem-permissoes    # sem responder permissões e pergunt
 npm run mod:install -- --sem-mensagens     # sem mandar mensagens aos agentes pelo escritório
 ```
 
-Habblaud fournit un [mod](https://code.claude.com/docs/en/plugins/mods/overview) (un plugin qui tourne à l'intérieur de
+AgentForge fournit un [mod](https://code.claude.com/docs/en/plugins/mods/overview) (un plugin qui tourne à l'intérieur de
 Claude Code) et l'installe dans chaque compte, via `claude plugin` lui-même, à partir de ce dossier. Avec lui :
 
-- l'**utilisation sur 5 heures et sur la semaine** de chaque compte s'affiche en direct dans Habblaud ;
+- l'**utilisation sur 5 heures et sur la semaine** de chaque compte s'affiche en direct dans AgentForge ;
 - le terminal affiche une ligne quand **une autre session a besoin de vous** (permission ou réponse) ;
-- la commande **`/habblaud`** devient disponible dans Claude Code ;
+- la commande **`/agentforge`** devient disponible dans Claude Code ;
 - vous pouvez **valider ou refuser depuis le bureau** les demandes de permission (« Do you want to… ») et **répondre aux
-  questions** de l'agent, avec le plugin `habblaud-permissoes` (voir [Répondre depuis le bureau](#répondre-depuis-le-bureau)) ;
+  questions** de l'agent, avec le plugin `agentforge-permissoes` (voir [Répondre depuis le bureau](#répondre-depuis-le-bureau)) ;
 - vous pouvez **envoyer des messages** à l'agent depuis le bureau, comme si vous tapiez dans son terminal, avec le plugin
-  `habblaud-mensagens` (voir [Envoyer des messages](#envoyer-des-messages)).
+  `agentforge-mensagens` (voir [Envoyer des messages](#envoyer-des-messages)).
 
 Il faut **Claude Code 2.1.287 ou plus récent** (`claude --version`). Le mod tourne dans chaque session, avec vos
 permissions, et n'accède qu'à ce qui est listé dans [`mod/README.md`](mod/README.md) ; pour vérifier sans rien exécuter,
-`claude plugin validate mod/habblaud` affiche les événements qu'il traite et les appels qu'il fait. Les sessions déjà
+`claude plugin validate mod/agentforge` affiche les événements qu'il traite et les appels qu'il fait. Les sessions déjà
 ouvertes chargent le mod avec `/reload-plugins` (ou à leur réouverture). Si le compte utilisait l'ancienne méthode
 (ci-dessous), `mod:install` retire la dérivation (tap) et le hook du `settings.json` (avec sauvegarde), puisque le mod
 fait la même chose. Vérifiez avec `npm run mod:status` ; pour revenir en arrière : `npm run mod:uninstall`.
@@ -219,31 +219,31 @@ capturent l'utilisation ou répondent à la même demande.
 
 Si vous utilisez aussi **Codex** d'OpenAI (la CLI `codex` ou l'app), ses sessions entrent dans le même bureau : chaque
 projet est une salle — la même que celle de Claude Code, quand les deux sont ouverts sur le même projet — et chaque
-session, un personnage avec le badge **CODEX**. Habblaud trouve tout seul le dossier de Codex (`~/.codex`, `CODEX_HOME`
+session, un personnage avec le badge **CODEX**. AgentForge trouve tout seul le dossier de Codex (`~/.codex`, `CODEX_HOME`
 ou `~/.codex*`) et lit les conversations, sans rien installer. Pour voir Codex **en direct** (ce qu'il fait en ce
 moment, qui a besoin de vous) et valider des commandes depuis le bureau, installez les hooks :
 
 ```bash
-npm run codex:install      # acrescenta os hooks do Habblaud em ~/.codex/hooks.json (backup antes; os outros ficam)
+npm run codex:install      # acrescenta os hooks do AgentForge em ~/.codex/hooks.json (backup antes; os outros ficam)
 npm run codex:status       # confere
 ```
 
-Ensuite, **ouvrez Codex et validez les hooks de Habblaud dans `/hooks`** : Codex n'exécute un nouveau hook qu'après
-votre validation (Habblaud n'enregistre jamais cette validation à votre place). Avec Habblaud dans Docker, pour envoyer
+Ensuite, **ouvrez Codex et validez les hooks de AgentForge dans `/hooks`** : Codex n'exécute un nouveau hook qu'après
+votre validation (AgentForge n'enregistre jamais cette validation à votre place). Avec AgentForge dans Docker, pour envoyer
 des messages aux sessions Codex, laissez aussi tourner `npm run codex:bridge` sur le Mac (voir [Codex](#codex)).
 
 ### Ouvrir sur le téléphone (facultatif)
 
-Par défaut, Habblaud n'accepte que les connexions venant de l'ordinateur lui-même. Pour l'ouvrir sur le téléphone (sur
+Par défaut, AgentForge n'accepte que les connexions venant de l'ordinateur lui-même. Pour l'ouvrir sur le téléphone (sur
 le même Wi-Fi), avec Docker :
 
 ```bash
-printf 'HABBLAUD_BIND=0.0.0.0\n' > .env
+printf 'AGENTFORGE_BIND=0.0.0.0\n' > .env
 npm run docker:up -- --no-build
 ```
 
 Ouvrez ensuite `http://<ip-do-computador>:4747` sur le téléphone (sur macOS : `ipconfig getifaddr en0` ; si le
-résultat est vide, `ipconfig getifaddr en1`). En mode Node, utilisez `HABBLAUD_HOST=0.0.0.0 npm start`.
+résultat est vide, `ipconfig getifaddr en1`). En mode Node, utilisez `AGENTFORGE_HOST=0.0.0.0 npm start`.
 
 > ⚠️ Dans ce cas, n'importe quel appareil du réseau voit l'activité des agents (commandes, fichiers, titres des
 > sessions). À n'utiliser que sur des réseaux de confiance. Le [terminal](#terminal) (et avec lui la réponse et l'envoi
@@ -264,9 +264,9 @@ npm run docker:up
 ```
 
 `remote:setup` n'écrit dans le `.env` que le **hash** du mot de passe (scrypt), crée une CA locale et le certificat du
-serveur dans `~/.habblaud/remote-tls`, et laisse un service qui annonce `<nome>.local` sur le réseau (mDNS ;
+serveur dans `~/.agentforge/remote-tls`, et laisse un service qui annonce `<nome>.local` sur le réseau (mDNS ;
 LaunchAgent sous macOS, systemd sous Linux). Ouvrez `https://<nome>.local` sur le téléphone (avec `:4748` si le port
-443 était occupé). La première fois, acceptez l'avertissement, touchez **Installez le certificat Habblaud** et
+443 était occupé). La première fois, acceptez l'avertissement, touchez **Installez le certificat AgentForge** et
 faites-lui confiance (iPhone : Réglages › Profil téléchargé › Installer, puis Réglages › Général › Informations ›
 Réglages des certificats ; Android : Sécurité › Chiffrement et identifiants › Installer un certificat › Certificat CA),
 en vérifiant l'empreinte que le setup a affichée.
@@ -278,26 +278,26 @@ en vérifiant l'empreinte que le setup a affichée.
 - **Adresse propre** (ex. : `meuclaude.home`) : elle figure dans le certificat, mais le téléphone ne la trouve qu'avec
   une entrée dans le DNS du routeur pointant vers l'IP de l'ordinateur. `<nome>.local` fonctionne sans rien configurer.
 - **Ce que le téléphone peut faire :** par défaut, valider et refuser les demandes de permission.
-  `HABBLAUD_REMOTE_ALLOW` dans le `.env` accepte `permissions`, `messages`, `terminal` et `spawn`, séparés par des
+  `AGENTFORGE_REMOTE_ALLOW` dans le `.env` accepte `permissions`, `messages`, `terminal` et `spawn`, séparés par des
   virgules, ou `none` (consultation seule). Le terminal interactif ne fonctionne jamais depuis le téléphone.
 - **Livraisons** (téléphone, avec `terminal` autorisé) : le bouton en forme de boîte dans la barre du haut liste ce que
   chaque agent a terminé, avec un résumé et des pièces jointes (captures d'écran, PDF, fichiers qu'il a envoyés) qui
   s'ouvrent d'un simple toucher.
 - **Nouvel agent** (le bouton **+**) : lance une session Claude Code en arrière-plan sur l'ordinateur (`claude --bg`,
   dans le dossier choisi), qui apparaît dans le bureau et reçoit les messages et les demandes de permission via
-  Habblaud. Dans un dossier auquel Claude Code ne fait pas encore confiance, il ouvre, déjà rempli, l'écran de nouvelle
-  session de l'appli Claude, et vous appuyez sur Enter là-bas. **Désactivé par défaut :** il faut `HABBLAUD_PTY=1` (la
+  AgentForge. Dans un dossier auquel Claude Code ne fait pas encore confiance, il ouvre, déjà rempli, l'écran de nouvelle
+  session de l'appli Claude, et vous appuyez sur Enter là-bas. **Désactivé par défaut :** il faut `AGENTFORGE_PTY=1` (la
   même activation que le [terminal interactif](#terminal-interactif-prendre-le-contrôle-nouvelle-session-et-fermer) ;
   dans Docker, mettez-la dans le `.env` et laissez tourner `npm run codex:bridge` sur l'ordinateur) et, depuis le
-  téléphone, `spawn` dans `HABBLAUD_REMOTE_ALLOW` aussi.
+  téléphone, `spawn` dans `AGENTFORGE_REMOTE_ALLOW` aussi.
 - **Dictée** (dans Nouvel agent et dans la zone de message) : nécessite `whisper-cli` et `ffmpeg` (`brew install
   whisper-cpp ffmpeg`) et un modèle multilingue dans `~/.local/share/whisper/` (`ggml-small.bin` se trompe moins que
   `ggml-base.bin` ; les `.en` ne comprennent que l'anglais). Sans eux, le bouton Dicter n'apparaît pas. La voix ne
-  quitte jamais l'ordinateur. `HABBLAUD_WHISPER_BIN`, `HABBLAUD_FFMPEG_BIN`, `HABBLAUD_WHISPER_MODEL` et
-  `HABBLAUD_DICTATION_LANGS` (par défaut `pt,en`) permettent de l'ajuster.
+  quitte jamais l'ordinateur. `AGENTFORGE_WHISPER_BIN`, `AGENTFORGE_FFMPEG_BIN`, `AGENTFORGE_WHISPER_MODEL` et
+  `AGENTFORGE_DICTATION_LANGS` (par défaut `pt,en`) permettent de l'ajuster.
 - **Hors de chez vous (Tailscale) :** avec Tailscale sur l'ordinateur et sur le téléphone, `tailscale serve --bg
   --https=443 https+insecure://127.0.0.1:443` publie le port distant (avec connexion) uniquement pour vos appareils,
-  avec un certificat valide sur `https://<computador>.<tailnet>.ts.net` ; ajoutez ce nom à `HABBLAUD_ALLOWED_HOSTS`.
+  avec un certificat valide sur `https://<computador>.<tailnet>.ts.net` ; ajoutez ce nom à `AGENTFORGE_ALLOWED_HOSTS`.
   Pointez toujours vers le port distant, jamais vers le 4747 (qui ne demande pas de connexion).
 - **Session :** 30 jours ; changer le mot de passe (relancer le setup) les ferme toutes, et **Réglages › Accès
   depuis le téléphone › Se déconnecter** ferme celle de cet appareil. Après 5 mauvais mots de passe d'affilée, chaque nouvelle tentative attend
@@ -307,14 +307,14 @@ en vérifiant l'empreinte que le setup a affichée.
   certificat sans redémarrer.
 - **Désactiver :** `npm run remote:setup -- --off` et `npm run docker:up`.
 
-Sans HTTPS, le port distant ne démarre pas ; `HABBLAUD_REMOTE_INSECURE_HTTP=1` force le HTTP simple (mot de passe et
-cookie en clair sur le réseau). En mode Node : `HABBLAUD_REMOTE_PORT` et `HABBLAUD_REMOTE_HOST` (par défaut
-`0.0.0.0:4748`) et `HABBLAUD_REMOTE_TLS_DIR` (par défaut `~/.habblaud/remote-tls/server`).
+Sans HTTPS, le port distant ne démarre pas ; `AGENTFORGE_REMOTE_INSECURE_HTTP=1` force le HTTP simple (mot de passe et
+cookie en clair sur le réseau). En mode Node : `AGENTFORGE_REMOTE_PORT` et `AGENTFORGE_REMOTE_HOST` (par défaut
+`0.0.0.0:4748`) et `AGENTFORGE_REMOTE_TLS_DIR` (par défaut `~/.agentforge/remote-tls/server`).
 
 ### Mettre à jour
 
 La version utilisée apparaît dans la barre du haut, à côté de « Connecté », et dans **Réglages › À propos**. Toutes les
-6 heures, Habblaud vérifie sur GitHub si une nouvelle version est sortie (les [releases](https://github.com/marmottajr/habblaud/releases)
+6 heures, AgentForge vérifie sur GitHub si une nouvelle version est sortie (les [releases](https://github.com/marmottajr/habblaud/releases)
 de ce dépôt). Si c'est le cas, le badge vert **Nouvelle version** remplace le numéro, avec une alerte et un point sur
 le bouton des réglages. Dans **À propos**, vous trouverez le lien vers ce qui a changé et le bouton **Vérifier
 maintenant** (les notes de chaque version sont aussi dans [`CHANGELOG.md`](CHANGELOG.md)). Pour mettre à jour :
@@ -331,16 +331,16 @@ npm run docker:up        # ou: npm run build && npm start (e depois npm run mod:
 
 `docker:up` met aussi à jour le mod dans les comptes où il est déjà installé (il ne l'installe jamais tout seul) et
 vous prévient : « Mod mis à jour en 0.3.0 pour Compte D ; sessions ouvertes : /reload-plugins ». En mode Node, lancez
-`npm run mod:install` après la mise à jour. Pour ne pas interroger GitHub, utilisez `HABBLAUD_UPDATE_CHECK=0` (dans le
+`npm run mod:install` après la mise à jour. Pour ne pas interroger GitHub, utilisez `AGENTFORGE_UPDATE_CHECK=0` (dans le
 `.env`, pour Docker).
 
 #### Migrer depuis CodeTown
 
-Habblaud s'appelait **CodeTown** jusqu'à la 0.3.2. Après le `git pull`, lancez une fois :
+AgentForge s'appelait **CodeTown** jusqu'à la 0.3.2. Après le `git pull`, lancez une fois :
 
 ```bash
 npm install
-npm run mod:install      # troca o marketplace e os plugins codetown pelos habblaud, em cada conta
+npm run mod:install      # troca o marketplace e os plugins codetown pelos agentforge, em cada conta
 npm run docker:up        # tira o container codetown e copia os dados do volume antigo para o novo
 ```
 
@@ -348,9 +348,9 @@ npm run docker:up        # tira o container codetown e copia os dados do volume 
   (les dossiers `mod/codetown*` ont changé de nom). `docker:up` vous prévient, mais ne fait pas le remplacement tout seul.
 - **Docker :** l'ancien volume (`codetown_codetown-data`) reste intact. Après avoir vérifié que les noms des personnages
   ont bien été repris, supprimez-le avec `docker volume rm codetown_codetown-data`, et l'ancienne image avec `docker image rm codetown:local`.
-- **Dossier local :** `~/.codetown` devient `~/.habblaud` tout seul (dans le serveur, dans `docker:up` et dans `mod:install`).
+- **Dossier local :** `~/.codetown` devient `~/.agentforge` tout seul (dans le serveur, dans `docker:up` et dans `mod:install`).
 - **Navigateur :** les préférences et les pièces passent aux nouvelles clés la première fois que la page s'ouvre.
-- **Variables :** les `CODETOWN_*` ne sont plus prises en compte ; renommez-les en `HABBLAUD_*` dans le `.env` (ex. : `HABBLAUD_BIND`). Le
+- **Variables :** les `CODETOWN_*` ne sont plus prises en compte ; renommez-les en `AGENTFORGE_*` dans le `.env` (ex. : `AGENTFORGE_BIND`). Le
   serveur et `docker:up` vous préviennent quand ils en trouvent une ancienne.
 - **Dépôt :** c'est désormais `github.com/marmottajr/habblaud` (GitHub redirige l'ancienne adresse). Pour mettre à jour le
   clone : `git remote set-url origin https://github.com/marmottajr/habblaud.git`. Le dossier local peut garder son
@@ -361,11 +361,11 @@ npm run docker:up        # tira o container codetown e copia os dados do volume 
 
 ```bash
 npm run mod:uninstall                       # tira o mod, os plugins de permissões e de mensagens e o marketplace
-npm run codex:uninstall                     # tira os hooks do Habblaud do Codex (os outros ficam)
+npm run codex:uninstall                     # tira os hooks do AgentForge do Codex (os outros ficam)
 npm run docker:down                         # para o container
-docker volume rm habblaud_habblaud-data     # apaga os dados do container (nomes, salas, linha do tempo e estatísticas)
-docker image rm habblaud:local              # apaga a imagem
-rm -rf ~/.habblaud                          # apaga os dados locais (uso capturado, nomes, salas, linha do tempo e estatísticas)
+docker volume rm agentforge_agentforge-data     # apaga os dados do container (nomes, salas, linha do tempo e estatísticas)
+docker image rm agentforge:local              # apaga a imagem
+rm -rf ~/.agentforge                          # apaga os dados locais (uso capturado, nomes, salas, linha do tempo e estatísticas)
 ```
 
 Il ne reste plus qu'à supprimer le dossier du projet — lancez `mod:uninstall` **avant**, sinon Claude Code se plaindra,
@@ -373,7 +373,7 @@ dans les comptes, du marketplace disparu. Si vous avez utilisé l'ancienne méth
 (qui rétablit la statusline d'origine) et `npm run hooks:uninstall` (qui retire le hook de permission) ; sans eux, la
 statusline des comptes se met à afficher une erreur (et le hook, à échouer en silence). `mod:install`, qui retire
 l'ancienne dérivation et l'ancien hook, ainsi que les anciens installateurs et désinstallateurs, laissent des copies
-`settings.json.habblaud-backup-<data>` dans le dossier de chaque compte (ex. : `~/.claude/`) ; supprimez-les si vous
+`settings.json.agentforge-backup-<data>` dans le dossier de chaque compte (ex. : `~/.claude/`) ; supprimez-les si vous
 n'en avez plus besoin.
 
 ## Mode d'emploi
@@ -438,9 +438,9 @@ les activités et les animations des agents. Le cycle jour/nuit reste une option
 
 L'interface est disponible en **portugais, anglais, espagnol et français**. Elle suit la langue du navigateur ; dans
 **Réglages › Langue**, vous pouvez en fixer une (le choix est enregistré dans ce navigateur). Les textes générés par le
-serveur (activités, alertes, terminal, journaux et scripts d'installation) suivent `HABBLAUD_LANG` et, à défaut, la
+serveur (activités, alertes, terminal, journaux et scripts d'installation) suivent `AGENTFORGE_LANG` et, à défaut, la
 langue du système, sauf l'anglais : beaucoup de machines et tous les conteneurs sont en anglais par défaut, même chez
-ceux qui utilisent une autre langue. Pour avoir le serveur en anglais, définissez `HABBLAUD_LANG=en` (dans Docker, dans
+ceux qui utilisent une autre langue. Pour avoir le serveur en anglais, définissez `AGENTFORGE_LANG=en` (dans Docker, dans
 le `.env`). Un texte sans traduction s'affiche en portugais.
 
 ### Jour, nuit et sons
@@ -483,21 +483,21 @@ l'historique restent en lecture seule.
   terminal avec le projet, le titre et la date dans l'en-tête et « Session terminée à … » en bas ; une session encore
   ouverte ouvre le terminal en direct de l'agent.
 
-Comme le terminal (et l'historique) affiche toute la conversation, il n'existe que lorsque Habblaud est accessible
+Comme le terminal (et l'historique) affiche toute la conversation, il n'existe que lorsque AgentForge est accessible
 **uniquement depuis l'ordinateur lui-même** (par défaut) et ne s'ouvre que via `http://localhost` ou `http://127.0.0.1`.
-Avec le port ouvert au réseau (`HABBLAUD_BIND=0.0.0.0` ou `HABBLAUD_HOST=0.0.0.0`), il est désactivé. Détails dans
+Avec le port ouvert au réseau (`AGENTFORGE_BIND=0.0.0.0` ou `AGENTFORGE_HOST=0.0.0.0`), il est désactivé. Détails dans
 [Confidentialité et sécurité](#confidentialité-et-sécurité).
 
 ### Terminal interactif (prendre le contrôle, nouvelle session et fermer)
 
-Avec `HABBLAUD_PTY=1` et en lançant avec `npm start` (hors Docker), la fenêtre de terminal de chaque agent principal
+Avec `AGENTFORGE_PTY=1` et en lançant avec `npm start` (hors Docker), la fenêtre de terminal de chaque agent principal
 est interactive : le bouton **Ouvrir le terminal** du panneau de détails, le raccourci à côté de chaque agent dans la
 liste latérale ou la touche `T` ouvrent la même fenêtre, avec des onglets pour les autres agents du même projet.
 
 - Session ouverte ici : c'est le vrai Claude Code (taper, répondre ; Esc interrompt l'agent, comme dans le terminal).
 - Session ouverte dans un autre terminal : **Prendre le contrôle ici** (en haut de la fenêtre) ferme la session là-bas
   et poursuit la **même conversation** ici (`claude --resume <sessão>`, dans le même dossier et avec le même compte).
-  Le personnage garde son nom. Sous Windows, le terminal d'où la session est partie revient à la normale (Habblaud
+  Le personnage garde son nom. Sous Windows, le terminal d'où la session est partie revient à la normale (AgentForge
   désactive les modes souris/clavier que Claude avait activés).
 - **Fermer** met fin à la session, qu'elle soit ici ou dans un autre terminal (la conversation reste enregistrée).
 - **Nouvelle session** (dans le panneau de la salle) ouvre un nouveau Claude Code dans le dossier du projet.
@@ -505,11 +505,11 @@ liste latérale ou la touche `T` ouvrent la même fenêtre, avec des onglets pou
 Prendre le contrôle et fermer demandent un second clic ; fermer la fenêtre ne met pas fin à la session. La fenêtre (et
 le panneau de l'agent) peut être déplacée par sa barre et redimensionnée par le coin ; un double clic sur la barre la
 remet à sa place.
-**Désactivé par défaut :** activez-le avec `HABBLAUD_PTY=1` (lisez d'abord l'avertissement dans [Confidentialité et sécurité](#confidentialité-et-sécurité)).
-Utilise `node-pty`, `@xterm/headless` (dépendances optionnelles) et le `claude` du PATH (`HABBLAUD_CLAUDE_BIN` pour
-un autre) ; n'accepte que les requêtes venant de l'ordinateur lui-même. Au démarrage, Habblaud ouvre un terminal de
+**Désactivé par défaut :** activez-le avec `AGENTFORGE_PTY=1` (lisez d'abord l'avertissement dans [Confidentialité et sécurité](#confidentialité-et-sécurité)).
+Utilise `node-pty`, `@xterm/headless` (dépendances optionnelles) et le `claude` du PATH (`AGENTFORGE_CLAUDE_BIN` pour
+un autre) ; n'accepte que les requêtes venant de l'ordinateur lui-même. Au démarrage, AgentForge ouvre un terminal de
 test : si `node-pty` ou `claude` ne fonctionnent pas, la fonction reste désactivée et le journal en donne la raison.
-**Redémarrer Habblaud met fin aux sessions qu'il a ouvertes.**
+**Redémarrer AgentForge met fin aux sessions qu'il a ouvertes.**
 Le terminal en direct reste disponible dans l'historique des sessions, pour les sous-agents et quand le mode interactif est désactivé.
 
 ### Timelapse de la journée
@@ -522,9 +522,9 @@ travail, les repères des pics (cliquez pour y sauter) et **Revenir au direct**.
 légère teinte sépia, avec le badge **REPLAY 14:32**, et le fil d'activité continue de montrer ce qui se passe maintenant.
 
 Le serveur enregistre la chronologie **à partir du moment où il est allumé** (impossible de reconstituer le passé) :
-des résumés de ce que le bureau affiche, sans les conversations, dans `~/.habblaud/timeline/` (dans Docker, dans le
+des résumés de ce que le bureau affiche, sans les conversations, dans `~/.agentforge/timeline/` (dans Docker, dans le
 volume de données), avec une taille limite par jour et les **7 derniers jours** conservés. Pour ne pas enregistrer :
-`HABBLAUD_TIMELINE=0`. Détails dans [`server/README.md`](server/README.md#linha-do-tempo-timelapse).
+`AGENTFORGE_TIMELINE=0`. Détails dans [`server/README.md`](server/README.md#linha-do-tempo-timelapse).
 
 Les personnages marchent plus vite pendant le replay, mais aux vitesses élevées, ceux qui restent peu de temps au
 bureau atteignent à peine leur poste ; sauter à un autre moment montre tout le monde déjà en place.
@@ -539,7 +539,7 @@ un fichier, ouvrir une page — la demande apparaît dans le bureau : le personn
 - **Valider** — et, quand Claude Code le propose, **Valider et ne plus demander** (la même règle que le terminal
   proposerait, par exemple `Bash(npm test:*)` dans ce projet) ;
 - **Refuser** — avec un motif facultatif, transmis à l'agent, et la possibilité de l'interrompre ;
-- **Répondre dans le terminal** — Habblaud laisse la demande de côté.
+- **Répondre dans le terminal** — AgentForge laisse la demande de côté.
 
 Le dialogue continue de s'afficher dans le terminal en même temps, et c'est la première réponse qui compte : si vous
 répondez dans le terminal, la demande disparaît toute seule du bureau. Le compteur **ont besoin de vous** (et la touche
@@ -552,9 +552,9 @@ voulez pas répondre, et **Répondre dans le terminal** laisse la question là-b
 vous l'aviez choisie dans le terminal.
 
 - La demande passe par un hook `PermissionRequest` de Claude Code (celui du plugin, ou celui de l'ancienne méthode), qui
-  ne la détourne que lorsqu'**une page de Habblaud est ouverte** sur cet ordinateur ; si Habblaud est arrêté ou
+  ne la détourne que lorsqu'**une page de AgentForge est ouverte** sur cet ordinateur ; si AgentForge est arrêté ou
   qu'aucune page n'est ouverte, il se termine aussitôt et le terminal fonctionne normalement.
-- Sans réponse depuis le bureau au bout de 5 minutes (jusqu'à 24 h avec `HABBLAUD_PERMISSION_TIMEOUT=86400` dans le
+- Sans réponse depuis le bureau au bout de 5 minutes (jusqu'à 24 h avec `AGENTFORGE_PERMISSION_TIMEOUT=86400` dans le
   bloc `env` du `settings.json`), la demande ne vaut plus que dans le terminal (les options du plugin sont dans
   [`mod/README.md`](mod/README.md) ; avec l'ancienne méthode, `npm run hooks:install -- --timeout 120` change le délai
   et `--port`, le port). Pour les **sous-agents en arrière-plan**, Claude Code n'affiche le dialogue dans le terminal
@@ -562,7 +562,7 @@ vous l'aviez choisie dans le terminal.
   de plus de 5 minutes, si 5 minutes passent sans aucune page ouverte capable de répondre (et sans
   [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) configuré pour répondre), la
   demande revient au terminal.
-- Cela fonctionne avec le même verrou que le terminal : uniquement avec Habblaud accessible seulement depuis l'ordinateur
+- Cela fonctionne avec le même verrou que le terminal : uniquement avec AgentForge accessible seulement depuis l'ordinateur
   lui-même et ouvert via `http://localhost`. Vérifiez avec `npm run mod:status` (ou `npm run hooks:status`, avec
   l'ancienne méthode).
   Cela fonctionne aussi depuis le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) (c'est le réglage par défaut là-bas).
@@ -580,12 +580,12 @@ son tour et attend la demande suivante, donner une nouvelle instruction ou corri
 - La zone indique l'état : **en file** (la session récupère les messages toutes les 2 secondes), **remis** ou **non
   remis**, avec la raison. Si l'agent est occupé, le message attend et entre quand il finit son tour, comme un
   prompt tapé pendant que l'agent travaille.
-- Le plugin tourne dans chaque session et ne parle à Habblaud que sur `127.0.0.1`. Sans lui (ou dans une session ouverte
+- Le plugin tourne dans chaque session et ne parle à AgentForge que sur `127.0.0.1`. Sans lui (ou dans une session ouverte
   avant l'installation : utilisez `/reload-plugins`), l'astuce d'installation apparaît à la place de la zone. Les
   sous-agents ne reçoivent pas de messages.
-- Cela fonctionne avec le même verrou que le terminal (accès local uniquement) et peut être désactivé avec `HABBLAUD_MENSAGENS=0`.
+- Cela fonctionne avec le même verrou que le terminal (accès local uniquement) et peut être désactivé avec `AGENTFORGE_MENSAGENS=0`.
   Lisez l'avertissement dans [Confidentialité et sécurité](#confidentialité-et-sécurité).
-  Depuis le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes), seulement avec `messages` dans `HABBLAUD_REMOTE_ALLOW`.
+  Depuis le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes), seulement avec `messages` dans `AGENTFORGE_REMOTE_ALLOW`.
 - En mode démonstration, les agents fictifs reçoivent aussi des messages (pour de faux).
 
 ### Modifier le personnage
@@ -601,9 +601,9 @@ détails de l'agent principal et cliquez sur le crayon à côté du nom (**Modif
   personnage. Avec deux sessions en même temps dans la même salle, la seconde reçoit un personnage tiré au sort.
 - **Revenir au tirage au sort :** annule le choix.
 
-Le choix est enregistré dans `~/.habblaud/names.json` et disparaît après 60 jours sans utilisation du projet. L'éditeur
-a le même verrou que le terminal : le crayon n'apparaît qu'avec le terminal activé (sans `HABBLAUD_TERMINAL=0`) et
-l'accès local, c'est-à-dire avec Habblaud accessible uniquement depuis l'ordinateur lui-même et ouvert via `http://localhost`.
+Le choix est enregistré dans `~/.agentforge/names.json` et disparaît après 60 jours sans utilisation du projet. L'éditeur
+a le même verrou que le terminal : le crayon n'apparaît qu'avec le terminal activé (sans `AGENTFORGE_TERMINAL=0`) et
+l'accès local, c'est-à-dire avec AgentForge accessible uniquement depuis l'ordinateur lui-même et ouvert via `http://localhost`.
 
 ### Codex
 
@@ -611,22 +611,22 @@ Les sessions Codex (CLI ou app) apparaissent comme celles de Claude Code : perso
 tâches, sous-agents, terminal et historique, utilisation sur 5 heures et sur la semaine, et **Ma journée** (tokens
 seulement : Codex n'indique pas le coût). La pastille du compte Codex est évidée et porte le badge **CODEX**.
 
-- **Sans rien installer**, Habblaud lit les fichiers que Codex écrit lui-même (les conversations dans `~/.codex/sessions`
+- **Sans rien installer**, AgentForge lit les fichiers que Codex écrit lui-même (les conversations dans `~/.codex/sessions`
   et les verrous des sessions ouvertes dans `~/.codex/thread-writer-locks`). Mais Codex n'écrit chaque étape **qu'une
   fois** qu'elle est terminée et n'écrit jamais « vous attend » : sans les hooks, le bureau montre Codex avec du retard
   et ne prévient pas quand il a besoin de vous.
-- **Avec les hooks** (`npm run codex:install` puis validation dans `/hooks`), Codex prévient Habblaud à chaque étape :
+- **Avec les hooks** (`npm run codex:install` puis validation dans `/hooks`), Codex prévient AgentForge à chaque étape :
   la session apparaît immédiatement, l'activité affichée est celle du moment et une demande de validation fait lever la
   main au personnage.
-- **Valider depuis le bureau :** avec une page de Habblaud ouverte, la demande de validation de Codex attend votre
+- **Valider depuis le bureau :** avec une page de AgentForge ouverte, la demande de validation de Codex attend votre
   réponse dans la carte **Demande la permission** jusqu'à **25 secondes** (`npm run codex:install -- --espera <s>`, de 5 à 120) :
   **Valider** ou **Refuser** (avec le motif). Contrairement à Claude Code, Codex n'affiche la validation dans le terminal
   **qu'après** la réponse du bureau ou la fin du délai — en attendant, le terminal affiche « En attente de réponse dans
-  Habblaud… ». Il n'y a ni « toujours autoriser » ni « interrompre », et Codex ne permet pas de répondre à ses questions
+  AgentForge… ». Il n'y a ni « toujours autoriser » ni « interrompre », et Codex ne permet pas de répondre à ses questions
   depuis l'extérieur.
 - **Envoyer des messages :** la zone **Envoyer un message** fonctionne aussi pour Codex, via `codex queue` : le message
   entre dans la file de la session et Codex le prend quand il a fini ce qu'il est en train de faire (jusqu'à une dizaine
-  de secondes plus tard). En mode Node, Habblaud lance lui-même la commande ; **dans Docker**, laissez tourner
+  de secondes plus tard). En mode Node, AgentForge lance lui-même la commande ; **dans Docker**, laissez tourner
   `npm run codex:bridge` sur le Mac (le conteneur ne voit pas votre Codex).
 - **Utilisation sur 5 heures et sur la semaine :** elle provient des fichiers de Codex eux-mêmes et ne se met à jour que
   pendant qu'une session tourne ; la carte affiche l'âge des chiffres et « sans quota » quand l'espace de travail n'a
@@ -636,11 +636,11 @@ seulement : Codex n'indique pas le coût). La pastille du compte Codex est évid
 - **Quand la session quitte le bureau :** la CLI de Codex fait tourner les sessions sur un serveur en arrière-plan, qui
   les garde chargées jusqu'à une minute après qu'elles sont devenues inactives et que plus personne ne les regarde ; le
   personnage peut donc mettre un peu de temps à partir après la fermeture du terminal.
-- Les conversations du cloud de ChatGPT (sans fichier sur l'ordinateur) n'apparaissent pas. `HABBLAUD_CODEX=0` désactive Codex.
+- Les conversations du cloud de ChatGPT (sans fichier sur l'ordinateur) n'apparaissent pas. `AGENTFORGE_CODEX=0` désactive Codex.
 
 ### GitHub dans le bureau
 
-Ce que les agents font sur GitHub anime la salle du projet, sans token et sans accès à Internet : Habblaud lit dans les
+Ce que les agents font sur GitHub anime la salle du projet, sans token et sans accès à Internet : AgentForge lit dans les
 transcripts les appels (`gh pr create`, `gh pr merge`, `git push`, `gh run watch`, `gh pr checks`, `gh run view`,
 `gh release create` et les outils du MCP de GitHub) et leurs résultats.
 
@@ -657,9 +657,9 @@ transcripts les appels (`gh pr create`, `gh pr merge`, `git push`, `gh run watch
   </tr>
 </table>
 
-Chaque événement génère aussi une alerte (« 🎉 Danilo a ouvert la PR #12 dans habblaud », « 🚨 CI en échec dans habblaud (feat/x) ») et entre
+Chaque événement génère aussi une alerte (« 🎉 Danilo a ouvert la PR #12 dans agentforge », « 🚨 CI en échec dans agentforge (feat/x) ») et entre
 dans le fil d'activité. Seul ce qui se passe en direct anime la salle : ce qui était déjà dans les transcripts à
-l'ouverture de Habblaud ne va que dans l'historique. Avec « réduire les animations » activé dans le système, rien ne
+l'ouverture de AgentForge ne va que dans l'historique. Avec « réduire les animations » activé dans le système, rien ne
 clignote ni ne tourne. En mode démonstration, des PR, des merges et des CI fictifs apparaissent de temps en temps.
 ### Ma journée
 
@@ -668,11 +668,11 @@ travailler et, mis en avant, combien de temps ils sont restés **à vous attendr
 la plus longue attente, qui a attendu, où et quand. À côté : sessions, sous-agents, demandes, tokens et coût (quand
 Claude Code enregistre le coût dans le transcript), ainsi que des graphiques par heure, par projet (de celui qui vous a
 le plus attendu à celui qui vous a le moins attendu) et par compte, et le classement des plus longues attentes.
-Choisissez le jour dans le sélecteur (Habblaud garde les 30 derniers) ; ouvert sur la journée en cours, le panneau se
+Choisissez le jour dans le sélecteur (AgentForge garde les 30 derniers) ; ouvert sur la journée en cours, le panneau se
 met à jour toutes les 30 s. Chaque graphique a une version en tableau, et la légende active et désactive chaque statut.
 
 Le temps compté est du **temps d'agent** : deux agents qui travaillent pendant une heure comptent pour deux heures.
-Habblaud ne compte que ce qui se passe pendant qu'il tourne, et la journée suit le fuseau horaire de votre navigateur.
+AgentForge ne compte que ce qui se passe pendant qu'il tourne, et la journée suit le fuseau horaire de votre navigateur.
 Avec le mode démonstration activé, le panneau affiche des chiffres fictifs (avec le badge « démonstration ») et permet
 de basculer vers les données réelles ; les agents de la démo n'entrent jamais dans les vraies statistiques.
 
@@ -683,7 +683,7 @@ Vous voulez voir le bureau plein sans avoir de sessions ouvertes ?
 - Ajoutez **`?mock=1`** à l'URL (ex. : http://localhost:4747/?mock=1) pour tout simuler dans le navigateur, sans vos
   vraies sessions. Paramètres : `&speed=3` accélère le temps et `&sessions=6` change le nombre de sessions simulées.
 - Ou activez-le depuis l'interface — **Voir la démonstration** (quand le bureau est vide) ou **Réglages › Mode
-  démonstration** —, ce qui ajoute des agents fictifs à côté des vrais. Avec `npm run demo` (ou `HABBLAUD_DEMO=1` dans
+  démonstration** —, ce qui ajoute des agents fictifs à côté des vrais. Avec `npm run demo` (ou `AGENTFORGE_DEMO=1` dans
   le `.env` de Docker), ce mode est activé dès le démarrage.
 
 ## Comptes et utilisation (5 heures et semaine)
@@ -693,13 +693,13 @@ Vous voulez voir le bureau plein sans avoir de sessions ouvertes ?
 > voir [Codex](#codex). Le reste de cette section concerne Claude Code.
 
 Si vous utilisez plus d'un compte Claude Code (par exemple, un raccourci `c` avec `~/.claude` et un `d` avec
-`CLAUDE_CONFIG_DIR=~/.claude-conta2`), Habblaud les affiche tous ensemble : chaque agent porte la pastille de son compte
+`CLAUDE_CONFIG_DIR=~/.claude-conta2`), AgentForge les affiche tous ensemble : chaque agent porte la pastille de son compte
 et le haut de l'écran montre, pour chaque compte, le **pourcentage utilisé** de la session de 5 heures et de la semaine,
 et **quand chaque limite se réinitialise**.
 
 **Comment les comptes sont reconnus.** Chaque dossier de configuration de Claude Code est un compte : `~/.claude` et
 tout `~/.claude*` contenant `projects/` ou `sessions/` (en plus de `CLAUDE_CONFIG_DIR`). Pour attribuer une lettre à
-chacun, Habblaud lit dans les fichiers du shell (`~/.zshrc`, `~/.bashrc`…) **uniquement** les lignes `alias x='... claude ...'` :
+chacun, AgentForge lit dans les fichiers du shell (`~/.zshrc`, `~/.bashrc`…) **uniquement** les lignes `alias x='... claude ...'` :
 
 ```bash
 alias c='claude'
@@ -709,9 +709,9 @@ alias d='CLAUDE_CONFIG_DIR=~/.claude-conta2 claude'
 devient **Compte C** et **Compte D**. Seuls les raccourcis de 3 lettres maximum sont pris en compte ; les comptes sans
 raccourci reçoivent A, B…
 
-**D'où viennent les chiffres.** La méthode recommandée est le mod Habblaud (`npm run mod:install`, Claude Code 2.1.287+) :
+**D'où viennent les chiffres.** La méthode recommandée est le mod AgentForge (`npm run mod:install`, Claude Code 2.1.287+) :
 dans chaque session, il reçoit de Claude Code lui-même les limites du forfait et ne garde que les pourcentages sur
-5 heures et sur la semaine (et le moment où ils se réinitialisent) dans `~/.habblaud/usage/<conta>.json`. Les chiffres
+5 heures et sur la semaine (et le moment où ils se réinitialisent) dans `~/.agentforge/usage/<conta>.json`. Les chiffres
 arrivent après la prochaine réponse de chaque compte. Vérifiez avec `npm run mod:status`. Avec les versions antérieures
 de Claude Code, la dérivation de statusline (`npm run usage:install`) fait la même chose via la commande de statusline,
 dans le même fichier.
@@ -720,20 +720,20 @@ dans le même fichier.
 <summary><b>Détails de la dérivation et du cache de /usage</b></summary>
 
 - `usage:install` (ancienne méthode) modifie, dans `<conta>/settings.json`, **seulement** le champ `statusLine.command` :
-  la commande d'origine (ex. : `npx -y ccstatusline`) passe désormais par `node "<pasta do Habblaud>/scripts/statusline-tap.mjs" --
+  la commande d'origine (ex. : `npx -y ccstatusline`) passe désormais par `node "<pasta do AgentForge>/scripts/statusline-tap.mjs" --
   <comando original>` (sous Windows, la commande d'origine tourne dans Git Bash, comme Claude Code la lancerait). Une
-  copie du fichier est d'abord enregistrée dans `settings.json.habblaud-backup-<data>`. Si le compte n'avait pas de
+  copie du fichier est d'abord enregistrée dans `settings.json.agentforge-backup-<data>`. Si le compte n'avait pas de
   statusline, il en crée une qui ne fait que capturer l'utilisation. `npm run usage:install -- --dry-run` montre ce qui
   changerait sans rien écrire.
 - La dérivation transmet le même JSON à votre statusline (sa sortie et son code de sortie restent inchangés) et
   n'enregistre **que** `{accountId, configDir, fetchedAt, five_hour, seven_day}` — ni prompts, ni coûts, ni chemins de
-  projet. Tout échec de capture est ignoré : la statusline ne casse jamais à cause de Habblaud.
+  projet. Tout échec de capture est ignoré : la statusline ne casse jamais à cause de AgentForge.
 
 | Source | Fonctionnement |
 | --- | --- |
-| **Mod Habblaud** (recommandé) | En direct, comme décrit ci-dessus. Remplace la dérivation : `mod:install` retire la dérivation du compte. |
+| **Mod AgentForge** (recommandé) | En direct, comme décrit ci-dessus. Remplace la dérivation : `mod:install` retire la dérivation du compte. |
 | Dérivation de statusline (Claude Code antérieur à 2.1.287) | En direct, via la commande de statusline, dans le même fichier. |
-| Cache de `/usage` (toujours actif) | Claude Code enregistre le dernier résultat de la commande `/usage`. En mode Node, Habblaud le relit toutes les 60 s ; dans Docker, c'est la valeur lue lors du dernier `npm run docker:up` qui compte. Ne change que lorsque quelqu'un lance `/usage`. |
+| Cache de `/usage` (toujours actif) | Claude Code enregistre le dernier résultat de la commande `/usage`. En mode Node, AgentForge le relit toutes les 60 s ; dans Docker, c'est la valeur lue lors du dernier `npm run docker:up` qui compte. Ne change que lorsque quelqu'un lance `/usage`. |
 
 Les sources sont des fichiers locaux : aucune ne lit de mots de passe ou de tokens, ni ne fait d'appels réseau. C'est
 toujours la source aux chiffres les plus récents qui l'emporte. Les chiffres de plus de 30 minutes apparaissent comme
@@ -748,31 +748,31 @@ Tout fonctionne sans rien configurer. Si vous avez besoin d'ajuster quelque chos
 
 | Variable | Par défaut | À quoi ça sert |
 | --- | --- | --- |
-| `HABBLAUD_PORT` | `4747` | Port HTTP (dans Docker, le port publié sur l'hôte). |
-| `HABBLAUD_HOST` | `127.0.0.1` | Interface du serveur en mode Node. En dehors de `127.0.0.1`/`localhost`, le terminal (ainsi que la réponse et l'envoi de messages depuis le bureau) est désactivé. |
-| `HABBLAUD_BIND` | `127.0.0.1` | Docker uniquement (dans le `.env`) : où le port est publié. `0.0.0.0` ouvre l'accès au réseau local (et désactive le terminal et tout ce qui agit sur les sessions). |
-| `HABBLAUD_CLAUDE_DIRS` | détection automatique | Dossiers des comptes, séparés par des virgules (ex. : `/caminho/conta1,/caminho/conta2`). |
-| `HABBLAUD_DATA_DIR` | `~/.habblaud` | Où Habblaud garde ses propres données (noms des personnages et des salles, chronologie du timelapse et statistiques de Ma journée). |
-| `HABBLAUD_TIMELINE` | activé | `0` désactive l'enregistrement de la chronologie (les jours déjà enregistrés restent dans le timelapse). Dans Docker, il est toujours activé. |
-| `HABBLAUD_USAGE_DIR` | `~/.habblaud/usage` | Où le mod (ou la dérivation de statusline) enregistre l'utilisation. |
-| `HABBLAUD_DEMO` | désactivé | `1` active le mode démonstration au démarrage. |
-| `HABBLAUD_ALLOWED_HOSTS` | — | Noms supplémentaires acceptés dans l'adresse (ex. : `meu-mac.local`), en plus de `localhost` et des IP. |
-| `HABBLAUD_TERMINAL` | activé (en accès local uniquement) | `0` désactive le terminal, la réponse et l'envoi de messages depuis le bureau, et l'éditeur de personnage. Avec le port exposé, ils sont déjà désactivés, sans possibilité de les activer. |
-| `HABBLAUD_PTY` | désactivé | `1` active le terminal interactif (ouvrir, reprendre et fermer des sessions Claude Code depuis le bureau ; uniquement en accès local et hors Docker) et **Nouvel agent** (aussi dans Docker, via `npm run codex:bridge`). Lisez l'avertissement dans [Confidentialité et sécurité](#confidentialité-et-sécurité). |
-| `HABBLAUD_CLAUDE_BIN` | `claude` du PATH | L'exécutable de Claude Code que lancent le terminal interactif et Nouvel agent. |
-| `HABBLAUD_REMOTE_ALLOW` | `permissions` | Ce que peut faire le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) : `permissions`, `messages`, `terminal`, `spawn` (séparés par des virgules) ou `none`. Les autres `HABBLAUD_REMOTE_*` sont écrites par `npm run remote:setup`. |
-| `HABBLAUD_MENSAGENS` | activé (avec le terminal) | `0` désactive seulement les messages depuis le bureau (la zone dans le terminal et dans les détails de l'agent). |
-| `HABBLAUD_CODEX` | activé | `0` désactive Codex dans le bureau. |
-| `HABBLAUD_CODEX_DIRS` | détection automatique | Dossiers de Codex, séparés par des virgules (à la place de `~/.codex*` et `CODEX_HOME`). |
-| `HABBLAUD_CODEX_BIN` | `codex` du PATH (sous Windows, `codex.exe`) | Le binaire de Codex qui remet les messages (`codex queue`), en mode Node ou dans `npm run codex:bridge`. |
-| `HABBLAUD_UPDATE_CHECK` | activé | `0` désactive la vérification de nouvelle version (une requête aux releases du dépôt sur GitHub toutes les 6 h). |
-| `HABBLAUD_LANG` | langue du système (sauf l'anglais), sinon `pt-BR` | Langue des textes générés par le serveur (activités, alertes, journaux) : `pt-BR`, `en`, `es` ou `fr`. L'interface suit le navigateur ou le choix fait dans Réglages › Langue. Voir [Langues](#langues). |
-| `HABBLAUD_ACCOUNTS` | — | JSON pour personnaliser le nom, la lettre ou la couleur, associé par le nom du dossier du compte. Ex. : `[{"id":".claude-conta2","name":"Trabalho","short":"T","color":"#5cc97b"}]`. |
+| `AGENTFORGE_PORT` | `4747` | Port HTTP (dans Docker, le port publié sur l'hôte). |
+| `AGENTFORGE_HOST` | `127.0.0.1` | Interface du serveur en mode Node. En dehors de `127.0.0.1`/`localhost`, le terminal (ainsi que la réponse et l'envoi de messages depuis le bureau) est désactivé. |
+| `AGENTFORGE_BIND` | `127.0.0.1` | Docker uniquement (dans le `.env`) : où le port est publié. `0.0.0.0` ouvre l'accès au réseau local (et désactive le terminal et tout ce qui agit sur les sessions). |
+| `AGENTFORGE_CLAUDE_DIRS` | détection automatique | Dossiers des comptes, séparés par des virgules (ex. : `/caminho/conta1,/caminho/conta2`). |
+| `AGENTFORGE_DATA_DIR` | `~/.agentforge` | Où AgentForge garde ses propres données (noms des personnages et des salles, chronologie du timelapse et statistiques de Ma journée). |
+| `AGENTFORGE_TIMELINE` | activé | `0` désactive l'enregistrement de la chronologie (les jours déjà enregistrés restent dans le timelapse). Dans Docker, il est toujours activé. |
+| `AGENTFORGE_USAGE_DIR` | `~/.agentforge/usage` | Où le mod (ou la dérivation de statusline) enregistre l'utilisation. |
+| `AGENTFORGE_DEMO` | désactivé | `1` active le mode démonstration au démarrage. |
+| `AGENTFORGE_ALLOWED_HOSTS` | — | Noms supplémentaires acceptés dans l'adresse (ex. : `meu-mac.local`), en plus de `localhost` et des IP. |
+| `AGENTFORGE_TERMINAL` | activé (en accès local uniquement) | `0` désactive le terminal, la réponse et l'envoi de messages depuis le bureau, et l'éditeur de personnage. Avec le port exposé, ils sont déjà désactivés, sans possibilité de les activer. |
+| `AGENTFORGE_PTY` | désactivé | `1` active le terminal interactif (ouvrir, reprendre et fermer des sessions Claude Code depuis le bureau ; uniquement en accès local et hors Docker) et **Nouvel agent** (aussi dans Docker, via `npm run codex:bridge`). Lisez l'avertissement dans [Confidentialité et sécurité](#confidentialité-et-sécurité). |
+| `AGENTFORGE_CLAUDE_BIN` | `claude` du PATH | L'exécutable de Claude Code que lancent le terminal interactif et Nouvel agent. |
+| `AGENTFORGE_REMOTE_ALLOW` | `permissions` | Ce que peut faire le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) : `permissions`, `messages`, `terminal`, `spawn` (séparés par des virgules) ou `none`. Les autres `AGENTFORGE_REMOTE_*` sont écrites par `npm run remote:setup`. |
+| `AGENTFORGE_MENSAGENS` | activé (avec le terminal) | `0` désactive seulement les messages depuis le bureau (la zone dans le terminal et dans les détails de l'agent). |
+| `AGENTFORGE_CODEX` | activé | `0` désactive Codex dans le bureau. |
+| `AGENTFORGE_CODEX_DIRS` | détection automatique | Dossiers de Codex, séparés par des virgules (à la place de `~/.codex*` et `CODEX_HOME`). |
+| `AGENTFORGE_CODEX_BIN` | `codex` du PATH (sous Windows, `codex.exe`) | Le binaire de Codex qui remet les messages (`codex queue`), en mode Node ou dans `npm run codex:bridge`. |
+| `AGENTFORGE_UPDATE_CHECK` | activé | `0` désactive la vérification de nouvelle version (une requête aux releases du dépôt sur GitHub toutes les 6 h). |
+| `AGENTFORGE_LANG` | langue du système (sauf l'anglais), sinon `pt-BR` | Langue des textes générés par le serveur (activités, alertes, journaux) : `pt-BR`, `en`, `es` ou `fr`. L'interface suit le navigateur ou le choix fait dans Réglages › Langue. Voir [Langues](#langues). |
+| `AGENTFORGE_ACCOUNTS` | — | JSON pour personnaliser le nom, la lettre ou la couleur, associé par le nom du dossier du compte. Ex. : `[{"id":".claude-conta2","name":"Trabalho","short":"T","color":"#5cc97b"}]`. |
 
-**Dans Docker**, sont prises en compte `HABBLAUD_PORT`, `HABBLAUD_BIND`, `HABBLAUD_ALLOWED_HOSTS`, `HABBLAUD_DEMO`, `HABBLAUD_TERMINAL`,
-`HABBLAUD_MENSAGENS`, `HABBLAUD_CODEX`, `HABBLAUD_UPDATE_CHECK`, `HABBLAUD_LANG`, `HABBLAUD_PTY` et les
-`HABBLAUD_REMOTE_*` (dans le `.env` ou dans l'environnement) ainsi que `HABBLAUD_CLAUDE_DIRS`, `HABBLAUD_CODEX_DIRS`, `HABBLAUD_USAGE_DIR` et
-`HABBLAUD_ACCOUNTS` (lues par `docker:up` sur l'hôte) ; les autres sont fixées à l'intérieur du conteneur. Options : `npm run docker:up -- --no-build` (démarre sans reconstruire),
+**Dans Docker**, sont prises en compte `AGENTFORGE_PORT`, `AGENTFORGE_BIND`, `AGENTFORGE_ALLOWED_HOSTS`, `AGENTFORGE_DEMO`, `AGENTFORGE_TERMINAL`,
+`AGENTFORGE_MENSAGENS`, `AGENTFORGE_CODEX`, `AGENTFORGE_UPDATE_CHECK`, `AGENTFORGE_LANG`, `AGENTFORGE_PTY` et les
+`AGENTFORGE_REMOTE_*` (dans le `.env` ou dans l'environnement) ainsi que `AGENTFORGE_CLAUDE_DIRS`, `AGENTFORGE_CODEX_DIRS`, `AGENTFORGE_USAGE_DIR` et
+`AGENTFORGE_ACCOUNTS` (lues par `docker:up` sur l'hôte) ; les autres sont fixées à l'intérieur du conteneur. Options : `npm run docker:up -- --no-build` (démarre sans reconstruire),
 `npm run docker:down` (arrête) et `npm run docker:logs` (suit les journaux).
 
 ## Comment ça marche
@@ -810,7 +810,7 @@ shared/   protocolo (types.ts), atividades em PT-BR, nomes, simulador de demonst
 server/   servidor HTTP + SSE: contas e uso, leitura das sessões e transcripts, modelo do escritório
 client/   Vite: src/art (pixel art procedural), src/world (o escritório no canvas), src/ui (interface)
 scripts/  build do servidor, docker-up, instaladores (mod, tap de statusline e hook de permissão) e screenshots
-mod/      o mod do Habblaud e os plugins de permissões e de mensagens (plugins do Claude Code; marketplace em .claude-plugin/)
+mod/      o mod do AgentForge e os plugins de permissões e de mensagens (plugins do Claude Code; marketplace em .claude-plugin/)
 ```
 
 | Route | Description |
@@ -832,7 +832,7 @@ mod/      o mod do Habblaud e os plugins de permissões e de mensagens (plugins 
 | `POST /api/rooms/rename` | `{"id": sala, "name": nome}` renomme la salle (vide = retour au nom du dossier) ; le nom est enregistré dans `rooms.json`, dans le dossier de données. En accès local uniquement. |
 | `GET /api/mod/summary` | Pour le mod de Claude Code : version, nombre d'agents, combien travaillent et qui a besoin de vous (sans la démo et, avec `?account=&session=`, sans la session elle-même). |
 | `/api/permissions…` | Répondre depuis le bureau : le hook de permission enregistre la demande (permission ou question) et attend ; la page récupère le détail et décide ou répond. En accès local uniquement. |
-| `/api/messages…` et `/api/mod/inbox…` | Envoyer des messages : la page met le message en file et suit sa remise ; le plugin `habblaud-mensagens` le récupère, le remet à la session et confirme. En accès local uniquement. |
+| `/api/messages…` et `/api/mod/inbox…` | Envoyer des messages : la page met le message en file et suit sa remise ; le plugin `agentforge-mensagens` le récupère, le remet à la session et confirme. En accès local uniquement. |
 | `POST /api/codex/events` | Événements des hooks de Codex (session ouverte, outil, validation, fin du tour). En accès local uniquement. |
 | `/api/codex/bridge/poll` et `/ack` | `npm run codex:bridge` récupère les messages pour Codex et confirme leur remise. En accès local uniquement. |
 
@@ -847,9 +847,9 @@ Plus de détails sur le serveur dans [`server/README.md`](server/README.md).
 | --- | --- | --- |
 | `<conta>/sessions/` | `/claude/<conta>/sessions` (lecture seule) | Sessions ouvertes et leurs statuts. |
 | `<conta>/projects/` | `/claude/<conta>/projects` (lecture seule) | Transcripts des sessions et des sous-agents. |
-| `~/.habblaud/usage/` | `/usage` (lecture seule) | Utilisation capturée par le mod (ou par la dérivation de statusline). |
-| volume `habblaud-data` | `/data` | Données propres à Habblaud (noms des personnages, chronologie du timelapse et statistiques de Ma journée). |
-| `~/.habblaud/remote-tls/server/` | `/remote-tls` (lecture seule) | Seulement après `npm run remote:setup` : le certificat et la clé du serveur du [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) (jamais la clé de la CA). |
+| `~/.agentforge/usage/` | `/usage` (lecture seule) | Utilisation capturée par le mod (ou par la dérivation de statusline). |
+| volume `agentforge-data` | `/data` | Données propres à AgentForge (noms des personnages, chronologie du timelapse et statistiques de Ma journée). |
+| `~/.agentforge/remote-tls/server/` | `/remote-tls` (lecture seule) | Seulement après `npm run remote:setup` : le certificat et la clé du serveur du [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) (jamais la clé de la CA). |
 
 Le dossier du compte n'est **jamais** monté en entier (il contient les identifiants et les configurations). Le conteneur
 tourne avec un utilisateur sans privilèges, un système de fichiers en lecture seule, sans capabilities supplémentaires et
@@ -860,28 +860,28 @@ avec `no-new-privileges`. Les métadonnées des comptes (lettre, e-mail, organis
 
 ## Confidentialité et sécurité
 
-- **Lecture seule :** Habblaud n'écrit jamais dans les dossiers de Claude Code. Les exceptions sont les installateurs,
+- **Lecture seule :** AgentForge n'écrit jamais dans les dossiers de Claude Code. Les exceptions sont les installateurs,
   que vous lancez vous-même : `npm run mod:install` / `mod:uninstall` utilise `claude plugin` lui-même (qui enregistre le
   marketplace et les plugins dans le `settings.json` et dans `<conta>/plugins/`) et, à l'installation, retire l'ancienne
   dérivation et l'ancien hook avec sauvegarde ; avec l'ancienne méthode, `npm run usage:install` / `usage:uninstall` ne
   modifie que le `statusLine.command` du `settings.json`, et `npm run hooks:install` / `hooks:uninstall`, que la liste
   `hooks.PermissionRequest` — toujours avec une sauvegarde préalable.
 - **Le mod :** il tourne dans chaque session de Claude Code, avec vos permissions (comme tout mod), et ne fait que ce qui
-  est listé dans [`mod/README.md`](mod/README.md) — `claude plugin validate mod/habblaud` affiche les événements et les
+  est listé dans [`mod/README.md`](mod/README.md) — `claude plugin validate mod/agentforge` affiche les événements et les
   appels, sans rien exécuter. Il n'enregistre que les pourcentages d'utilisation sur 5 heures et sur la semaine (et le
-  moment où ils se réinitialisent) dans `~/.habblaud/usage/<conta>.json` ; pour la ligne « a besoin de vous » et
-  `/habblaud`, il ne parle à Habblaud que sur `127.0.0.1`. Il ne lit pas la conversation, n'appelle pas le modèle et
+  moment où ils se réinitialisent) dans `~/.agentforge/usage/<conta>.json` ; pour la ligne « a besoin de vous » et
+  `/agentforge`, il ne parle à AgentForge que sur `127.0.0.1`. Il ne lit pas la conversation, n'appelle pas le modèle et
   n'envoie rien hors de l'ordinateur. Il est lu depuis ce dossier : ce qui s'y trouve (y compris après un `git pull`)
-  est ce qui s'exécute. Le plugin de messages (`habblaud-mensagens`) est séparé justement parce qu'il agit : il tape dans
+  est ce qui s'exécute. Le plugin de messages (`agentforge-mensagens`) est séparé justement parce qu'il agit : il tape dans
   la session ce que vous avez envoyé depuis le bureau.
 - **Local uniquement, par défaut :** le serveur n'accepte que les connexions venant de l'ordinateur lui-même ; ouvrir
   l'accès au réseau local est facultatif. Il n'y a pas de télémétrie. Le seul appel externe est la vérification de
   nouvelle version : toutes les 6 heures, une requête anonyme, sans token, à l'API publique de GitHub
   (`api.github.com/repos/marmottajr/habblaud/releases/latest`). Elle n'envoie rien sur vos sessions ; GitHub ne voit que
   votre IP et la version utilisée, qui figure dans le `User-Agent`.
-  `HABBLAUD_UPDATE_CHECK=0` désactive la requête.
+  `AGENTFORGE_UPDATE_CHECK=0` désactive la requête.
   Le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes) aussi : il n'existe qu'après `npm run remote:setup`.
-- **Sans identifiants :** Habblaud ne lit ni mots de passe ni tokens d'accès. Du `.claude.json` de chaque compte, il
+- **Sans identifiants :** AgentForge ne lit ni mots de passe ni tokens d'accès. Du `.claude.json` de chaque compte, il
   n'utilise que l'e-mail, l'organisation et le cache de `/usage` ; l'utilisation en direct vient du mod (ou de la
   dérivation de statusline).
 - **Secrets masqués :** les tokens et mots de passe au format connu (`Bearer`, `-u usuário:senha`, `TOKEN=`, clés
@@ -889,20 +889,20 @@ avec `no-new-privileges`. Les métadonnées des comptes (lettre, e-mail, organis
 - **Protégé contre les sites malveillants :** le serveur refuse les adresses qui ne sont pas `localhost`/IP (DNS
   rebinding) et les `POST` venant d'autres origines (CSRF), et empêche l'intégration de la page dans d'autres sites.
 - **Terminal local uniquement :** la conversation complète des sessions (et l'historique des sessions terminées, avec
-  leurs titres) ne sort du serveur que si Habblaud est accessible uniquement depuis l'ordinateur lui-même
-  (`HABBLAUD_HOST` local en Node ; `HABBLAUD_BIND` local dans Docker) — impossible de
+  leurs titres) ne sort du serveur que si AgentForge est accessible uniquement depuis l'ordinateur lui-même
+  (`AGENTFORGE_HOST` local en Node ; `AGENTFORGE_BIND` local dans Docker) — impossible de
   l'activer avec le port exposé — et chaque requête doit passer par `localhost`/`127.0.0.1` : les IP du réseau et les
-  noms de `HABBLAUD_ALLOWED_HOSTS` (proxys, tunnels) sont refusés. Les secrets sont masqués et les textes longs tronqués
-  avant d'arriver au navigateur ; en mode démonstration, la conversation est fictive. `HABBLAUD_TERMINAL=0` le désactive complètement.
-  Seule exception : le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes), et seulement avec `terminal` dans `HABBLAUD_REMOTE_ALLOW`.
+  noms de `AGENTFORGE_ALLOWED_HOSTS` (proxys, tunnels) sont refusés. Les secrets sont masqués et les textes longs tronqués
+  avant d'arriver au navigateur ; en mode démonstration, la conversation est fictive. `AGENTFORGE_TERMINAL=0` le désactive complètement.
+  Seule exception : le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes), et seulement avec `terminal` dans `AGENTFORGE_REMOTE_ALLOW`.
 - **Chronologie du timelapse :** uniquement les résumés déjà affichés à l'écran (activité sur une ligne, statut, titres,
-  utilisation des comptes, sans e-mails, commandes complètes ni conversations), enregistrés dans `~/.habblaud/timeline/`
-  et supprimés au bout de 7 jours. `HABBLAUD_TIMELINE=0` désactive l'enregistrement.
+  utilisation des comptes, sans e-mails, commandes complètes ni conversations), enregistrés dans `~/.agentforge/timeline/`
+  et supprimés au bout de 7 jours. `AGENTFORGE_TIMELINE=0` désactive l'enregistrement.
 - **Répondre depuis le bureau, en local uniquement :** valider ou refuser agit sur les sessions, cela suit donc le même
   verrou que le terminal (bind local, `Host` local, pas de proxys ni de tunnels) et n'existe qu'avec le hook de
-  permission (celui du plugin `habblaud-permissoes` ou celui de l'ancienne méthode) installé par vous. Les réponses
+  permission (celui du plugin `agentforge-permissoes` ou celui de l'ancienne méthode) installé par vous. Les réponses
   exigent du JSON et une origine locale (un site ouvert dans le navigateur ne peut pas les envoyer), le hook ne parle
-  qu'à `127.0.0.1` et, dans le doute — Habblaud hors service, erreur, délai écoulé —, il se termine sans décider : c'est
+  qu'à `127.0.0.1` et, dans le doute — AgentForge hors service, erreur, délai écoulé —, il se termine sans décider : c'est
   le terminal qui compte. La commande complète ou le diff ne sortent du serveur que pour qui a ouvert la page depuis
   l'ordinateur lui-même. « Toujours autoriser » n'applique qu'une règle que Claude Code lui-même a proposée pour cette
   demande. Attention : tout programme ou toute personne capable d'ouvrir `http://localhost:4747` sur cette machine peut
@@ -915,47 +915,47 @@ avec `no-new-privileges`. Les métadonnées des comptes (lettre, e-mail, organis
   **n'importe quel programme de cette machine** qui parle à `http://localhost:4747` — y compris un agent qui exécute une
   commande — peut déposer un message pour une autre session qui a le plugin. Si cela ne vous convient pas (ordinateur
   partagé, agents qui tournent sans supervision), n'installez pas le plugin (`npm run mod:install -- --sem-mensagens`)
-  ou désactivez-le avec `HABBLAUD_MENSAGENS=0`. Le texte des messages n'est pas enregistré : il disparaît du serveur dès
+  ou désactivez-le avec `AGENTFORGE_MENSAGENS=0`. Le texte des messages n'est pas enregistré : il disparaît du serveur dès
   qu'il est remis.
-  Depuis le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes), seulement avec `messages` dans `HABBLAUD_REMOTE_ALLOW`.
-- **Terminal interactif, sur activation — avec un avertissement :** avec `HABBLAUD_PTY=1`, le bureau ouvre Claude Code
+  Depuis le [téléphone avec connexion](#téléphone-avec-connexion-et-https-valider-les-demandes), seulement avec `messages` dans `AGENTFORGE_REMOTE_ALLOW`.
+- **Terminal interactif, sur activation — avec un avertissement :** avec `AGENTFORGE_PTY=1`, le bureau ouvre Claude Code
   dans n'importe quel dossier, y tape (y compris `!comando`, qui s'exécute dans le shell) et ferme ou reprend des
   sessions ouvertes dans d'autres terminaux. Cela suit le même verrou que le terminal (bind local, `Host` local, pas de
   proxys ni de tunnels) et chaque requête doit venir de l'ordinateur lui-même, avec une origine locale (un site ouvert
   dans le navigateur ne peut pas en envoyer). Malgré tout, **n'importe quel programme de cette machine** qui parle à
   `http://localhost:4747` — y compris un agent qui exécute une commande — obtient ce pouvoir. Avant de mettre fin à un
-  processus externe, Habblaud vérifie dans le registre des sessions et dans le système que ce PID correspond toujours à
+  processus externe, AgentForge vérifie dans le registre des sessions et dans le système que ce PID correspond toujours à
   ce Claude Code (même démarrage et même exécutable). Sur des ordinateurs partagés ou avec des agents qui tournent sans
   supervision, laissez-le désactivé.
 - **Téléphone avec connexion, sur activation :** n'existe qu'après `npm run remote:setup`. Un second port avec HTTPS
   (une CA locale qui ne signe que les noms `.local`, `localhost`, votre propre adresse et les IP privées), un
   identifiant et un mot de passe (seul le hash scrypt est conservé) ; la session est un cookie `HttpOnly`,
-  `SameSite=Strict` et `Secure` signé avec HMAC. Sur ce port, ce qui est autorisé vient de `HABBLAUD_REMOTE_ALLOW` (par
+  `SameSite=Strict` et `Secure` signé avec HMAC. Sur ce port, ce qui est autorisé vient de `AGENTFORGE_REMOTE_ALLOW` (par
   défaut, seulement répondre aux demandes de permission), jamais de l'en-tête Host ; les routes des hooks, des plugins
   et de l'auxiliaire de l'hôte, le terminal interactif, l'éditeur de personnage et le renommage des salles ne
   fonctionnent jamais par ce port. Qui a le mot de passe obtient ce que vous avez autorisé : choisissez-en un robuste
-  et n'autorisez que le nécessaire. La clé de la CA reste dans `~/.habblaud/remote-tls/ca` et n'entre jamais dans le
+  et n'autorisez que le nécessaire. La clé de la CA reste dans `~/.agentforge/remote-tls/ca` et n'entre jamais dans le
   conteneur.
-- **Nouvel agent, sur activation :** avec `HABBLAUD_PTY=1`, le bureau lance des sessions Claude Code avec la demande
+- **Nouvel agent, sur activation :** avec `AGENTFORGE_PTY=1`, le bureau lance des sessions Claude Code avec la demande
   que vous avez écrite, dans le dossier que vous choisissez — le même avertissement que pour le terminal interactif
-  s'applique. Les pièces jointes sont écrites dans `~/.habblaud/attachments/` (dossier 700, fichiers 600). Dans Docker,
+  s'applique. Les pièces jointes sont écrites dans `~/.agentforge/attachments/` (dossier 700, fichiers 600). Dans Docker,
   c'est l'auxiliaire de l'hôte (`npm run codex:bridge`) qui lance les sessions ; il ne lit les fichiers des livraisons
   que dans les dossiers de projet connus (ceux que Claude Code a dans `<conta>/projects`), le dossier temporaire et les
   pièces jointes.
 - **Éditeur de personnage, en local uniquement :** enregistrer ou revenir au tirage au sort modifie le bureau et écrit
   dans `names.json`, cela suit donc le même verrou que le terminal (bind local, `Host` local, pas de proxys ni de
   tunnels) : sans lui, le crayon n'apparaît pas et le serveur répond `403`. Les modifications exigent du JSON et une
-  origine locale. `HABBLAUD_TERMINAL=0` le désactive aussi.
+  origine locale. `AGENTFORGE_TERMINAL=0` le désactive aussi.
 - **Statistiques de Ma journée :** uniquement des chiffres agrégés (temps par statut, comptages, tokens, coût) avec les
-  noms de projet, de compte et d'agent, conservés dans `HABBLAUD_DATA_DIR/stats/` pendant 30 jours — rien de la conversation.
-- **Codex :** Habblaud ne lit que les conversations (`sessions/`, `archived_sessions/`) et les verrous des sessions
+  noms de projet, de compte et d'agent, conservés dans `AGENTFORGE_DATA_DIR/stats/` pendant 30 jours — rien de la conversation.
+- **Codex :** AgentForge ne lit que les conversations (`sessions/`, `archived_sessions/`) et les verrous des sessions
   ouvertes (`thread-writer-locks/`) ; dans Docker, seuls ces trois dossiers sont montés, en lecture seule. Il ne lit
   jamais `auth.json`, `config.toml`, l'environnement du shell (`shell_snapshots/`), l'historique des prompts, les
   journaux ni les bases de données de Codex, et n'affiche pas les identifiants du compte ChatGPT. `npm run codex:install`
   ne fait qu'ajouter des groupes dans `hooks.json` (avec sauvegarde ; ceux des autres applis restent à leur place) et
-  écrit `~/.habblaud/codex-hook.json` ; la validation des hooks vous revient toujours, dans `/hooks`. Les hooks ne
+  écrit `~/.agentforge/codex-hook.json` ; la validation des hooks vous revient toujours, dans `/hooks`. Les hooks ne
   parlent qu'à `127.0.0.1`. Les messages à Codex appellent le même avertissement que ceux de Claude Code : n'importe
-  quel programme de cette machine qui parle à Habblaud peut déposer un message dans la file d'une session.
+  quel programme de cette machine qui parle à AgentForge peut déposer un message dans la file d'une session.
 - **Ce qui apparaît à l'écran :** des résumés des activités (outil, fichier, commande ou requête), les titres des
   sessions, les tâches et les statistiques (et, dans le terminal, la conversation). N'exposez pas le port sur des réseaux
   auxquels vous ne faites pas confiance.
@@ -970,9 +970,9 @@ avec `no-new-privileges`. Les métadonnées des comptes (lettre, e-mail, organis
 | `npm run build` / `npm start` | Compile et lance la version de production. |
 | `npm test` | Tests (Vitest). |
 | `npm run typecheck` | Vérification des types du client, du serveur et des scripts. |
-| `claude plugin test mod/habblaud` | Tests du mod (sans session, compte ni réseau) ; idem pour `mod/habblaud-mensagens`. |
-| `claude plugin validate .` | Valide le marketplace (`.claude-plugin/marketplace.json`) ; avec `mod/habblaud`, `mod/habblaud-permissoes` ou `mod/habblaud-mensagens`, valide le plugin et liste les événements et les appels du mod. |
-| `claude --plugin-dir mod/habblaud` | Ouvre une session avec le mod de ce dossier, sans l'installer (modifiez-le puis lancez `/reload-plugins`). |
+| `claude plugin test mod/agentforge` | Tests du mod (sans session, compte ni réseau) ; idem pour `mod/agentforge-mensagens`. |
+| `claude plugin validate .` | Valide le marketplace (`.claude-plugin/marketplace.json`) ; avec `mod/agentforge`, `mod/agentforge-permissoes` ou `mod/agentforge-mensagens`, valide le plugin et liste les événements et les appels du mod. |
+| `claude --plugin-dir mod/agentforge` | Ouvre une session avec le mod de ce dossier, sans l'installer (modifiez-le puis lancez `/reload-plugins`). |
 | `npm run mod:status` | Affiche, par compte, le marketplace, les plugins et les versions installées. |
 | `npm run demo:timeline` | Génère une chronologie fictive (simulateur du mode démonstration) pour le timelapse. |
 | `npm run release` | Publie la version du `package.json` sur GitHub (tag et release avec les notes du `CHANGELOG.md`). |
@@ -981,25 +981,25 @@ Pour prendre des captures d'écran sans ouvrir votre navigateur, `scripts/shot.m
 (Playwright). La première fois, téléchargez le navigateur (une seule fois suffit) : `npx playwright-core install chromium-headless-shell`.
 
 ```bash
-node scripts/shot.mjs 'http://localhost:4747/?mock=1&speed=3' /tmp/habblaud.png --size 1400x900 --wait 4000
+node scripts/shot.mjs 'http://localhost:4747/?mock=1&speed=3' /tmp/agentforge.png --size 1400x900 --wait 4000
 ```
 
-Dans la console du navigateur, `habblaud.world.debug` propose des outils pour tester des scènes (ex. :
-`habblaud.world.debug.setHour(21)` pour voir la nuit). Pour fixer l'heure dès l'ouverture, utilisez `?hora=21:30` dans l'URL.
+Dans la console du navigateur, `agentforge.world.debug` propose des outils pour tester des scènes (ex. :
+`agentforge.world.debug.setHour(21)` pour voir la nuit). Pour fixer l'heure dès l'ouverture, utilisez `?hora=21:30` dans l'URL.
 
 **Timelapse avec des données fictives uniquement** (ex. : pour enregistrer un GIF) : `npm run demo:timeline` lance le
 simulateur du mode démonstration hors ligne et enregistre une journée entière (par défaut, hier de 9 h à 19 h, avec une
-matinée chargée, un déjeuner plus calme et un pic l'après-midi) dans `<tmp>/habblaud-demo/timeline/`. Lancez ensuite un
-Habblaud qui ne lit que ce dossier et n'affiche pas vos sessions, puis ouvrez le Timelapse :
+matinée chargée, un déjeuner plus calme et un pic l'après-midi) dans `<tmp>/agentforge-demo/timeline/`. Lancez ensuite un
+AgentForge qui ne lit que ce dossier et n'affiche pas vos sessions, puis ouvrez le Timelapse :
 
 ```bash
-npm run demo:timeline -- --data-dir /tmp/habblaud-demo        # opções: --date, --start 8:30, --hours, --sessions, --seed
-mkdir -p /tmp/habblaud-demo/vazio
-HABBLAUD_DATA_DIR=/tmp/habblaud-demo HABBLAUD_TIMELINE=0 HABBLAUD_CLAUDE_DIRS=/tmp/habblaud-demo/vazio \
-  HABBLAUD_PORT=4848 npm start                                 # depois de npm run build; abra http://localhost:4848
+npm run demo:timeline -- --data-dir /tmp/agentforge-demo        # opções: --date, --start 8:30, --hours, --sessions, --seed
+mkdir -p /tmp/agentforge-demo/vazio
+AGENTFORGE_DATA_DIR=/tmp/agentforge-demo AGENTFORGE_TIMELINE=0 AGENTFORGE_CLAUDE_DIRS=/tmp/agentforge-demo/vazio \
+  AGENTFORGE_PORT=4848 npm start                                 # depois de npm run build; abra http://localhost:4848
 ```
 
-`HABBLAUD_TIMELINE=0` évite d'écrire dans ce dossier ; avec l'enregistrement activé, les jours de plus de 7 jours sont supprimés.
+`AGENTFORGE_TIMELINE=0` évite d'écrire dans ce dossier ; avec l'enregistrement activé, les jours de plus de 7 jours sont supprimés.
 
 **Publier une version :** chaque version a sa section dans [`CHANGELOG.md`](CHANGELOG.md), avec ce qu'elle apporte.
 Pendant le travail, notez les changements sous « Não lançado » (non publié). Pour publier :
@@ -1009,7 +1009,7 @@ Pendant le travail, notez les changements sous « Não lançado » (non publié)
    au-dessus et mettez à jour les liens de la fin. `npm test` échoue si la version du `package.json` n'a pas de section.
 3. Faites le merge dans `main` et lancez `npm run release` (nécessite [`gh`](https://cli.github.com/) authentifié ; `-- --dry-run`
    affiche seulement les notes). Le script crée le tag `v0.3.0` et la release avec le texte de la section. À partir de
-   là, les utilisateurs de Habblaud voient le badge **Nouvelle version**.
+   là, les utilisateurs de AgentForge voient le badge **Nouvelle version**.
 
 ## Dépannage
 
@@ -1018,7 +1018,7 @@ Pendant le travail, notez les changements sous « Não lançado » (non publié)
 
 Seules les sessions **ouvertes** de Claude Code apparaissent. Vérifiez qu'il y en a une en cours et que le compte a été
 détecté dans `http://localhost:4747/api/health`. Si les dossiers des comptes se trouvent ailleurs, utilisez
-`HABBLAUD_CLAUDE_DIRS=/caminho/conta1,/caminho/conta2`.
+`AGENTFORGE_CLAUDE_DIRS=/caminho/conta1,/caminho/conta2`.
 
 </details>
 
@@ -1038,7 +1038,7 @@ la place du pourcentage signifie que la fenêtre s'est réinitialisée depuis la
 Lancez `npm run mod:status` : il affiche la version de Claude Code (le mod nécessite la 2.1.287 ou plus récente) et, par
 compte, si le marketplace pointe vers ce dossier et si les plugins sont installés et activés. Dans une session ouverte
 avant l'installation, lancez `/reload-plugins` ; `/plugin` affiche, sous les onglets, les mods chargés (ex. :
-`1 mod active · habblaud`). Les mods ne tournent pas avec `"disableAllHooks": true` dans le `settings.json` du compte ni avec
+`1 mod active · agentforge`). Les mods ne tournent pas avec `"disableAllHooks": true` dans le `settings.json` du compte ni avec
 `claude --safe-mode`.
 
 </details>
@@ -1046,8 +1046,8 @@ avant l'installation, lancez `/reload-plugins` ; `/plugin` affiche, sous les ong
 <details>
 <summary><b>« Le port 4747 est déjà utilisé »</b></summary>
 
-Un autre Habblaud (Node ou Docker) tourne déjà. Arrêtez-le (`npm run docker:down`, ou Ctrl+C dans le terminal de
-`npm start`) ou utilisez un autre port : `HABBLAUD_PORT=4848 npm run docker:up` (Docker) ou `HABBLAUD_PORT=4848 npm start`
+Un autre AgentForge (Node ou Docker) tourne déjà. Arrêtez-le (`npm run docker:down`, ou Ctrl+C dans le terminal de
+`npm start`) ou utilisez un autre port : `AGENTFORGE_PORT=4848 npm run docker:up` (Docker) ou `AGENTFORGE_PORT=4848 npm start`
 (Node).
 
 </details>
@@ -1055,9 +1055,9 @@ Un autre Habblaud (Node ou Docker) tourne déjà. Arrêtez-le (`npm run docker:d
 <details>
 <summary><b>Ça ne s'ouvre pas sur le téléphone</b></summary>
 
-Vérifiez que vous avez créé le `.env` avec `HABBLAUD_BIND=0.0.0.0` et recréé le conteneur (`npm run docker:up -- --no-build`), que
+Vérifiez que vous avez créé le `.env` avec `AGENTFORGE_BIND=0.0.0.0` et recréé le conteneur (`npm run docker:up -- --no-build`), que
 le téléphone est sur le même Wi-Fi et que le pare-feu de l'ordinateur autorise les connexions sur le port 4747. Par IP,
-ça marche directement ; pour l'ouvrir par un nom (ex. : `meu-mac.local`), ajoutez `HABBLAUD_ALLOWED_HOSTS=meu-mac.local`
+ça marche directement ; pour l'ouvrir par un nom (ex. : `meu-mac.local`), ajoutez `AGENTFORGE_ALLOWED_HOSTS=meu-mac.local`
 (dans Docker, dans le même `.env`).
 
 </details>
@@ -1065,9 +1065,9 @@ le téléphone est sur le même Wi-Fi et que le pare-feu de l'ordinateur autoris
 <details>
 <summary><b>Le terminal ne s'ouvre pas</b></summary>
 
-Le terminal n'existe que si Habblaud est accessible uniquement depuis l'ordinateur lui-même. Vérifiez que le `.env` ne
-contient pas `HABBLAUD_BIND=0.0.0.0` (ou, en mode Node, que vous n'avez pas utilisé `HABBLAUD_HOST=0.0.0.0`) ni
-`HABBLAUD_TERMINAL=0`, et ouvrez via `http://localhost:4747` (par l'IP du réseau ou par un nom de `HABBLAUD_ALLOWED_HOSTS`,
+Le terminal n'existe que si AgentForge est accessible uniquement depuis l'ordinateur lui-même. Vérifiez que le `.env` ne
+contient pas `AGENTFORGE_BIND=0.0.0.0` (ou, en mode Node, que vous n'avez pas utilisé `AGENTFORGE_HOST=0.0.0.0`) ni
+`AGENTFORGE_TERMINAL=0`, et ouvrez via `http://localhost:4747` (par l'IP du réseau ou par un nom de `AGENTFORGE_ALLOWED_HOSTS`,
 il est refusé). Dans Docker, un conteneur créé avant l'arrivée de cette fonction doit être recréé : `npm run docker:up`.
 Le journal de démarrage (`npm run docker:logs`) indique si le terminal est activé et, s'il ne l'est pas, pourquoi.
 
@@ -1076,12 +1076,12 @@ Le journal de démarrage (`npm run docker:logs`) indique si le terminal est acti
 <details>
 <summary><b>La demande de permission (ou la question) n'apparaît pas dans le bureau</b></summary>
 
-Lancez `npm run mod:status` : il indique, par compte, si le plugin `habblaud-permissoes` est installé et activé (et s'il
-reste l'ancien hook à côté, ce qui ferait répondre deux mécanismes) et si Habblaud traite les demandes. Avec l'ancienne
+Lancez `npm run mod:status` : il indique, par compte, si le plugin `agentforge-permissoes` est installé et activé (et s'il
+reste l'ancien hook à côté, ce qui ferait répondre deux mécanismes) et si AgentForge traite les demandes. Avec l'ancienne
 méthode, `npm run hooks:status` indique si le hook est installé et pointe vers ce dossier. La demande n'est détournée
-qu'avec une page de Habblaud ouverte via `http://localhost` (ou `127.0.0.1`) et avec le terminal activé (même verrou).
+qu'avec une page de AgentForge ouverte via `http://localhost` (ou `127.0.0.1`) et avec le terminal activé (même verrou).
 Les sessions ouvertes avant l'installation chargent le plugin avec `/reload-plugins` (ou à leur réouverture). Avec
-l'ancienne méthode, si Habblaud utilise un autre port, réinstallez avec `npm run hooks:install -- --port <porta>`. Pour
+l'ancienne méthode, si AgentForge utilise un autre port, réinstallez avec `npm run hooks:install -- --port <porta>`. Pour
 les questions de l'agent, le plugin doit être celui de la 0.6.0 ou plus récent : lancez `npm run mod:install` après la
 mise à jour.
 
@@ -1090,8 +1090,8 @@ mise à jour.
 <details>
 <summary><b>Codex n'apparaît pas dans le bureau (ou apparaît avec du retard)</b></summary>
 
-Le journal de démarrage (`npm run docker:logs`) indique combien de comptes Codex Habblaud a trouvés ; s'il n'en a trouvé
-aucun, indiquez le dossier avec `HABBLAUD_CODEX_DIRS` (et relancez `npm run docker:up` : dans Docker, seuls les dossiers
+Le journal de démarrage (`npm run docker:logs`) indique combien de comptes Codex AgentForge a trouvés ; s'il n'en a trouvé
+aucun, indiquez le dossier avec `AGENTFORGE_CODEX_DIRS` (et relancez `npm run docker:up` : dans Docker, seuls les dossiers
 qui existaient au moment du `docker:up` sont montés). Sans les hooks, Codex apparaît via ses fichiers, qui ne sont écrits
 qu'après chaque étape : lancez `npm run codex:install`, **validez les hooks dans `/hooks` dans Codex** et vérifiez avec
 `npm run codex:status`. Codex lance les hooks via le shell de connexion, qui peut avoir un vieux Node ; `codex:install`
@@ -1104,12 +1104,12 @@ de la session), et sans dossier, pas de salle.
 <details>
 <summary><b>La zone de message n'apparaît pas (ou reste en file)</b></summary>
 
-La zone n'apparaît que pour les agents principaux dont la session a le plugin `habblaud-mensagens` connecté : lancez
-`npm run mod:status` (il indique, par compte, si le plugin est installé et si Habblaud a les messages activés) et, dans
+La zone n'apparaît que pour les agents principaux dont la session a le plugin `agentforge-mensagens` connecté : lancez
+`npm run mod:status` (il indique, par compte, si le plugin est installé et si AgentForge a les messages activés) et, dans
 les sessions ouvertes avant l'installation, `/reload-plugins`. Sans le plugin, les détails de l'agent affichent l'astuce
-d'installation. Les messages suivent le verrou du terminal et `HABBLAUD_MENSAGENS=0` les désactive ; le journal de
+d'installation. Les messages suivent le verrou du terminal et `AGENTFORGE_MENSAGENS=0` les désactive ; le journal de
 démarrage (`npm run docker:logs`) indique s'ils sont activés et, sinon, pourquoi. Un message qui reste **en file** puis
-échoue avec « la session n'a pas récupéré le message » signifie que la session a cessé d'interroger Habblaud (elle a été
+échoue avec « la session n'a pas récupéré le message » signifie que la session a cessé d'interroger AgentForge (elle a été
 fermée, ou le plugin a été désactivé).
 
 </details>
@@ -1118,7 +1118,7 @@ fermée, ou le plugin a été désactivé).
 <summary><b>Dans Docker, une session fermée reste dans le bureau</b></summary>
 
 Cela arrive si Claude Code a été arrêté de force sans supprimer sa propre entrée dans `sessions/` (dans Docker, impossible
-de vérifier si le processus existe encore). En lançant avec Node (`npm start`), Habblaud vérifie les processus et cela
+de vérifier si le processus existe encore). En lançant avec Node (`npm start`), AgentForge vérifie les processus et cela
 n'arrive pas.
 
 </details>
@@ -1134,19 +1134,19 @@ Docker Desktop ne partage que certains dossiers du Mac avec les conteneurs (par 
 <details>
 <summary><b>Je veux repartir de zéro</b></summary>
 
-`npm run docker:down`, puis `docker volume rm habblaud_habblaud-data` (supprime les noms enregistrés) et
+`npm run docker:down`, puis `docker volume rm agentforge_agentforge-data` (supprime les noms enregistrés) et
 `npm run docker:up`.
 
 </details>
 
 ## Avertissement
 
-Habblaud est un projet indépendant, **ni affilié à Anthropic, ni sponsorisé ou approuvé par elle**. « Claude » et
+AgentForge est un projet indépendant, **ni affilié à Anthropic, ni sponsorisé ou approuvé par elle**. « Claude » et
 « Claude Code » sont des marques d'Anthropic, utilisées ici uniquement pour décrire ce avec quoi le projet fonctionne.
 
-Pour afficher les agents, Habblaud lit uniquement des fichiers locaux que Claude Code écrit lui-même sur votre machine
+Pour afficher les agents, AgentForge lit uniquement des fichiers locaux que Claude Code écrit lui-même sur votre machine
 (registres des sessions ouvertes, transcripts et configurations des comptes). Ce format n'est pas documenté et peut changer d'une version de Claude Code à l'autre :
-après une mise à jour, Habblaud peut cesser de fonctionner, totalement ou partiellement, jusqu'à ce qu'il soit adapté.
+après une mise à jour, AgentForge peut cesser de fonctionner, totalement ou partiellement, jusqu'à ce qu'il soit adapté.
 
 ## Licence
 
@@ -1163,7 +1163,7 @@ quand la commande se termine — ou quand vous envoyez une nouvelle demande à q
 on m'appelle ! 🏃 ») et retourne en courant à son bureau.
 
 <p align="center">
-  <img src="docs/screenshots/social-lounge.gif" width="816" alt="Le salon de Habblaud avec trois groupes en même temps : trois collègues sur le canapé regardent le foot à la télé (l'écran fait clignoter GOL), une partie de ping-pong avec des supporters et un duel sur les bornes d'arcade avec des provocations dans les bulles" />
+  <img src="docs/screenshots/social-lounge.gif" width="816" alt="Le salon de AgentForge avec trois groupes en même temps : trois collègues sur le canapé regardent le foot à la télé (l'écran fait clignoter GOL), une partie de ping-pong avec des supporters et un duel sur les bornes d'arcade avec des provocations dans les bulles" />
 </p>
 
 ### Les activités de groupe
@@ -1225,7 +1225,7 @@ Chaque gain apparaît sous la forme « +🪙10 » au-dessus de la tête ; les pa
 d'activité. Le solde, le score et le relevé sont enregistrés dans le navigateur (chaque navigateur a sa propre économie :
 c'est là que les paris sont tirés au sort) et sont oubliés trois jours après le départ de l'agent.
 
-> Tout cela n'est que de la mise en scène de Habblaud : rien ne change pour les agents Claude Code, qui continuent de travailler normalement.
+> Tout cela n'est que de la mise en scène de AgentForge : rien ne change pour les agents Claude Code, qui continuent de travailler normalement.
 
 ---
 

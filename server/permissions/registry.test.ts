@@ -80,8 +80,8 @@ const ASK_INPUT = {
 
 const askInput = (over: Record<string, unknown> = {}) => hookInput({ tool_name: 'AskUserQuestion', tool_input: ASK_INPUT, permission_suggestions: [], ...over });
 
-describe('PermissionRegistry: registro', () => {
-  it('sem página local aberta, com sessão desconhecida ou AskUserQuestion sem perguntas para mostrar: não desvia (skip)', () => {
+describe('PermissionRegistry: registration', () => {
+  it('no local page open, unknown session, or AskUserQuestion with no questions to show: no reroute (skip)', () => {
     const { registry, setViewers } = setup({ viewers: 0 });
     expect(registry.register(hookInput())).toEqual({ skip: 'no-viewers' });
     setViewers(2);
@@ -94,14 +94,14 @@ describe('PermissionRegistry: registro', () => {
     expect(registry.size).toBe(0);
   });
 
-  it('corpo inválido lança (vira 400 na rota)', () => {
+  it('invalid body throws (becomes 400 on the route)', () => {
     const { registry } = setup();
     expect(() => registry.register({})).toThrow(/session_id/);
     expect(() => registry.register(null)).toThrow();
     expect(() => registry.register({ session_id: SESSION })).toThrow();
   });
 
-  it('publica no snapshot: status waiting, título e resumo, sugestão, SEM os argumentos; feed e aviso', () => {
+  it('publishes in the snapshot: status waiting, title and summary, suggestion, WITHOUT the arguments; feed and notice', () => {
     const { office, registry, clock } = setup();
     office.commit();
     const r = registry.register(hookInput({ tool_input: { command: 'curl -H "Authorization: Bearer abcdef123456" https://api.x' } }));
@@ -110,7 +110,7 @@ describe('PermissionRegistry: registro', () => {
     const commit = office.commit();
     const a = commit.snapshot.agents.find((x) => x.id === MAIN)!;
     expect(a.status).toBe('waiting');
-    expect(a.waitingFor).toBe('aprovar uma permissão');
+    expect(a.waitingFor).toBe('approve a permission');
     expect(a.permission).toMatchObject({ id, tool: 'Bash', createdAt: clock.now(), expiresAt: clock.now() + 60_000 });
     expect(a.permission!.title).toMatch(/^Bash\(curl/);
     expect(a.permission!.title).not.toContain('abcdef123456');
@@ -122,12 +122,12 @@ describe('PermissionRegistry: registro', () => {
     expect(d.input).toContain('Authorization: ***');
     expect(d.input).not.toContain('abcdef123456');
     // Feed e aviso.
-    expect(commit.feed.map((f) => f.activity.text)).toEqual([expect.stringMatching(/^Pede permissão:/)]);
-    expect(commit.notices.map((n) => n.text)).toEqual([expect.stringMatching(/^🔐 .+ pede permissão em loja:/)]);
+    expect(commit.feed.map((f) => f.activity.text)).toEqual([expect.stringMatching(/^Asks for permission:/)]);
+    expect(commit.notices.map((n) => n.text)).toEqual([expect.stringMatching(/^🔐 .+ asks for permission in loja:/)]);
     expect(commit.notices[0]).toMatchObject({ level: 'alert', agentId: MAIN });
   });
 
-  it('subagente acompanhado recebe o pedido; desconhecido vai para o principal com o tipo', () => {
+  it('watched subagent receives the request; unknown goes to the main with the type', () => {
     const { office, registry } = setup();
     office.addSub({ id: SUB, parentId: MAIN, sessionId: SESSION, role: 'Explore', background: true, startedAt: 0 });
     const a = registered(registry.register(hookInput({ agent_id: 'a1b2c3', agent_type: 'Explore' })));
@@ -141,7 +141,7 @@ describe('PermissionRegistry: registro', () => {
     expect(main.permission).toMatchObject({ id: b, subagent: 'Plan' });
   });
 
-  it('vários pedidos do mesmo agente: o mais antigo no snapshot, com quantos esperam depois', () => {
+  it('several requests from the same agent: the oldest in the snapshot, with how many wait after', () => {
     const { office, registry, clock } = setup();
     const first = registered(registry.register(hookInput()));
     clock.advance(10);
@@ -154,7 +154,7 @@ describe('PermissionRegistry: registro', () => {
     expect(snapAgent(office, MAIN)!.permission!.queued).toBeUndefined();
   });
 
-  it('pedidos do mesmo agente no mesmo milissegundo: só o primeiro tem outros esperando', () => {
+  it('requests from the same agent in the same millisecond: only the first has others waiting', () => {
     const { registry } = setup();
     const first = registered(registry.register(hookInput()));
     const second = registered(registry.register(hookInput({ tool_input: { command: 'npm run build' } }))); // sem avançar o relógio
@@ -162,7 +162,7 @@ describe('PermissionRegistry: registro', () => {
     expect(registry.detail(second)!.queued).toBeUndefined();
   });
 
-  it('limite de pedidos abertos', () => {
+  it('open request limit', () => {
     const { office } = setup();
     const r = new PermissionRegistry({ office, viewers: () => 1, maxPending: 2 });
     registered(r.register(hookInput()));
@@ -171,8 +171,8 @@ describe('PermissionRegistry: registro', () => {
   });
 });
 
-describe('PermissionRegistry: decisões e esperas do hook', () => {
-  it('aprovar entrega a decisão a quem espera e tira o pedido do snapshot (o status volta)', async () => {
+describe('PermissionRegistry: hook decisions and waits', () => {
+  it('approving delivers the decision to whoever waits and removes the request from the snapshot (status returns)', async () => {
     const { office, registry } = setup();
     const id = registered(registry.register(hookInput()));
     const w = registry.wait(id, 25_000)!;
@@ -183,10 +183,10 @@ describe('PermissionRegistry: decisões e esperas do hook', () => {
     expect(a.status).toBe('working');
     expect(registry.wait(id, 10)).toBeUndefined();
     expect(registry.decide(id, { behavior: 'deny' })).toBe('not-found');
-    expect(office.detail(MAIN)!.history.map((h) => h.text)).toContain('Aprovado no Habblaud (sempre permitir)');
+    expect(office.detail(MAIN)!.history.map((h) => h.text)).toContain('Approved in AgentForge (always allow)');
   });
 
-  it('recusa com motivo e interrupção; decisão sem ninguém esperando fica guardada para a próxima espera', async () => {
+  it('refusal with reason and interruption; decision with nobody waiting stays saved for the next wait', async () => {
     const { registry } = setup();
     const id = registered(registry.register(hookInput()));
     expect(registry.decide(id, { behavior: 'deny', message: 'use pnpm', interrupt: true })).toBe('ok');
@@ -196,7 +196,7 @@ describe('PermissionRegistry: decisões e esperas do hook', () => {
     expect(registry.wait(id, 10)).toBeUndefined();
   });
 
-  it('"responder no terminal" libera o hook sem decisão', async () => {
+  it('"answer in the terminal" releases the hook without a decision', async () => {
     const { office, registry } = setup();
     const id = registered(registry.register(hookInput()));
     const w = registry.wait(id, 25_000)!;
@@ -205,14 +205,14 @@ describe('PermissionRegistry: decisões e esperas do hook', () => {
     expect(snapAgent(office, MAIN)!.permission).toBeUndefined();
   });
 
-  it('sugestão que não existe no pedido: inválida', () => {
+  it('suggestion that does not exist in the request: invalid', () => {
     const { registry } = setup();
     const id = registered(registry.register(hookInput({ permission_suggestions: [] })));
     expect(registry.decide(id, { behavior: 'allow', suggestion: 0 })).toBe('invalid');
     expect(registry.decide(id, { behavior: 'allow' })).toBe('ok');
   });
 
-  it('espera sem decisão responde "pending" no tempo pedido', async () => {
+  it('wait without a decision answers "pending" in the requested time', async () => {
     const { registry } = setup();
     const id = registered(registry.register(hookInput()));
     const t0 = Date.now();
@@ -221,14 +221,14 @@ describe('PermissionRegistry: decisões e esperas do hook', () => {
   });
 });
 
-describe('PermissionRegistry: perguntas (AskUserQuestion)', () => {
-  it('publica as perguntas com as posições do original (mascaradas): espera "responder uma pergunta"; feed e aviso de pergunta', () => {
+describe('PermissionRegistry: questions (AskUserQuestion)', () => {
+  it('publishes the questions with the original positions (masked): waits "answer a question"; question feed and notice', () => {
     const { office, registry } = setup();
     office.commit();
     const id = registered(registry.register(askInput()));
     const commit = office.commit();
     const a = commit.snapshot.agents.find((x) => x.id === MAIN)!;
-    expect(a).toMatchObject({ status: 'waiting', waitingFor: 'responder uma pergunta' });
+    expect(a).toMatchObject({ status: 'waiting', waitingFor: 'answer a question' });
     expect(a.permission).toMatchObject({ id, tool: 'AskUserQuestion', icon: '❓' });
     expect(a.permission!.suggestions).toBeUndefined();
     const qs = a.permission!.questions!;
@@ -236,12 +236,12 @@ describe('PermissionRegistry: perguntas (AskUserQuestion)', () => {
     expect(qs[0]!.question).not.toContain('abcdef123456');
     expect(qs[0]!.multiSelect).toBeUndefined();
     expect(qs[1]).toMatchObject({ header: 'Testes', multiSelect: true, options: [{ index: 0, label: 'Unidade' }, { index: 2, label: 'E2E' }] });
-    expect(commit.feed.map((f) => f.activity)).toEqual([expect.objectContaining({ icon: '❓', text: expect.stringMatching(/^Pergunta: Qual banco usar\?/) })]);
-    expect(commit.notices.map((n) => n.text)).toEqual([expect.stringMatching(/^❓ .+ tem uma pergunta em loja: Qual banco usar\?/)]);
+    expect(commit.feed.map((f) => f.activity)).toEqual([expect.objectContaining({ icon: '❓', text: expect.stringMatching(/^Question: Qual banco usar\?/) })]);
+    expect(commit.notices.map((n) => n.text)).toEqual([expect.stringMatching(/^❓ .+ has a question in loja: Qual banco usar\?/)]);
     expect(commit.notices[0]!.text).not.toContain('abcdef123456');
   });
 
-  it('responder: a espera recebe as respostas por posição (normalizadas) e a linha do tempo ganha o resumo', async () => {
+  it('answering: the wait receives the answers by position (normalized) and the timeline gains the summary', async () => {
     const { office, registry } = setup();
     const id = registered(registry.register(askInput()));
     const w = registry.wait(id, 25_000)!;
@@ -258,13 +258,13 @@ describe('PermissionRegistry: perguntas (AskUserQuestion)', () => {
     const a = snapAgent(office, MAIN)!;
     expect(a.permission).toBeUndefined();
     expect(a.status).toBe('working');
-    const act = office.detail(MAIN)!.history.find((h) => h.text === 'Respondido no Habblaud')!;
+    const act = office.detail(MAIN)!.history.find((h) => h.text === 'Answered in AgentForge')!;
     expect(act).toMatchObject({ icon: '💬', kind: 'other' });
     expect(act.detail).toBe('Banco: SQLite · Testes: Unidade, E2E, “lint”');
     expect(registry.decide(id, d)).toBe('not-found');
   });
 
-  it('respostas que não batem com as perguntas, aprovar uma pergunta ou responder uma permissão: inválidas (o pedido segue aberto)', () => {
+  it('answers that do not match the questions, approving a question, or answering a permission: invalid (the request stays open)', () => {
     const { registry } = setup();
     const id = registered(registry.register(askInput()));
     const answer = (answers: unknown) => registry.decide(id, parseDecision({ behavior: 'answer', answers })!);
@@ -284,7 +284,7 @@ describe('PermissionRegistry: perguntas (AskUserQuestion)', () => {
     expect(registry.decide(id, { behavior: 'deny', message: 'decida você' })).toBe('ok');
   });
 
-  it('respondida no terminal: o principal deixa de esperar (plano B; a chamada só vai ao transcript com a resposta)', async () => {
+  it('answered in the terminal: the main stops waiting (plan B; the call only goes to the transcript with the answer)', async () => {
     const { office, registry, clock } = setup();
     const id = registered(registry.register(askInput()));
     const w = registry.wait(id, 25_000)!;
@@ -299,8 +299,8 @@ describe('PermissionRegistry: perguntas (AskUserQuestion)', () => {
   });
 });
 
-describe('PermissionRegistry: pedidos órfãos', () => {
-  it('hook que some (ninguém esperando por ORPHAN_MS) e tempo limite do hook', async () => {
+describe('PermissionRegistry: orphaned requests', () => {
+  it('hook that disappears (nobody waiting for ORPHAN_MS) and hook timeout', async () => {
     const { office, registry, clock } = setup({ orphanMs: 8_000 });
     const orphan = registered(registry.register(hookInput()));
     clock.advance(7_000);
@@ -318,7 +318,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     await expect(w.result).resolves.toEqual({ status: 'released', reason: 'expired' });
   });
 
-  it('espera cancelada (conexão fechada) conta para o órfão; agente que saiu libera o hook', async () => {
+  it('cancelled wait (closed connection) counts toward the orphan; agent that left releases the hook', async () => {
     const { office, registry, clock } = setup();
     const id = registered(registry.register(hookInput()));
     const w = registry.wait(id, 25_000)!;
@@ -332,7 +332,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     await expect(w2.result).resolves.toEqual({ status: 'released', reason: 'gone' });
   });
 
-  it('espera longa sem nenhuma página que responda: volta ao terminal depois de UNWATCHED_MS (a espera padrão não muda)', async () => {
+  it('long wait with no page to answer: goes back to the terminal after UNWATCHED_MS (the default wait does not change)', async () => {
     const { registry, clock, setViewers } = setup({ orphanMs: 60 * 60_000 });
     const long = registered(registry.register(hookInput({ timeout_ms: 86_400_000 })));
     const short = registered(registry.register(hookInput({ timeout_ms: 300_000, tool_input: { command: 'ls' } })));
@@ -349,7 +349,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     await expect(registry.wait(short, 10)!.result).resolves.not.toEqual({ status: 'released', reason: 'unwatched' });
   });
 
-  it('espera longa com celular que pode entrar depois (porta remota com permissions): continua esperando', () => {
+  it('long wait with a phone that may join later (remote port with permissions): keeps waiting', () => {
     const { registry, clock, setViewers } = setup({ orphanMs: 60 * 60_000, answerLater: true });
     registered(registry.register(hookInput({ timeout_ms: 86_400_000 })));
     setViewers(0);
@@ -359,7 +359,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     expect(registry.size).toBe(1);
   });
 
-  it('decisões não buscadas são esquecidas depois de um tempo', () => {
+  it('unfetched decisions are forgotten after a while', () => {
     const { registry, clock } = setup();
     const id = registered(registry.register(hookInput()));
     registry.decide(id, { behavior: 'allow' });
@@ -368,7 +368,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     expect(registry.wait(id, 10)).toBeUndefined();
   });
 
-  it('respondido no terminal: o tool_result da chamada aparece no transcript', async () => {
+  it('answered in the terminal: the call tool_result appears in the transcript', async () => {
     const tmp = tempDir();
     try {
       const file = join(tmp.dir, 'sess-1.jsonl');
@@ -398,7 +398,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     }
   });
 
-  it('plano B (chamada não achada no transcript): o principal esperou e deixou de esperar no registro', async () => {
+  it('plan B (call not found in the transcript): the main waited and stopped waiting in the registry', async () => {
     const { office, registry, clock } = setup();
     const id = registered(registry.register(hookInput()));
     const w = registry.wait(id, 25_000)!;
@@ -419,7 +419,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     await expect(w.result).resolves.toEqual({ status: 'released', reason: 'answered' });
   });
 
-  it('com a chamada achada no transcript, só o tool_result vale (pedidos em sequência passam por "busy")', () => {
+  it('with the call found in the transcript, only the tool_result counts (sequential requests go through "busy")', () => {
     const tmp = tempDir();
     try {
       const file = join(tmp.dir, 'sess-1.jsonl');
@@ -437,7 +437,7 @@ describe('PermissionRegistry: pedidos órfãos', () => {
     }
   });
 
-  it('stop libera quem espera', async () => {
+  it('stop releases whoever waits', async () => {
     const { registry } = setup();
     const id = registered(registry.register(hookInput()));
     const w = registry.wait(id, 25_000)!;
@@ -446,8 +446,8 @@ describe('PermissionRegistry: pedidos órfãos', () => {
   });
 });
 
-describe('peças puras', () => {
-  it('pickSuggestions: só addRules/allow em destino conhecido, com a posição original', () => {
+describe('pure pieces', () => {
+  it('pickSuggestions: only addRules/allow in a known destination, with the original position', () => {
     expect(
       pickSuggestions([
         { type: 'setMode', mode: 'acceptEdits', destination: 'session' },
@@ -471,7 +471,7 @@ describe('peças puras', () => {
     expect(parseDecision(null)).toBeUndefined();
   });
 
-  it('parseDecision: answer (posições inteiras, opções distintas em ordem, texto livre aparado até 2.000)', () => {
+  it('parseDecision: answer (whole positions, distinct options in order, free text trimmed to 2,000)', () => {
     expect(parseDecision({ behavior: 'answer', answers: [{ question: 1, options: [3, 0], other: '  x  ', extra: 1 }, { question: 0, options: [], other: ' ' }], message: 'ignorado' })).toEqual({
       behavior: 'answer',
       answers: [{ question: 1, options: [0, 3], other: 'x' }, { question: 0 }],
@@ -494,14 +494,14 @@ describe('peças puras', () => {
     expect(parseDecision({ behavior: 'answer', answers: [{ question: 0, other: ` ${'x'.repeat(2_000)} ` }] })).toBeDefined();
   });
 
-  it('callSignature: o argumento principal das ferramentas conhecidas, o resto inteiro', () => {
+  it('callSignature: the main argument of known tools, the whole rest', () => {
     expect(callSignature('Bash', { command: 'ls', description: 'a' })).toBe(callSignature('Bash', { command: 'ls', timeout: 5 }));
     expect(callSignature('Edit', { file_path: '/a.ts', old_string: 'x' })).toBe(callSignature('Edit', { file_path: '/a.ts', replace_all: false }));
     expect(callSignature('mcp__x__y', { b: 1, a: 'z' })).toBe(callSignature('mcp__x__y', { a: 'z', b: 1 }));
     expect(callSignature('mcp__x__y', { a: 'z' })).not.toBe(callSignature('mcp__x__y', { a: 'w' }));
   });
 
-  it('scanToolCall: chamada mais recente sem resultado; com o id, só confere o resultado', () => {
+  it('scanToolCall: most recent call without result; with the id, only checks the result', () => {
     const tmp = tempDir();
     try {
       const file = join(tmp.dir, 't.jsonl');

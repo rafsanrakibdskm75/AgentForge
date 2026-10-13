@@ -1,8 +1,8 @@
 // Servidor de teste para "responder pelo escritório": Office + Hub + rotas de verdade (guard, app e
 // /api/permissions) numa porta livre do 127.0.0.1, com um agente principal na sessão "sess-1".
-// Usado pelos testes das rotas e do hook (mod/habblaud-permissoes/hooks/permission-hook.mjs rodado como processo).
+// Usado pelos testes das rotas e do hook (mod/agentforge-permissoes/hooks/permission-hook.mjs rodado como processo).
 // Com `codex`, também um agente principal do Codex (conta ".codex", thread CODEX_THREAD) e a fonte do Codex ao vivo
-// (`codexLive`, um falso) para o hook do Codex (mod/habblaud-codex/hook.mjs).
+// (`codexLive`, um falso) para o hook do Codex (mod/agentforge-codex/hook.mjs).
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { AccountsService } from '../accounts/service';
@@ -74,7 +74,7 @@ export async function servePermissions(
     permissions: registry ? createPermissionRoutes(registry) : undefined,
     codexLive: opts.codexLive,
   });
-  const guard = createRequestGuard({ allowedHosts: new Set(['habblaud.lan']) });
+  const guard = createRequestGuard({ allowedHosts: new Set(['agentforge.lan']) });
   const server = http.createServer((req, res) => {
     if (guard(req, res)) return;
     if (!api(req, res, new URL(req.url ?? '/', 'http://x'))) res.writeHead(404).end();

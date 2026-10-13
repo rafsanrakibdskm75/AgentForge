@@ -1,8 +1,8 @@
 {
-  "name": "Habblaud",
-  "short_name": "Habblaud",
-  "description": "O escritório dos seus agentes: quem trabalha, quem precisa de você e o que foi entregue.",
-  "lang": "pt-BR",
+  "name": "AgentForge",
+  "short_name": "AgentForge",
+  "description": "Your agents\u2019 office: who is working, who needs you and what was delivered.",
+  "lang": "en",
   "start_url": "/?app=1",
   "scope": "/",
   "display": "standalone",

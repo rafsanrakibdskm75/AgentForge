@@ -346,7 +346,7 @@ function filesLabel(files: string[]): string | undefined {
   const names = files.filter(looksLikeFile).map((f) => basename(f) || f);
   if (!names.length) return undefined;
   if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} e ${names[1]}`;
+  if (names.length === 2) return tr('{0} e {1}', [names[0], names[1]]);
   return tr('{0} e mais {1}', [names[0], names.length - 1]);
 }
 

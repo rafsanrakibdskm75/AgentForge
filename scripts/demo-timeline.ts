@@ -3,10 +3,10 @@
 // N horas simuladas, e grava com o mesmo gravador do servidor (server/history/timeline.ts) em
 // <pasta>/timeline/AAAA-MM-DD.jsonl. Nenhum dado real entra no arquivo.
 //
-//   npm run demo:timeline                                   # ontem, das 9h às 19h, em <tmp>/habblaud-demo
+//   npm run demo:timeline                                   # ontem, das 9h às 19h, em <tmp>/agentforge-demo
 //   npm run demo:timeline -- --date 2026-10-07 --start 8:30 --hours 11 --sessions 7
 //
-// Para assistir: HABBLAUD_DATA_DIR=<pasta> HABBLAUD_TIMELINE=0 npm start (ou npm run dev) e o botão
+// Para assistir: AGENTFORGE_DATA_DIR=<pasta> AGENTFORGE_TIMELINE=0 npm start (ou npm run dev) e o botão
 // Timelapse da barra superior. Ao longo do dia o número de sessões sobe de manhã, cai no almoço, volta
 // a subir à tarde e zera no fim (sessionsAt), para o timelapse ter cara de dia de trabalho.
 import { existsSync, unlinkSync } from 'node:fs';
@@ -31,11 +31,11 @@ Opções:
   --pace X            ritmo do simulador: 1 = o do modo demonstração ao vivo (turnos de 40 s a 4 min);
                       0.25 = 4× mais lento, o de um dia de trabalho (padrão: 0.25)
   --seed N            semente (padrão: 1; a mesma semente gera o mesmo dia)
-  --data-dir PASTA    pasta de dados do Habblaud (padrão: <tmp>/habblaud-demo); o arquivo vai em PASTA/timeline/
+  --data-dir PASTA    pasta de dados do AgentForge (padrão: <tmp>/agentforge-demo); o arquivo vai em PASTA/timeline/
   --force             sobrescreve o arquivo do dia, se existir
   -h, --help          mostra esta ajuda
 
-Para assistir: HABBLAUD_DATA_DIR=PASTA HABBLAUD_TIMELINE=0 npm start e abra o Timelapse.`;
+Para assistir: AGENTFORGE_DATA_DIR=PASTA AGENTFORGE_TIMELINE=0 npm start e abra o Timelapse.`;
 
 export interface DemoTimelineOptions {
   date: string;
@@ -62,7 +62,7 @@ export function parseArgs(argv: string[], now = Date.now()): DemoTimelineOptions
     sessions: 6,
     pace: 0.25,
     seed: 1,
-    dataDir: join(tmpdir(), 'habblaud-demo'),
+    dataDir: join(tmpdir(), 'agentforge-demo'),
     force: false,
     help: false,
   };
@@ -203,10 +203,10 @@ async function main(): Promise<void> {
   }
   const t0 = Date.now();
   const r = generateDemoTimeline(opts);
-  const hhmm = (at: number) => new Date(at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const hhmm = (at: number) => new Date(at).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
   console.log(`Linha do tempo fictícia de ${opts.date}, ${hhmm(r.from)}–${hhmm(r.to)}, gerada em ${((Date.now() - t0) / 1000).toFixed(1)} s:`);
   for (const f of r.files) console.log(`  ${f}`);
-  console.log(`\nPara assistir:\n  HABBLAUD_DATA_DIR=${opts.dataDir} HABBLAUD_TIMELINE=0 npm start\ne abra o Timelapse na barra superior.`);
+  console.log(`\nPara assistir:\n  AGENTFORGE_DATA_DIR=${opts.dataDir} AGENTFORGE_TIMELINE=0 npm start\ne abra o Timelapse na barra superior.`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

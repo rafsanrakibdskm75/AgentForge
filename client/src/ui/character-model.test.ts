@@ -9,7 +9,7 @@ const OPEN = { live: true, terminal: true, local: true, replaying: false, mock: 
 const MAIN = { id: '.claude:1', kind: 'main', status: 'working' } as const;
 
 describe('canEditCharacter', () => {
-  it('só o principal real, ao vivo, com acesso local (fora do timelapse e do mock)', () => {
+  it('only the real main agent, live, with local access (outside timelapse and mock)', () => {
     expect(canEditCharacter(MAIN, OPEN)).toBe(true);
     expect(canEditCharacter({ ...MAIN, id: 's:sub', kind: 'sub' }, OPEN)).toBe(false);
     expect(canEditCharacter({ ...MAIN, id: 'demo:x-1' }, OPEN)).toBe(false);
@@ -17,14 +17,14 @@ describe('canEditCharacter', () => {
     for (const k of ['replaying', 'mock'] as const) expect(canEditCharacter(MAIN, { ...OPEN, [k]: true })).toBe(false);
   });
 
-  it('quem está saindo (offline, nos 20 s de graça) não ganha o lápis; os outros status, sim', () => {
+  it('whoever is leaving (offline, in the 20 s grace) does not get the pencil; other statuses do', () => {
     expect(canEditCharacter({ ...MAIN, status: 'offline' }, OPEN)).toBe(false);
     for (const status of ['idle', 'waiting', 'shell'] as const) expect(canEditCharacter({ ...MAIN, status }, OPEN), status).toBe(true);
   });
 });
 
 describe('changedParts', () => {
-  it('só as peças diferentes da aparência da seed, na ordem fixa', () => {
+  it('only the pieces different from the seed appearance, in fixed order', () => {
     const base = appearanceFromSeed(3, { look: 'm' });
     const skin = base.skin === '#5a3623' ? '#ffe2cc' : '#5a3623';
     const topStyle = base.topStyle === 'jacket' ? 'polo' : 'jacket';
@@ -34,16 +34,16 @@ describe('changedParts', () => {
     expect(changedParts(base, { ...base })).toEqual({});
   });
 
-  it('a ordem vem de PART_KEYS, não da ordem das chaves da aparência editada', () => {
+  it('the order comes from PART_KEYS, not from the edited appearance key order', () => {
     const base = appearanceFromSeed(3, { look: 'm' });
     const shoes = base.shoes === '#101010' ? '#ffffff' : '#101010';
     const bottomStyle = base.bottomStyle === 'skirt' ? 'pants' : 'skirt';
-    // No literal da aparência `shoes` vem antes de `bottomStyle`; em PART_KEYS é o contrário.
+    // In the appearance literal `shoes` comes before `bottomStyle`; in PART_KEYS it is the opposite.
     expect(Object.keys(base).indexOf('shoes')).toBeLessThan(Object.keys(base).indexOf('bottomStyle'));
     expect(PART_KEYS.indexOf('bottomStyle')).toBeLessThan(PART_KEYS.indexOf('shoes'));
     expect(Object.keys(changedParts(base, { ...base, shoes, bottomStyle }))).toEqual(['bottomStyle', 'shoes']);
 
-    // Mesmo com as chaves da editada em ordem invertida, o resultado segue a ordem de PART_KEYS.
+    // Even with the edited one's keys in reverse order, the result follows PART_KEYS order.
     const skin = base.skin === '#5a3623' ? '#ffe2cc' : '#5a3623';
     const topStyle = base.topStyle === 'jacket' ? 'polo' : 'jacket';
     const reversed = Object.fromEntries(Object.entries({ ...base, shoes, bottomStyle, topStyle, skin }).reverse()) as unknown as typeof base;
@@ -52,27 +52,27 @@ describe('changedParts', () => {
   });
 });
 
-describe('grupos e rótulos do editor', () => {
-  it('todas as peças aparecem uma vez no editor', () => {
+describe('editor groups and labels', () => {
+  it('all pieces appear once in the editor', () => {
     const keys = EDITOR_GROUPS.flatMap((g) => g.rows.map((r) => r.key));
     expect([...keys].sort()).toEqual([...PART_KEYS].sort());
   });
 
-  it('todo estilo tem rótulo em português', () => {
+  it('every style has a label in English', () => {
     const lists = { hairStyle: HAIR_STYLES, topStyle: TOP_STYLES, bottomStyle: BOTTOM_STYLES, accessory: ACCESSORIES, facialHair: FACIAL_HAIR } as const;
     for (const [key, values] of Object.entries(lists)) {
       for (const v of values) expect(styleLabel(key as keyof typeof lists, v), `${key}=${v}`).not.toBe(v);
     }
   });
 
-  it('a cor do acessório some quando não há acessório', () => {
+  it('the accessory color disappears when there is no accessory', () => {
     const color = EDITOR_GROUPS.flatMap((g) => g.rows).find((r) => r.key === 'accessoryColor')!;
     expect(rowVisible(color, { accessory: 'none' })).toBe(false);
     expect(rowVisible(color, { accessory: 'cap' })).toBe(true);
   });
 });
 
-// Elementos mínimos para exercitar o editor no ambiente Node, sem desenho em canvas.
+// Minimal elements to exercise the editor in the Node environment, without canvas drawing.
 class EditorElement {
   className = '';
   textContent = '';
@@ -114,7 +114,7 @@ function characterEditor() {
   const button = editor.button as unknown as EditorElement;
   const input = elements.find((el) => el.className === 'ui-char__name')!;
   const error = elements.find((el) => el.className === 'ui-char__error')!;
-  const save = elements.find((el) => el.textContent === 'Salvar')!;
+  const save = elements.find((el) => el.textContent === 'Save')!;
   const reset = elements.find((el) => el.className === 'ui-link-btn ui-char__reset')!;
   const open = (id: string) => { editor.open(id); button.click(); };
   const send = (operation: 'save' | 'reset') => {
@@ -125,12 +125,12 @@ function characterEditor() {
   return { editor, button, input, error, save, open, send, settle, announce };
 }
 
-describe('respostas assíncronas do editor de personagem', () => {
+describe('async responses of the character editor', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   for (const operation of ['save', 'reset'] as const) {
     for (const next of ['b', 'a']) {
-      it.each([undefined, 'Sem conexão com o Habblaud.'])(`${operation}: resposta %s não altera a nova edição de ${next}`, async (error) => {
+      it.each([undefined, 'No connection to AgentForge.'])(`${operation}: response %s does not change the new edit of ${next}`, async (error) => {
         const ui = characterEditor();
         ui.open('a');
         ui.send(operation);
@@ -151,7 +151,7 @@ describe('respostas assíncronas do editor de personagem', () => {
       });
     }
 
-    it(`${operation}: sucesso na edição atual fecha o editor e anuncia o resultado`, async () => {
+    it(`${operation}: success in the current edit closes the editor and announces the result`, async () => {
       const ui = characterEditor();
       ui.open('a');
       ui.send(operation);
@@ -161,7 +161,7 @@ describe('respostas assíncronas do editor de personagem', () => {
       expect(ui.editor.el.hidden).toBe(true);
       expect(ui.button.getAttribute('aria-expanded')).toBe('false');
       expect(document.activeElement).toBe(ui.button);
-      expect(ui.announce).toHaveBeenCalledWith(operation === 'save' ? 'Personagem salvo: a.' : 'O personagem voltou ao sorteio.');
+      expect(ui.announce).toHaveBeenCalledWith(operation === 'save' ? 'Character saved: a.' : 'The character is back to random.');
     });
   }
 });

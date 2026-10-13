@@ -9,8 +9,8 @@ function session(p: Partial<RecentSession> & Pick<RecentSession, 'sessionId' | '
   return { account: '.claude', projectDir: '-p', size: 1_000, open: false, ...p };
 }
 
-describe('sessões do Codex no histórico', () => {
-  it('parseRecentSessions guarda o provider só quando é o Codex; a busca acha "codex"', () => {
+describe('Codex sessions in history', () => {
+  it('parseRecentSessions keeps the provider only for Codex; search finds "codex"', () => {
     const list = parseRecentSessions({
       sessions: [
         { account: '.codex', provider: 'codex', sessionId: 'x', projectDir: '/p', lastAt: 2, size: 1, open: false },
@@ -28,7 +28,7 @@ describe('sessões do Codex no histórico', () => {
 });
 
 describe('groupSessionsByDay', () => {
-  it('Hoje, Ontem e datas, do dia mais recente para o mais antigo (e da mais recente para a mais antiga dentro do dia)', () => {
+  it('Today, Yesterday and dates, newest day first (and newest session first within the day)', () => {
     const list = [
       session({ sessionId: 'a', lastAt: at(8, 9) }),
       session({ sessionId: 'b', lastAt: at(6, 23, 59) }),
@@ -38,13 +38,13 @@ describe('groupSessionsByDay', () => {
     ];
     const days = groupSessionsByDay(list, NOW);
     expect(days.map((d) => [d.label, d.sessions.map((s) => s.sessionId)])).toEqual([
-      ['Hoje', ['c', 'a']],
-      ['Ontem', ['d']],
+      ['Today', ['c', 'a']],
+      ['Yesterday', ['d']],
       [dayLabel(at(6, 12), NOW), ['b']],
       [dayLabel(at(2, 12), NOW), ['e']],
     ]);
-    expect(days[2].label).toMatch(/^Ter.*06.*out/i);
-    expect(days[3].label).toMatch(/^Sex.*02.*out/i);
+    expect(days[2].label).toMatch(/^Tue.*Oct.*06/i);
+    expect(days[3].label).toMatch(/^Fri.*Oct.*02/i);
     expect(groupSessionsByDay([], NOW)).toEqual([]);
   });
 });
@@ -57,7 +57,7 @@ describe('filterSessions', () => {
   ];
   const label = (id: string) => (id === '.claude-conta2' ? 'Trabalho T' : 'Pessoal P');
 
-  it('por título ou projeto, sem diferenciar maiúsculas nem acentos; todos os termos precisam casar', () => {
+  it('by title or project, case- and accent-insensitive; all terms must match', () => {
     expect(filterSessions(list, 'configuracao').map((s) => s.sessionId)).toEqual(['a']);
     expect(filterSessions(list, 'LOJA').map((s) => s.sessionId)).toEqual(['a']);
     expect(filterSessions(list, 'site').map((s) => s.sessionId)).toEqual(['c']);
@@ -65,7 +65,7 @@ describe('filterSessions', () => {
     expect(filterSessions(list, 'rota loja')).toEqual([]);
   });
 
-  it('pela conta (nome ou letra); sem termo, tudo', () => {
+  it('by account (name or letter); no term, everything', () => {
     expect(filterSessions(list, 'trabalho', label).map((s) => s.sessionId)).toEqual(['b']);
     expect(filterSessions(list, 'pessoal', label).map((s) => s.sessionId)).toEqual(['a', 'c']);
     expect(filterSessions(list, '  ', label)).toHaveLength(3);
@@ -73,7 +73,7 @@ describe('filterSessions', () => {
 });
 
 describe('parseRecentSessions', () => {
-  it('aceita as válidas, ignora o resto e ordena da mais recente para a mais antiga', () => {
+  it('accepts the valid ones, ignores the rest and sorts newest first', () => {
     const raw = {
       sessions: [
         { account: '.claude', sessionId: 's1', projectDir: '-p', project: '/p', title: 'Um', firstAt: 1, lastAt: 10, size: 99, open: false, agentId: 'x' },
@@ -88,14 +88,14 @@ describe('parseRecentSessions', () => {
     const out = parseRecentSessions(raw);
     expect(out.map((s) => s.sessionId)).toEqual(['s2', 's1']);
     expect(out[0]).toEqual({ account: '.claude', sessionId: 's2', projectDir: '', lastAt: 20, size: 0, open: true, agentId: '.claude:7' });
-    // agentId só vale para sessão aberta.
+    // agentId only counts for an open session.
     expect(out[1]).toEqual({ account: '.claude', sessionId: 's1', projectDir: '-p', project: '/p', title: 'Um', firstAt: 1, lastAt: 10, size: 99, open: false });
     expect(parseRecentSessions(null)).toEqual([]);
     expect(parseRecentSessions({ sessions: 'x' })).toEqual([]);
   });
 });
 
-describe('utilitários', () => {
+describe('utilities', () => {
   it('formatSize', () => {
     expect(formatSize(10)).toBe('1 KB');
     expect(formatSize(820 * 1024)).toBe('820 KB');

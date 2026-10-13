@@ -1,4 +1,4 @@
-/* Interface do Habblaud: painéis escuros translúcidos sobre o escritório em pixel art.
+/* Interface do AgentForge: painéis escuros translúcidos sobre o escritório em pixel art.
    Tipografia: logotipo em pixels (SVG); Pixelify Sans só em rótulos fixos de painel sem "C" maiúsculo nem
    dígitos (na Pixelify o "C" parece "O" e o "5" parece "S"); system-ui para o corpo, nomes, letras de conta e números.
    Identidade: detalhes "em pixel" (pontos de status quadrados, barras segmentadas de uso, ícones em pixels). */
@@ -3383,7 +3383,7 @@
   animation: ui-blink 1s steps(2, jump-none) infinite;
 }
 
-/* Aviso de versão nova (página aberta antes de uma atualização do Habblaud). */
+/* Aviso de versão nova (página aberta antes de uma atualização do AgentForge). */
 .ui-banner--update {
   z-index: 46;
   border-color: rgba(74, 168, 232, 0.55);
@@ -7541,7 +7541,7 @@ html.is-replay #world {
   opacity: 0.94;
 }
 
-/* Terminal expandido na tela toda do Habblaud (botão ao lado do fechar). */
+/* Terminal expandido na tela toda do AgentForge (botão ao lado do fechar). */
 .ui-term.is-max {
   z-index: 46;
   inset: calc(var(--top-h) + var(--gap)) var(--gap) var(--gap) !important;
@@ -7722,6 +7722,20 @@ html.is-replay #world {
   background: var(--ui-bg-soft);
   color: var(--ui-text);
   font: inherit;
+}
+.ui-alerts__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-bg-soft);
+  color: var(--ui-text);
+  font: inherit;
+}
+.ui-alerts__input:focus {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: -1px;
 }
 
 .ui-spawn__label {

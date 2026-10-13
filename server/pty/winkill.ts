@@ -19,7 +19,7 @@ function script(pid: number, fileTime: string): string {
 $ErrorActionPreference = 'Stop'
 Add-Type @"
 using System; using System.Runtime.InteropServices;
-public static class HabblaudConsole {
+public static class AgentForgeConsole {
   [DllImport("kernel32.dll")] public static extern bool FreeConsole();
   [DllImport("kernel32.dll")] public static extern bool AttachConsole(uint pid);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] public static extern IntPtr CreateFileW(string n, uint a, uint s, IntPtr sec, uint d, uint f, IntPtr t);
@@ -31,26 +31,26 @@ public static class HabblaudConsole {
 "@
 $target = Get-Process -Id ${pid} -ErrorAction SilentlyContinue
 if (-not $target -or $target.StartTime.ToFileTimeUtc() -ne ${fileTime}) { exit 4 }
-[HabblaudConsole]::FreeConsole() | Out-Null
-$attached = [HabblaudConsole]::AttachConsole(${pid})
+[AgentForgeConsole]::FreeConsole() | Out-Null
+$attached = [AgentForgeConsole]::AttachConsole(${pid})
 Stop-Process -Id ${pid} -Force
 if (-not $attached) { exit 3 }
 for ($i = 0; $i -lt 30 -and (Get-Process -Id ${pid} -ErrorAction SilentlyContinue); $i++) { Start-Sleep -Milliseconds 100 }
 Start-Sleep -Milliseconds 150
-$out = [HabblaudConsole]::CreateFileW('CONOUT$', ([uint32]3221225472), 3, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
+$out = [AgentForgeConsole]::CreateFileW('CONOUT$', ([uint32]3221225472), 3, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
 $m = 0
-if ([HabblaudConsole]::GetConsoleMode($out, [ref]$m)) { [HabblaudConsole]::SetConsoleMode($out, $m -bor 4) | Out-Null }
+if ([AgentForgeConsole]::GetConsoleMode($out, [ref]$m)) { [AgentForgeConsole]::SetConsoleMode($out, $m -bor 4) | Out-Null }
 $s = ${reset}
 $w = 0
-[HabblaudConsole]::WriteConsoleW($out, $s, $s.Length, [ref]$w, [IntPtr]::Zero) | Out-Null
-[HabblaudConsole]::CloseHandle($out) | Out-Null
-$in = [HabblaudConsole]::CreateFileW('CONIN$', ([uint32]3221225472), 3, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
-if ([HabblaudConsole]::GetConsoleMode($in, [ref]$m)) {
+[AgentForgeConsole]::WriteConsoleW($out, $s, $s.Length, [ref]$w, [IntPtr]::Zero) | Out-Null
+[AgentForgeConsole]::CloseHandle($out) | Out-Null
+$in = [AgentForgeConsole]::CreateFileW('CONIN$', ([uint32]3221225472), 3, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
+if ([AgentForgeConsole]::GetConsoleMode($in, [ref]$m)) {
   # Sem entrada VT (0x200) e com processamento, linha e eco: o shell volta a receber teclas normais.
-  [HabblaudConsole]::SetConsoleMode($in, (($m -band (-bnot 0x200)) -bor 0x7)) | Out-Null
+  [AgentForgeConsole]::SetConsoleMode($in, (($m -band (-bnot 0x200)) -bor 0x7)) | Out-Null
 }
-[HabblaudConsole]::CloseHandle($in) | Out-Null
-[HabblaudConsole]::FreeConsole() | Out-Null
+[AgentForgeConsole]::CloseHandle($in) | Out-Null
+[AgentForgeConsole]::FreeConsole() | Out-Null
 `;
 }
 

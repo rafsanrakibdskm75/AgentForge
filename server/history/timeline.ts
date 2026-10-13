@@ -14,7 +14,7 @@ import { compactSnapshot, dayKey, diffFrames, isDayKey, isDemoId, keyframeOf, sh
 import { errMsg, log } from '../log';
 import { tr } from '../../shared/i18n';
 
-/** Pasta dentro do HABBLAUD_DATA_DIR. */
+/** Pasta dentro do AGENTFORGE_DATA_DIR. */
 export const TIMELINE_DIR = 'timeline';
 export const KEYFRAME_MS = 5 * 60_000;
 export const THROTTLE_MS = 1_000;

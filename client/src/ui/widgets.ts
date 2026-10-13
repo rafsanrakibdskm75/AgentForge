@@ -133,6 +133,6 @@ export function updateShellActivityLine(el: HTMLElement, wait: ShellWait, now: n
 export function wordmark(cls = 'ui-brand__name'): HTMLElement {
   const el = h('span', { class: cls });
   el.innerHTML = WORDMARK;
-  el.append(h('span', { class: 'ui-sr', text: 'Habblaud' }));
+  el.append(h('span', { class: 'ui-sr', text: 'AgentForge' }));
   return el;
 }

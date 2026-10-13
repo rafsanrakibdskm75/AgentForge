@@ -181,12 +181,12 @@ describe('SessionHistory.resolve', () => {
     expect(path.endsWith(`${sid(1)}.jsonl`)).toBe(true);
 
     for (const bad of ['../../etc/passwd', '..', `${sid(1)}/../${sid(1)}`, `${sid(1)}.jsonl`, 'x', '', `${sid(1)} `]) {
-      expect(h.resolve('.claude', bad)).toEqual({ status: 400, error: 'id de sessão inválido' });
+      expect(h.resolve('.claude', bad)).toEqual({ status: 400, error: 'invalid session id' });
     }
     for (const account of ['.claude/..', '..', '.claude-outra', '', join(root, '.claude')]) {
-      expect(h.resolve(account, sid(1))).toEqual({ status: 404, error: 'conta desconhecida' });
+      expect(h.resolve(account, sid(1))).toEqual({ status: 404, error: 'unknown account' });
     }
-    expect(h.resolve('.claude', sid(9))).toEqual({ status: 404, error: 'sessão não encontrada' });
+    expect(h.resolve('.claude', sid(9))).toEqual({ status: 404, error: 'session not found' });
   });
 
   it('link dentro de projects/ apontando para fora não serve', ({ skip }) => {
@@ -198,18 +198,18 @@ describe('SessionHistory.resolve', () => {
     writeFileSync(join(root, 'outra', `${sid(3)}.jsonl`), `${L.prompt('segredo')}\n`);
     symlinkSync(join(root, 'outra'), join(c.dir, 'projects', 'link'), 'junction');
     const h = history([c]);
-    expect(h.resolve('.claude', sid(3))).toEqual({ status: 404, error: 'sessão não encontrada' });
+    expect(h.resolve('.claude', sid(3))).toEqual({ status: 404, error: 'session not found' });
     expect('path' in h.resolve('.claude', sid(1))).toBe(true);
     // Arquivo que é um link para fora também não.
     const outside = join(root, 'fora.jsonl');
     writeFileSync(outside, `${L.prompt('segredo')}\n`);
     symlinkOrSkip(skip, outside, join(c.dir, 'projects', encodeCwd('/p'), `${sid(2)}.jsonl`));
-    expect(h.resolve('.claude', sid(2))).toEqual({ status: 404, error: 'sessão não encontrada' });
+    expect(h.resolve('.claude', sid(2))).toEqual({ status: 404, error: 'session not found' });
   });
 
   it('conta sem projects/: 404', () => {
     const { acc } = setup();
-    expect(history([acc('.claude')]).resolve('.claude', sid(1))).toEqual({ status: 404, error: 'sessão não encontrada' });
+    expect(history([acc('.claude')]).resolve('.claude', sid(1))).toEqual({ status: 404, error: 'session not found' });
   });
 });
 

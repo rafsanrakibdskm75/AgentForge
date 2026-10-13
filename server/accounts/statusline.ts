@@ -1,6 +1,6 @@
 // Fonte 'statusline' de uso: arquivos <usageDir>/<conta>.json gravados por scripts/statusline-tap.mjs
 // a partir do JSON que o próprio Claude Code envia ao comando de statusline (campo rate_limits), ou
-// pelo mod do Claude Code (mod/habblaud, a partir de `$.session.usage()`), no mesmo formato.
+// pelo mod do Claude Code (mod/agentforge, a partir de `$.session.usage()`), no mesmo formato.
 // Não lê credenciais nem chama API nenhuma: só arquivos pequenos, relidos a cada ~5 s.
 //
 // Formato (o tap grava SÓ isto; o mod acrescenta "source": "mod", que vira AccountUsage.via):

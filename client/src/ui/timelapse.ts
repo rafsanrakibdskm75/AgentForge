@@ -261,8 +261,8 @@ export class TimelapsePlayer implements UiComponent {
       if (!r.days.length) {
         this.status = 'empty';
         this.message = r.recording
-          ? tr('Nada gravado ainda: o Habblaud grava o escritório enquanto está ligado. Volte daqui a pouco.')
-          : tr('A gravação está desligada neste servidor (HABBLAUD_TIMELINE=0) e não há dias gravados.');
+          ? tr('Nada gravado ainda: o AgentForge grava o escritório enquanto está ligado. Volte daqui a pouco.')
+          : tr('A gravação está desligada neste servidor (AGENTFORGE_TIMELINE=0) e não há dias gravados.');
         this.ctx.invalidate();
         return;
       }

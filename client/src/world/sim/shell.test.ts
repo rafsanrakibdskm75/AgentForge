@@ -36,8 +36,8 @@ function job(id: string, ageMs: number, extra: Partial<ShellJob> = {}): ShellJob
   return { id, label: `Comando ${id}`, startedAt: NOW - ageMs, background: true, kind: 'shell', ...extra };
 }
 
-describe('escalada da espera', () => {
-  it('estágios pela idade: pipoca, inquieto, teia, cochilo', () => {
+describe('wait escalation', () => {
+  it('stages by age: fidget, restless, cobweb, nap', () => {
     expect(shellStage(0)).toBe('popcorn');
     expect(shellStage(3 * MIN - 1)).toBe('popcorn');
     expect(shellStage(3 * MIN)).toBe('restless');
@@ -48,7 +48,7 @@ describe('escalada da espera', () => {
     expect(shellStage(5 * 60 * MIN)).toBe('nap');
   });
 
-  it('teia: nenhuma antes de 10 min, 1x até 20 min, 2x depois (escala inteira)', () => {
+  it('cobweb: none before 10 min, 1x until 20 min, 2x after (whole scale)', () => {
     expect(cobwebScale(9 * MIN)).toBe(0);
     expect(cobwebScale(10 * MIN)).toBe(1);
     expect(cobwebScale(19.9 * MIN)).toBe(1);
@@ -56,7 +56,7 @@ describe('escalada da espera', () => {
     expect(cobwebScale(90 * MIN)).toBe(2);
   });
 
-  it('ampulheta vira a cada 1,2 s', () => {
+  it('hourglass flips every 1.2 s', () => {
     expect(hourglassIcon(0)).toBe('hourglass');
     expect(hourglassIcon(1199)).toBe('hourglass');
     expect(hourglassIcon(1200)).toBe('hourglass_flip');
@@ -64,7 +64,7 @@ describe('escalada da espera', () => {
   });
 });
 
-describe('giros na cadeira', () => {
+describe('chair spins', () => {
   /** Inícios dos giros (ms de idade) amostrando a cada 20 ms. */
   function spinStarts(seed: number, from: number, to: number): number[] {
     const starts: number[] = [];
@@ -77,7 +77,7 @@ describe('giros na cadeira', () => {
     return starts;
   }
 
-  it('só no estágio inquieto, a cada 15–25 s, cada um com ~0,8 s', () => {
+  it('only in the restless stage, every 15–25 s, each ~0.8 s', () => {
     for (const seed of [1, 42, 0xdeadbeef, 987654321]) {
       expect(spinStarts(seed, 0, SHELL_RESTLESS_MS)).toEqual([]);
       expect(spinStarts(seed, SHELL_COBWEB_MS, SHELL_COBWEB_MS + 2 * MIN)).toEqual([]);
@@ -99,19 +99,19 @@ describe('giros na cadeira', () => {
     }
   });
 
-  it('determinístico por semente; sementes diferentes giram em momentos diferentes', () => {
+  it('deterministic by seed; different seeds spin at different times', () => {
     expect(spinStarts(7, SHELL_RESTLESS_MS, SHELL_COBWEB_MS)).toEqual(spinStarts(7, SHELL_RESTLESS_MS, SHELL_COBWEB_MS));
     expect(spinStarts(7, SHELL_RESTLESS_MS, SHELL_COBWEB_MS)).not.toEqual(spinStarts(8, SHELL_RESTLESS_MS, SHELL_COBWEB_MS));
   });
 
-  it('uma volta completa no sentido horário, terminando onde começou', () => {
+  it('one full clockwise turn, ending where it started', () => {
     const seq = [0, 0.26, 0.51, 0.76, 0.99].map((p) => spinDir(p, 'up'));
     expect(seq).toEqual(['right', 'down', 'left', 'up', 'up']);
     expect([0.1, 0.3, 0.6, 0.9].map((p) => spinDir(p, 'down'))).toEqual(['left', 'up', 'right', 'down']);
     expect(spinDir(-1, 'left')).toBe('left');
   });
 
-  it('bocejos só no estágio da teia', () => {
+  it('yawns only in the cobweb stage', () => {
     let yawns = 0;
     let prev = -1;
     for (let t = 0; t < SHELL_NAP_MS + 5 * MIN; t += 50) {
@@ -129,10 +129,10 @@ describe('giros na cadeira', () => {
   });
 });
 
-describe('shells do agente', () => {
+describe("agent's shells", () => {
   const shells = [job('b1', 5 * MIN), job('b2', 1 * MIN), job('fg', 20_000, { background: false })];
 
-  it('mais antigo e contagem (todos ou só os de primeiro plano)', () => {
+  it('oldest and count (all or foreground only)', () => {
     expect(oldestShell(shells, false)?.id).toBe('b1');
     expect(oldestShell(shells, true)?.id).toBe('fg');
     expect(oldestShell(undefined, false)).toBeNull();
@@ -142,7 +142,7 @@ describe('shells do agente', () => {
     expect(countShells(undefined, false)).toBe(0);
   });
 
-  it('primeiro plano só vira espera depois de 10 s', () => {
+  it('foreground only becomes waiting after 10 s', () => {
     expect(foregroundWaiting([job('fg', FOREGROUND_WAIT_MS - 1, { background: false })], NOW)).toBe(false);
     expect(foregroundWaiting([job('fg', FOREGROUND_WAIT_MS + 1, { background: false })], NOW)).toBe(true);
     // shells em segundo plano não contam como "parado esperando" enquanto o agente trabalha
@@ -150,17 +150,17 @@ describe('shells do agente', () => {
     expect(foregroundWaiting(undefined, NOW)).toBe(false);
   });
 
-  it('início da espera e rótulo (com textos de reserva)', () => {
+  it('wait start and label (with fallback texts)', () => {
     expect(shellWaitSince({ status: 'shell', shells, statusSince: NOW })).toBe(NOW - 5 * MIN);
     expect(shellWaitSince({ status: 'working', shells, statusSince: NOW })).toBe(NOW - 20_000);
     expect(shellWaitSince({ status: 'shell', shells: [], statusSince: NOW - 7 })).toBe(NOW - 7);
     expect(shellLabel({ status: 'shell', shells })).toBe('Comando b1');
-    expect(shellLabel({ status: 'shell', shells: [job('x', 1, { label: '  ' })] })).toBe('Comando em segundo plano');
-    expect(shellLabel({ status: 'working', shells: [] })).toBe('Comando no terminal');
-    expect(shellLabel({ status: 'shell', shells: [job('m', 1, { label: '', kind: 'monitor' })] })).toBe('Monitorando um processo');
+    expect(shellLabel({ status: 'shell', shells: [job('x', 1, { label: '  ' })] })).toBe('Background command');
+    expect(shellLabel({ status: 'working', shells: [] })).toBe('Terminal command');
+    expect(shellLabel({ status: 'shell', shells: [job('m', 1, { label: '', kind: 'monitor' })] })).toBe('Monitoring a process');
   });
 
-  it('modo: status shell e comando longo em primeiro plano viram "shell"; espera de usuário vence', () => {
+  it('mode: shell status and long foreground command become "shell"; user wait wins', () => {
     expect(modeFor('shell', { kind: 'main' })).toBe('shell');
     expect(modeFor('shell', { kind: 'sub' })).toBe('shell');
     expect(modeFor('working', { kind: 'main', shells, now: NOW })).toBe('shell');
@@ -170,17 +170,17 @@ describe('shells do agente', () => {
     expect(modeFor('shell', { kind: 'main', missing: true })).toBe('leave');
   });
 
-  it('volta à mesa andando; só corre se estiver muito longe', () => {
+  it('walks back to the desk; only runs when very far', () => {
     expect(shouldRun(10, 'shell')).toBe(false);
     expect(shouldRun(18, 'shell')).toBe(false);
     expect(shouldRun(30, 'shell')).toBe(true);
   });
 });
 
-describe('fim do shell', () => {
+describe('shell end', () => {
   const act = (id: string, at: number, tool?: string, error?: boolean) => ({ id, kind: 'run' as const, icon: '✅', text: id, at, tool, error });
 
-  it("acha a 'ShellDone' mais recente, mesmo atrás de outra atividade do mesmo snapshot", () => {
+  it("finds the newest 'ShellDone', even behind another activity of the same snapshot", () => {
     expect(latestShellDone({ activity: act('x', 5), recent: [] })).toBeNull();
     expect(latestShellDone({ activity: act('d', 5, SHELL_DONE_TOOL) })?.id).toBe('d');
     const recent = [act('d1', 1, SHELL_DONE_TOOL), act('e', 2), act('d2', 3, SHELL_DONE_TOOL, true), act('r', 4)];
@@ -189,8 +189,8 @@ describe('fim do shell', () => {
   });
 });
 
-describe('balão da espera', () => {
-  it('tempo em PT-BR: "45 s", "3 min", "1 h 05"', () => {
+describe('wait bubble', () => {
+  it('time in en-US: "45 s", "3 min", "1 h 05"', () => {
     expect(formatShellAge(-500)).toBe('0 s');
     expect(formatShellAge(45_400)).toBe('45 s');
     expect(formatShellAge(59_999)).toBe('59 s');
@@ -202,7 +202,7 @@ describe('balão da espera', () => {
     expect(shellBubbleText('Rodar phpunit', 3 * MIN)).toBe('Rodar phpunit · 3 min');
   });
 
-  it('a chave do texto muda exatamente quando o tempo exibido muda', () => {
+  it('the text key changes exactly when the displayed time changes', () => {
     let prevKey = shellAgeKey(0);
     let prevText = formatShellAge(0);
     for (let ms = 0; ms < 3 * 60 * MIN; ms += 250) {
@@ -214,7 +214,7 @@ describe('balão da espera', () => {
     }
   });
 
-  it("modo 'important': ao entrar, depois 4 s a cada ~30 s", () => {
+  it("'important' mode: on entry, then 4 s every ~30 s", () => {
     expect(shellBubbleAlpha(-1)).toBe(0);
     expect(shellBubbleAlpha(1_000)).toBe(1);
     expect(shellBubbleAlpha(10_000)).toBe(0);

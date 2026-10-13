@@ -1,7 +1,7 @@
-// Hook do Codex (mod/habblaud-codex/hook.mjs) rodado como processo de verdade contra o servidor de teste (rotas de
+// Hook do Codex (mod/agentforge-codex/hook.mjs) rodado como processo de verdade contra o servidor de teste (rotas de
 // verdade e uma fonte do Codex falsa): eventos de observação (sem saída), a conta pelo CODEX_HOME, pelo
-// transcript_path ou ~/.codex, a configuração em ~/.habblaud/codex-hook.json, e o PermissionRequest (aprovar, recusar,
-// terminal, tempo esgotado, Habblaud fora do ar). HOME e CODEX_HOME sempre em pastas temporárias; stdin sintético.
+// transcript_path ou ~/.codex, a configuração em ~/.agentforge/codex-hook.json, e o PermissionRequest (aprovar, recusar,
+// terminal, tempo esgotado, AgentForge fora do ar). HOME e CODEX_HOME sempre em pastas temporárias; stdin sintético.
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
@@ -14,7 +14,7 @@ import { CODEX_MAIN, CODEX_THREAD, servePermissions, type PermissionServer } fro
 
 setQuiet(true);
 
-const HOOK = resolve(__dirname, '../../mod/habblaud-codex/hook.mjs');
+const HOOK = resolve(__dirname, '../../mod/agentforge-codex/hook.mjs');
 
 /** Funções exportadas pelo hook (JavaScript puro, sem tipos). */
 interface HookModule {
@@ -62,10 +62,10 @@ afterEach(async () => {
   tmp.cleanup();
 });
 
-/** ~/.habblaud/codex-hook.json no HOME falso. */
+/** ~/.agentforge/codex-hook.json no HOME falso. */
 function writeConfig(cfg: Record<string, unknown>): void {
-  mkdirSync(join(home, '.habblaud'), { recursive: true });
-  writeFileSync(join(home, '.habblaud', 'codex-hook.json'), JSON.stringify(cfg));
+  mkdirSync(join(home, '.agentforge'), { recursive: true });
+  writeFileSync(join(home, '.agentforge', 'codex-hook.json'), JSON.stringify(cfg));
 }
 
 function runHook(stdin: string, env: NodeJS.ProcessEnv = {}): Promise<HookRun> {
@@ -150,7 +150,7 @@ describe('hook.mjs do Codex (processo)', () => {
     expect((live.calls[0].input.tool_response as { output: string }).output.length).toBe(8_000);
   });
 
-  it('PermissionRequest aprovado no Habblaud: manda o evento, registra e imprime allow (só isso)', async () => {
+  it('PermissionRequest aprovado no AgentForge: manda o evento, registra e imprime allow (só isso)', async () => {
     srv = await servePermissions({ codex: true, codexLive: live });
     writeConfig({ port: srv.port, permissionTimeoutS: 30 });
     const run = runHook(JSON.stringify(permission()), { CODEX_HOME: codexHome });
@@ -173,21 +173,21 @@ describe('hook.mjs do Codex (processo)', () => {
     let run = runHook(JSON.stringify(permission()), { CODEX_HOME: codexHome });
     expect(srv.registry!.decide(await pendingId(srv), { behavior: 'deny', message: 'use pnpm' })).toBe('ok');
     let r = await run;
-    expect(JSON.parse(r.stdout)).toEqual({ hookSpecificOutput: { hookEventName: 'PermissionRequest', decision: { behavior: 'deny', message: 'Recusado pelo usuário no Habblaud: use pnpm' } } });
+    expect(JSON.parse(r.stdout)).toEqual({ hookSpecificOutput: { hookEventName: 'PermissionRequest', decision: { behavior: 'deny', message: 'Recusado pelo usuário no AgentForge: use pnpm' } } });
     run = runHook(JSON.stringify(permission()), { CODEX_HOME: codexHome });
     srv.registry!.decide(await pendingId(srv), { behavior: 'terminal' });
     r = await run;
     expect(r).toMatchObject({ code: 0, stdout: '' });
   });
 
-  it('HABBLAUD_PORT vale como reserva quando o arquivo não tem a porta', async () => {
+  it('AGENTFORGE_PORT vale como reserva quando o arquivo não tem a porta', async () => {
     srv = await servePermissions({ codex: true, codexLive: live });
-    const run = runHook(JSON.stringify(permission()), { CODEX_HOME: codexHome, HABBLAUD_PORT: String(srv.port) });
+    const run = runHook(JSON.stringify(permission()), { CODEX_HOME: codexHome, AGENTFORGE_PORT: String(srv.port) });
     srv.registry!.decide(await pendingId(srv), { behavior: 'allow' });
     expect(JSON.parse((await run).stdout).hookSpecificOutput.decision).toEqual({ behavior: 'allow' });
   });
 
-  it('Habblaud fora do ar, sem página aberta ou sessão desconhecida: sai rápido, sem decisão', async () => {
+  it('AgentForge fora do ar, sem página aberta ou sessão desconhecida: sai rápido, sem decisão', async () => {
     writeConfig({ port: await deadPort() });
     let r = await runHook(JSON.stringify(permission()), { CODEX_HOME: codexHome });
     expect(r).toMatchObject({ code: 0, stdout: '' });
@@ -211,7 +211,7 @@ describe('hook.mjs do Codex (processo)', () => {
     expect(r.ms).toBeLessThan(10_000);
   }, 20_000);
 
-  it('stdin inválido ou evento que o Habblaud não usa: nada é mandado', async () => {
+  it('stdin inválido ou evento que o AgentForge não usa: nada é mandado', async () => {
     srv = await servePermissions({ codex: true, codexLive: live });
     writeConfig({ port: srv.port });
     for (const stdin of ['', 'não é json', '[]', JSON.stringify({ hook_event_name: 'Stop' }), JSON.stringify(codexEvent('PreCompact', { trigger: 'auto' }))]) {
@@ -223,16 +223,16 @@ describe('hook.mjs do Codex (processo)', () => {
 });
 
 describe('hook.mjs do Codex (funções)', () => {
-  it('readConfig: arquivo, reserva HABBLAUD_PORT, padrões e limites da espera', () => {
+  it('readConfig: arquivo, reserva AGENTFORGE_PORT, padrões e limites da espera', () => {
     expect(hook.readConfig({ HOME: home })).toEqual({ port: 4747, waitMs: 25_000 });
-    expect(hook.readConfig({ HOME: home, HABBLAUD_PORT: '4851' })).toEqual({ port: 4851, waitMs: 25_000 });
+    expect(hook.readConfig({ HOME: home, AGENTFORGE_PORT: '4851' })).toEqual({ port: 4851, waitMs: 25_000 });
     writeConfig({ port: 4900, permissionTimeoutS: 60 });
-    expect(hook.readConfig({ HOME: home, HABBLAUD_PORT: '4851' })).toEqual({ port: 4900, waitMs: 60_000 });
+    expect(hook.readConfig({ HOME: home, AGENTFORGE_PORT: '4851' })).toEqual({ port: 4900, waitMs: 60_000 });
     writeConfig({ port: 'x', permissionTimeoutS: 1 });
     expect(hook.readConfig({ HOME: home })).toEqual({ port: 4747, waitMs: 5_000 });
     writeConfig({ permissionTimeoutS: 999 });
     expect(hook.readConfig({ HOME: home })).toEqual({ port: 4747, waitMs: 120_000 });
-    writeFileSync(join(home, '.habblaud', 'codex-hook.json'), '{ quebrado');
+    writeFileSync(join(home, '.agentforge', 'codex-hook.json'), '{ quebrado');
     expect(hook.readConfig({ HOME: home })).toEqual({ port: 4747, waitMs: 25_000 });
   });
 
@@ -246,7 +246,7 @@ describe('hook.mjs do Codex (funções)', () => {
     expect(hook.accountOf('/u/.codex')).toBe('.codex');
   });
 
-  it('permissionBody: provider codex, conta e só o que o Habblaud usa', () => {
+  it('permissionBody: provider codex, conta e só o que o AgentForge usa', () => {
     const body = hook.permissionBody(permission({ agent_id: 'filho', agent_type: 'worker', tool_input: { command: 'y'.repeat(20_000) } }), '.codex', '/u/.codex', 25_000);
     expect(Object.keys(body).sort()).toEqual(['account', 'agent_id', 'agent_type', 'codexHome', 'cwd', 'provider', 'session_id', 'timeout_ms', 'tool_input', 'tool_name', 'turn_id']);
     expect(body).toMatchObject({ provider: 'codex', account: '.codex', codexHome: '/u/.codex', session_id: CODEX_THREAD, tool_name: 'Bash', timeout_ms: 25_000 });
@@ -258,7 +258,7 @@ describe('hook.mjs do Codex (funções)', () => {
     const allow = hook.decisionOutput({ status: 'decided', behavior: 'allow', suggestion: 0 });
     expect(allow).toEqual({ hookSpecificOutput: { hookEventName: 'PermissionRequest', decision: { behavior: 'allow' } } });
     expect(hook.decisionOutput({ status: 'decided', behavior: 'deny', interrupt: true })).toEqual({
-      hookSpecificOutput: { hookEventName: 'PermissionRequest', decision: { behavior: 'deny', message: 'Recusado pelo usuário no Habblaud.' } },
+      hookSpecificOutput: { hookEventName: 'PermissionRequest', decision: { behavior: 'deny', message: 'Recusado pelo usuário no AgentForge.' } },
     });
     expect(hook.decisionOutput({ status: 'decided', behavior: 'answer', answers: [] })).toBeUndefined();
     expect(hook.decisionOutput({ status: 'released', reason: 'terminal' })).toBeUndefined();

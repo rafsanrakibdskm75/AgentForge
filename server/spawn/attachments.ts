@@ -1,5 +1,5 @@
 // Anexos do "Novo agente" (imagens e arquivos que o celular manda junto com o pedido). O link do app do Claude só leva
-// texto, então os arquivos são gravados no computador do app, em ~/.habblaud/attachments/<data>-<id>/, e o pedido ganha
+// texto, então os arquivos são gravados no computador do app, em ~/.agentforge/attachments/<data>-<id>/, e o pedido ganha
 // a lista dos caminhos para o agente ler. Quem grava é quem abre o link: o servidor no modo Node, o auxiliar do host
 // (scripts/codex-bridge.ts) no Docker. Os arquivos chegam como JSON base64 (o guard exige JSON em todo POST: CSRF).
 // Node puro e sem dependências: também é importado pelo auxiliar do host (via tsx).
@@ -107,7 +107,7 @@ export class AttachmentStore {
 }
 
 export function attachmentsRoot(env: NodeJS.ProcessEnv = process.env): string {
-  return env.HABBLAUD_ATTACHMENTS_DIR?.trim() || join(env.HOME || homedir(), '.habblaud', 'attachments');
+  return env.AGENTFORGE_ATTACHMENTS_DIR?.trim() || join(env.HOME || homedir(), '.agentforge', 'attachments');
 }
 
 function stamp(at: Date): string {
@@ -142,6 +142,6 @@ export function writeAttachments(root: string, spawnId: string, files: readonly 
 export function promptWithAttachments(prompt: string, paths: readonly string[]): string {
   if (!paths.length) return prompt;
   const list = paths.map((p) => `- ${p}`).join('\n');
-  const head = paths.length === 1 ? tr('Anexo enviado pelo Habblaud (leia antes de começar):') : tr('Anexos enviados pelo Habblaud (leia antes de começar):');
+  const head = paths.length === 1 ? tr('Anexo enviado pelo AgentForge (leia antes de começar):') : tr('Anexos enviados pelo AgentForge (leia antes de começar):');
   return `${prompt.trim() ? `${prompt.trimEnd()}\n\n` : ''}${head}\n${list}`;
 }

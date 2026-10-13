@@ -1,6 +1,6 @@
 // Ordem das salas na lista lateral escolhida pelo usuário (arrastando o cabeçalho da sala), guardada no navegador
 // pelo id da sala (a pasta do projeto). Salas que não estão na ordem guardada vão para o fim, na ordem em que vieram.
-const ORDER_KEY = 'habblaud.rooms.order';
+const ORDER_KEY = 'agentforge.rooms.order';
 /** Salas lembradas (as mais recentes da lista). */
 const MAX_ROOMS = 100;
 

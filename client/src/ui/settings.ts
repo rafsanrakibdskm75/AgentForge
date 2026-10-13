@@ -6,6 +6,7 @@ import { ICONS } from './icons';
 import { notificationState, type Notifier } from './notify';
 import type { UiPrefs } from './prefs';
 import { SoundSettingsGroup } from './settings-sound';
+import { AlertsSettingsGroup } from './alerts-settings';
 import type { SoundControl } from './sound';
 import { AboutGroup } from './version';
 import { LOCALE_STORAGE_KEY, LOCALES, normalizeLocale, tr, type Locale } from '../../../shared/i18n';
@@ -89,6 +90,7 @@ export class SettingsPopover implements UiComponent {
   private theme: ReturnType<typeof segmented<UiPrefs['theme']>>;
   private language: ReturnType<typeof segmented<LanguageChoice>>;
   private soundGroup: SoundSettingsGroup;
+  private alertsGroup: AlertsSettingsGroup;
   private demoGroup: HTMLElement;
   /** Só na página do celular (porta remota com login): sair deste aparelho. */
   private remoteGroup: HTMLElement;
@@ -144,6 +146,7 @@ export class SettingsPopover implements UiComponent {
     );
     this.theme.row.append(h('span', { class: 'ui-set__hint', text: tr('Automático: Halloween em outubro e Natal de 1º de novembro a 26 de dezembro; no resto do ano, o visual original. Nenhum: sempre o original.') }));
     this.soundGroup = new SoundSettingsGroup(ctx, sound);
+    this.alertsGroup = new AlertsSettingsGroup(ctx);
 
     // Nomes dos idiomas sempre na própria língua, para quem não entende o idioma atual achar o seu.
     this.language = segmented<LanguageChoice>(
@@ -152,7 +155,7 @@ export class SettingsPopover implements UiComponent {
       (v) => pickLanguage(v),
     );
     this.language.row.append(
-      h('span', { class: 'ui-set__hint', text: tr('Os textos das atividades vêm do servidor: seguem HABBLAUD_LANG ou o idioma do sistema onde o Habblaud roda (o inglês, só com HABBLAUD_LANG=en).') }),
+      h('span', { class: 'ui-set__hint', text: tr('Os textos das atividades vêm do servidor: seguem AGENTFORGE_LANG ou o idioma do sistema onde o AgentForge roda (o inglês, só com AGENTFORGE_LANG=en).') }),
     );
 
     this.demoGroup = h(
@@ -204,6 +207,7 @@ export class SettingsPopover implements UiComponent {
         sw('browserNotifications', tr('Notificações do navegador'), tr('Avisa quando alguém precisa de você e a aba está em segundo plano.'), () => void this.toggleNotifications()),
       ),
       this.soundGroup.el,
+      this.alertsGroup.el,
       h('div', { class: 'ui-set-group' }, h('h3', { text: tr('Idioma') }), this.language.row),
       this.demoGroup,
       this.remoteGroup,
@@ -278,6 +282,7 @@ export class SettingsPopover implements UiComponent {
     this.theme.set(p.theme);
     this.language.set(savedLanguage());
     this.soundGroup.render();
+    this.alertsGroup.render();
     setHidden(this.demoGroup, this.ctx.store.mock || access().remote);
     setHidden(this.remoteGroup, !access().remote);
     this.about.render();

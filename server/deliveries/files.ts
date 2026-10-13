@@ -35,7 +35,7 @@ const TYPES: Readonly<Record<string, { kind: DeliveryAttachmentKind; type: strin
 };
 
 /** Pastas e nomes que nunca saem, mesmo que um agente os "entregue" (texto injetado num transcript, por exemplo). */
-const SECRET_DIRS = /(^|\/)(\.ssh|\.gnupg|\.aws|\.azure|\.kube|\.docker|\.password-store|\.config\/gh|\.config\/gcloud|Keychains|\.habblaud\/remote-tls)(\/|$)/i;
+const SECRET_DIRS = /(^|\/)(\.ssh|\.gnupg|\.aws|\.azure|\.kube|\.docker|\.password-store|\.config\/gh|\.config\/gcloud|Keychains|\.agentforge\/remote-tls)(\/|$)/i;
 const SECRET_NAMES = /(^|\/)(\.env[^/]*|id_[a-z0-9]+|[^/]*\.(pem|key|p12|pfx|keystore|jks|kdbx)|[^/]*(secret|credential|password|senha|token)[^/]*)$/i;
 
 export function extensionOf(path: string): string {
@@ -93,7 +93,7 @@ export function tempRoots(): string[] {
 /**
  * O arquivo (caminho real) está numa pasta que o auxiliar do host pode ler: uma pasta de projeto que alguma conta do
  * Claude Code conhece (ela, ou uma acima dela, tem <conta>/projects/<pasta codificada>) ou uma das `roots` (pastas
- * temporárias, anexos do Habblaud). Assim um pedido vindo do container não alcança o resto do computador.
+ * temporárias, anexos do AgentForge). Assim um pedido vindo do container não alcança o resto do computador.
  */
 export function insideKnownFolder(
   path: string,

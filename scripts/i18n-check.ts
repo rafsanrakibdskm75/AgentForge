@@ -1,15 +1,14 @@
-// Confere as traduções: lista os textos passados a tr() sem tradução e as traduções que sobraram
-// (o texto em PT mudou ou saiu do código). Uso: npm run i18n:check [-- en|es|fr]
-// Não falha o build: um texto sem tradução simplesmente aparece em PT.
+// Checks the translations: lists texts passed to tr() without a translation and translations left over
+// (the PT text changed or left the code). Usage: npm run i18n:check [-- en|bn]
+// Doesn't fail the build: a text without translation simply shows in PT.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { BN } from '../shared/locales/bn';
 import { EN } from '../shared/locales/en';
-import { ES } from '../shared/locales/es';
-import { FR } from '../shared/locales/fr';
 
 const ROOT = join(import.meta.dirname, '..');
 const DIRS = ['client/src', 'shared', 'server', 'scripts'];
-const DICTS: Record<string, Readonly<Record<string, string>>> = { en: EN, es: ES, fr: FR };
+const DICTS: Record<string, Readonly<Record<string, string>>> = { en: EN, bn: BN };
 
 /** Primeiro argumento literal de cada tr('...') do código (sem os testes). */
 export function collectKeys(root = ROOT): Map<string, string[]> {

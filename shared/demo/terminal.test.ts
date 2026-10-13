@@ -14,16 +14,16 @@ function agent(over: Partial<AgentInfo> = {}): AgentInfo {
     roomId: `demo:${ROOT}`,
     name: 'Marina',
     look: 'f',
-    role: 'Agente principal',
-    title: 'Cria a página de checkout com resumo do pedido',
+    role: 'Main agent',
+    title: 'Build the checkout page with an order summary',
     sessionId: 'demo:sess-1',
     account: 'demo:.claude',
     status: 'working',
     recent: [],
     tasks: [
-      { id: '1', title: 'Criar página de checkout', status: 'completed' },
-      { id: '2', title: 'Validar formulário de endereço', status: 'in_progress' },
-      { id: '3', title: 'Escrever testes do carrinho', status: 'pending' },
+      { id: '1', title: 'Create checkout page', status: 'completed' },
+      { id: '2', title: 'Validate address form', status: 'in_progress' },
+      { id: '3', title: 'Write cart tests', status: 'pending' },
     ],
     gitBranch: 'feat/checkout',
     startedAt: T0,
@@ -43,9 +43,9 @@ function history(): Activity[] {
     if (!sameTick) at += 2_000;
     return { id: `demo:x-a${++seq}`, at, ...d };
   };
-  const bg = { description: 'Rodar a suíte de testes', command: 'npm test -- --runInBand' };
+  const bg = { description: 'Run the test suite', command: 'npm test -- --runInBand' };
   return [
-    act(describePrompt('Cria a página de checkout com resumo do pedido')),
+    act(describePrompt('Build the checkout page with an order summary')),
     act(SPECIAL.think()),
     act(describeTool('Read', { file_path: `${ROOT}/src/pages/Checkout.tsx` })),
     act(describeTool('Grep', { pattern: 'useCart' })),
@@ -59,14 +59,14 @@ function history(): Activity[] {
     act(describeTool('WebFetch', { url: 'https://developer.mozilla.org/pt-BR/docs/Web' })),
     act(describeTool('TodoWrite', { todos: [{ status: 'completed' }, { status: 'in_progress' }, { status: 'pending' }] })),
     act(describeTool('Agent', { description: '3 frentes em paralelo', subagent_type: 'general-purpose' })),
-    act({ kind: 'think', icon: '📥', text: 'Juntando os resultados da equipe' }),
-    act(SPECIAL.waiting('aprovar uma permissão')),
+    act({ kind: 'think', icon: '📥', text: 'Gathering the team\'s results' }),
+    act(SPECIAL.waiting('approve a permission')),
     act(describeTool('Bash', { ...bg, run_in_background: true })),
-    act(SPECIAL.waitingShell('Rodar a suíte de testes', 1, bg.command), true),
-    act(SPECIAL.shellDone('Rodar a suíte de testes', 'ok', 95_000, bg.command)),
-    act(SPECIAL.shellDone('Build de produção', 'failed', 40_000, 'npm run build -- --mode production')),
+    act(SPECIAL.waitingShell('Run the test suite', 1, bg.command), true),
+    act(SPECIAL.shellDone('Run the test suite', 'ok', 95_000, bg.command)),
+    act(SPECIAL.shellDone('Production build', 'failed', 40_000, 'npm run build -- --mode production')),
     act(SPECIAL.turnDone(130_000)),
-    act({ kind: 'compact', icon: '🧹', text: 'Organizando a memória (compactando)' }),
+    act({ kind: 'compact', icon: '🧹', text: 'Tidying up memory (compacting)' }),
     act({ kind: 'error', icon: '⚠️', text: 'Erro em Bash', detail: 'Exit code 1' }),
     act(describeTool('SendMessage', { to: 'Bruno', message: 'pode revisar?' })),
   ];
@@ -107,7 +107,7 @@ describe('demoTerminalEntries', () => {
     const result = (i: number) => groups[i].find((x) => x.kind === 'result') as Extract<TerminalEntry, { kind: 'result' }>;
     const system = (i: number) => groups[i].find((x) => x.kind === 'system') as Extract<TerminalEntry, { kind: 'system' }>;
 
-    expect(groups[0]).toEqual([expect.objectContaining({ kind: 'user', text: 'Cria a página de checkout com resumo do pedido' })]);
+    expect(groups[0]).toEqual([expect.objectContaining({ kind: 'user', text: 'Build the checkout page with an order summary' })]);
     expect(kinds(1)).toEqual(['thinking']);
     expect(tool(2)).toMatchObject({ tool: 'Read', title: 'Read(src/pages/Checkout.tsx)' });
     expect(result(2).text).toMatch(/^ +1\t/);
@@ -121,25 +121,25 @@ describe('demoTerminalEntries', () => {
     expect(tool(6).input!.split('\n').every((l) => l.startsWith('+ '))).toBe(true);
     // Bash com comando e saída.
     expect(tool(7)).toMatchObject({ tool: 'Bash', title: 'Bash(npm test)', input: 'npm test', inputKind: 'command' });
-    expect(result(7).text).toMatch(/✓ \d+ testes passaram/);
+    expect(result(7).text).toMatch(/✓ \d+ tests passed/);
     expect(result(8).text).toContain('On branch feat/checkout');
     expect(result(9).text).toContain('built in');
     expect(tool(10)).toMatchObject({ tool: 'WebSearch', title: 'WebSearch(react checkout form validation)' });
     expect(tool(11)).toMatchObject({ tool: 'WebFetch', title: 'WebFetch(https://developer.mozilla.org/pt-BR/docs/Web)' });
-    expect(tool(12)).toMatchObject({ tool: 'TodoWrite', title: 'TodoWrite(1/3 concluídas)' });
-    expect(tool(12).input).toBe('☒ Criar página de checkout\n◐ Validar formulário de endereço\n☐ Escrever testes do carrinho');
+    expect(tool(12)).toMatchObject({ tool: 'TodoWrite', title: 'TodoWrite(1/3 done)' });
+    expect(tool(12).input).toBe('☒ Create checkout page\n◐ Validate address form\n☐ Write cart tests');
     expect(tool(13)).toMatchObject({ tool: 'Agent', title: 'Agent(general-purpose: 3 frentes em paralelo)' });
     expect(kinds(14)).toEqual(['thinking']);
-    expect(system(15)).toMatchObject({ text: 'Aguardando você: aprovar uma permissão', level: 'warn' });
+    expect(system(15)).toMatchObject({ text: 'Waiting on you: approve a permission', level: 'warn' });
     // Shell em segundo plano: lançamento, espera e fim (ok e falha).
-    expect(result(16).text).toMatch(/segundo plano/);
+    expect(result(16).text).toMatch(/in the background/);
     expect(groups[17]).toEqual([expect.objectContaining({ kind: 'assistant' })]);
-    expect(system(18)).toMatchObject({ text: 'Tarefa em segundo plano concluída: npm test -- --runInBand (1min 35s)', level: 'info' });
-    expect(system(19)).toMatchObject({ text: 'Tarefa em segundo plano falhou: npm run build -- --mode production', level: 'warn' });
+    expect(system(18)).toMatchObject({ text: 'Background task completed: npm test -- --runInBand (1min 35s)', level: 'info' });
+    expect(system(19)).toMatchObject({ text: 'Background task failed: npm run build -- --mode production', level: 'warn' });
     // Fim do turno: resumo do assistant e a duração.
     expect(kinds(20)).toEqual(['assistant', 'system']);
-    expect(system(20).text).toBe('Turno concluído em 2min 10s');
-    expect(system(21).text).toBe('Conversa compactada automaticamente');
+    expect(system(20).text).toBe('Turn completed in 2min 10s');
+    expect(system(21).text).toBe('Conversation compacted automatically');
     expect(system(22)).toMatchObject({ text: 'Erro em Bash', level: 'error', detail: 'Exit code 1' });
     expect(tool(23)).toMatchObject({ tool: 'SendMessage' });
   });
@@ -159,7 +159,7 @@ describe('demoTerminalEntries', () => {
 
   it('sem atividades, o título abre a conversa; depois, os prompts vêm das atividades', () => {
     const empty = demoTerminalEntries(agent(), []);
-    expect(empty).toEqual([expect.objectContaining({ kind: 'user', text: 'Cria a página de checkout com resumo do pedido', at: T0 })]);
+    expect(empty).toEqual([expect.objectContaining({ kind: 'user', text: 'Build the checkout page with an order summary', at: T0 })]);
     expect(demoTerminalEntries(agent({ title: undefined }), [])).toEqual([]);
     const withPrompt = demoTerminalEntries(agent(), history().slice(0, 1));
     expect(withPrompt.map((x) => x.kind)).toEqual(['user']);
@@ -214,12 +214,12 @@ describe('demoTerminalEntries: agente do Codex', () => {
     expect(tool(6).input).toMatch(/^\*\*\* Begin Patch\n\*\*\* Add File: src\/api\/orders\.ts\n\+/);
     expect(result(6).text).toBe('Success. Updated the following files:\nA src/api/orders.ts');
     expect(tool(7)).toMatchObject({ tool: 'Shell', title: 'Shell(npm test)', input: 'npm test' });
-    expect(result(7).text).toMatch(/✓ \d+ testes passaram/);
+    expect(result(7).text).toMatch(/✓ \d+ tests passed/);
     expect(tool(10)).toMatchObject({ tool: 'web_search', title: 'web_search(react checkout form validation)' });
     expect(tool(11).title).toMatch(/^Shell\(curl -sL https:\/\/developer\.mozilla\.org/);
-    expect(tool(12)).toMatchObject({ tool: 'update_plan', title: 'update_plan(1/3 concluídas)' });
+    expect(tool(12)).toMatchObject({ tool: 'update_plan', title: 'update_plan(1/3 done)' });
     expect(tool(13)).toMatchObject({ tool: 'spawn_agent', title: 'spawn_agent(worker: 3 frentes em paralelo)' });
-    expect(result(16).text).toMatch(/segundo plano/);
+    expect(result(16).text).toMatch(/in the background/);
     // Nada do jeito do Claude Code.
     expect(e.some((x) => x.kind === 'tool' && ['Read', 'Edit', 'Write', 'Grep', 'Glob', 'Bash', 'TodoWrite', 'Agent', 'WebSearch', 'WebFetch'].includes(x.tool))).toBe(false);
   });

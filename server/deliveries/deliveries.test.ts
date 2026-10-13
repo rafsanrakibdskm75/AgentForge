@@ -51,23 +51,23 @@ function transcript(): string[] {
   ].map((l) => JSON.stringify(l));
 }
 
-describe('entregas: texto', () => {
-  it('manchete = primeira frase sem markdown; resumo = último parágrafo corrido', () => {
+describe('deliveries: text', () => {
+  it('headline = first sentence without markdown; summary = last running paragraph', () => {
     expect(headlineOf(REPLY)).toBe('O relatório está pronto e foi enviado.');
     expect(summaryOf(REPLY, headlineOf(REPLY))).toMatch(/^Em poucas palavras: o relatório de vendas agora mostra/);
     expect(summaryOf('Uma frase só, sem resumo nenhum aqui dentro.', 'x')).toBeUndefined();
     expect(headlineOf('# Título\n\n' + 'palavra '.repeat(60))).toMatch(/…$/);
   });
 
-  it('links para arquivos de ver: absolutos, relativos ao projeto; nada protegido', () => {
+  it('links to viewable files: absolute, project-relative; nothing protected', () => {
     expect(linkedFiles(REPLY, '/Users/ana/proj')).toEqual(['/Users/ana/proj/relatorio.pdf']);
     expect(linkedFiles('veja [a](telas/a.png) e [b](https://x.com/b.png) e /Users/ana/.ssh/k.png', '/Users/ana/proj')).toEqual(['/Users/ana/proj/telas/a.png']);
     expect(linkedFiles('[c](relativo.png)')).toEqual([]);
   });
 });
 
-describe('entregas: pedidos do transcript', () => {
-  it('só o texto que encerrou a vez vale; anexos, capturas (as 2 últimas) e contagem', () => {
+describe('deliveries: transcript requests', () => {
+  it('only the text that ended the turn counts; attachments, screenshots (last 2) and counting', () => {
     const { turns, last } = parseTurns(transcript(), createTerminalParser());
     expect(turns.map((t) => t.start.text)).toEqual(['Corrija o relatório de vendas', 'Obrigado']);
     const t = turns[0];
@@ -78,7 +78,7 @@ describe('entregas: pedidos do transcript', () => {
     expect(last?.ended).toBe(false);
   });
 
-  it('DeliveryIndex: monta as entregas, ids opacos e nada de arquivo protegido', async () => {
+  it('DeliveryIndex: builds the deliveries, opaque ids and no protected files', async () => {
     const dir = tempDir().dir;
     const path = join(dir, 's.jsonl');
     writeFileSync(path, transcript().join('\n') + '\n');
@@ -96,8 +96,8 @@ describe('entregas: pedidos do transcript', () => {
     expect(d.attachments.map((a) => [a.name, a.kind, a.caption ?? '', !!a.capture])).toEqual([
       ['print.png', 'image', 'A tela nova', false],
       ['relatorio.pdf', 'pdf', '', false],
-      ['tela-1.png', 'image', 'Tela capturada pelo agente', true],
-      ['tela-2.png', 'image', 'Tela capturada pelo agente', true],
+      ['tela-1.png', 'image', 'Screenshot taken by the agent', true],
+      ['tela-2.png', 'image', 'Screenshot taken by the agent', true],
     ]);
     expect(JSON.stringify(list)).not.toContain('/Users/ana/proj/print.png');
     expect(JSON.stringify(list)).not.toContain('.ssh');

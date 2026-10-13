@@ -40,7 +40,7 @@ describe('rollout do Codex: paginated', () => {
       R.agent(T, 'turn1', 'a1', 'Corrigi o teste.', at + 5),
       R.taskComplete('turn1', at + 6, 6_000),
     ]);
-    expect(texts(results)).toEqual(['Recebeu “Arrume o teste quebrado da loja”', 'Pensando…', 'Escrevendo a resposta', 'Concluiu em 6s']);
+    expect(texts(results)).toEqual(['Received “Arrume o teste quebrado da loja”', 'Thinking…', 'Writing the reply', 'Done in 6s']);
     expect(ids(results)).toEqual(['acc:t#u1', 'acc:t#r1', 'acc:t#a1', 'acc:t#turn1:done']);
     expect(results.find((r) => r.activities[0]?.activity.kind === 'prompt')?.activities[0].activity.kind).toBe('prompt');
     expect(state.title).toBe('Arrume o teste quebrado da loja');
@@ -60,11 +60,11 @@ describe('rollout do Codex: paginated', () => {
     ]);
     const acts = results.flatMap((r) => r.activities.map((a) => a.activity));
     expect(acts.map((a) => [a.id, a.text, a.tool])).toEqual([
-      ['acc:t#call_1', 'Rodando testes', 'Bash'],
-      ['acc:t#call_2', 'Enviando commits (git push)', 'Bash'],
-      ['acc:t#call_2:e', 'Erro em Bash', 'Bash'],
-      ['acc:t#call_3', 'Organizando arquivos', 'Bash'],
-      ['acc:t#call_3:r', 'Você recusou: Bash', undefined],
+      ['acc:t#call_1', 'Running tests', 'Bash'],
+      ['acc:t#call_2', 'Pushing commits (git push)', 'Bash'],
+      ['acc:t#call_2:e', 'Error in Bash', 'Bash'],
+      ['acc:t#call_3', 'Organizing files', 'Bash'],
+      ['acc:t#call_3:r', 'You denied: Bash', undefined],
     ]);
     expect(acts[0].detail).toBe('npm test');
     expect(state.stats.toolCalls).toBe(3);
@@ -80,8 +80,8 @@ describe('rollout do Codex: paginated', () => {
       R.customToolCall('call_x', 'exec', 'await tools.exec_command({cmd: "ls"})'),
     ]);
     const results = all.slice(1);
-    expect(results[0].activities[0].activity).toMatchObject({ id: 'acc:t#call_9', text: 'Compilando o projeto', tool: 'Bash' });
-    expect(results[1].activities[0].activity).toMatchObject({ id: 'acc:t#call_x', text: 'Executando código' });
+    expect(results[0].activities[0].activity).toMatchObject({ id: 'acc:t#call_9', text: 'Building the project', tool: 'Bash' });
+    expect(results[1].activities[0].activity).toMatchObject({ id: 'acc:t#call_x', text: 'Running code' });
     expect([...state.pending.keys()]).toEqual(['call_9', 'call_x']);
     const done = parseRolloutLine(state, R.command(T, 't', 'call_9', 'npm run build'), ctx);
     expect(done.activities[0].activity.id).toBe('acc:t#call_9');
@@ -101,10 +101,10 @@ describe('rollout do Codex: paginated', () => {
     ]);
     const acts = results.flatMap((r) => r.activities.map((a) => a.activity));
     expect(acts.map((a) => [a.id, a.text])).toEqual([
-      ['acc:t#call_p', 'Editando app.ts'],
-      ['acc:t#call_p:1', 'Escrevendo novo.ts'],
+      ['acc:t#call_p', 'Editing app.ts'],
+      ['acc:t#call_p:1', 'Writing novo.ts'],
       ['acc:t#call_m', 'GitHub: create pull request'],
-      ['acc:t#call_plan', 'Atualizando o plano'],
+      ['acc:t#call_plan', 'Updating the plan'],
     ]);
     expect(acts[2].tool).toBe('mcp__github__create_pull_request');
     expect(state.tasks).toEqual([
@@ -117,8 +117,8 @@ describe('rollout do Codex: paginated', () => {
       { path: 'src/a.ts', kind: 'update' },
       { path: 'src/b.ts', kind: 'add' },
     ]);
-    expect(describeCodexTool('apply_patch', { command: '*** Begin Patch\n*** Add File: docs/x.md\n+oi\n*** End Patch' })).toMatchObject({ tool: 'Write', desc: { text: 'Escrevendo x.md' } });
-    expect(describeCodexTool('Bash', { command: 'pytest -q' }).desc.text).toBe('Rodando testes');
+    expect(describeCodexTool('apply_patch', { command: '*** Begin Patch\n*** Add File: docs/x.md\n+oi\n*** End Patch' })).toMatchObject({ tool: 'Write', desc: { text: 'Writing x.md' } });
+    expect(describeCodexTool('Bash', { command: 'pytest -q' }).desc.text).toBe('Running tests');
     expect(describeCodexTool('create_issue', {}, 'mcp__github__').tool).toBe('mcp__github__create_issue');
   });
 
@@ -132,11 +132,11 @@ describe('rollout do Codex: paginated', () => {
     ]);
     const acts = results.flatMap((r) => r.activities.map((a) => a.activity));
     expect(acts.map((a) => [a.id, a.text, a.detail])).toEqual([
-      ['acc:t#call_js', 'Executando código', undefined],
-      ['acc:t#call_msg', 'Escrevendo a resposta', 'Achei o bug no checkout'],
+      ['acc:t#call_js', 'Running code', undefined],
+      ['acc:t#call_msg', 'Writing the reply', 'Achei o bug no checkout'],
       // O item concluído tem o mesmo id: o escritório não duplica.
-      ['acc:t#call_msg', 'Escrevendo a resposta', 'Achei o bug no checkout'],
-      ['acc:t#call_cut', 'Escrevendo a resposta', 'Texto cortado'],
+      ['acc:t#call_msg', 'Writing the reply', 'Achei o bug no checkout'],
+      ['acc:t#call_cut', 'Writing the reply', 'Texto cortado'],
     ]);
   });
 
@@ -178,7 +178,7 @@ describe('rollout do Codex: paginated', () => {
     const lines = [R.taskStarted('t9'), R.turnAborted('t9'), R.legacyAgent('x')];
     const a = feed(lines);
     const b = feed(lines);
-    expect(texts(a.results)).toEqual(['Interrompido por você', 'Escrevendo a resposta']);
+    expect(texts(a.results)).toEqual(['Interrupted by you', 'Writing the reply']);
     expect(ids(a.results)).toEqual(ids(b.results));
     expect(a.state.turnOpen).toBe(false);
   });
@@ -196,7 +196,7 @@ describe('rollout do Codex: legacy', () => {
       // Num legacy, item_completed de UserMessage não existe; se aparecer, não duplica a conversa por isso.
     ]);
     expect(state.mode).toBe('legacy');
-    expect(texts(results)).toEqual(['Recebeu “Liste os arquivos”', 'Pensando…', 'Explorando pastas', 'Erro em Bash', 'Escrevendo a resposta']);
+    expect(texts(results)).toEqual(['Received “Liste os arquivos”', 'Thinking…', 'Exploring folders', 'Error in Bash', 'Writing the reply']);
     expect(state.stats.toolCalls).toBe(1);
     expect(state.title).toBe('Liste os arquivos');
   });

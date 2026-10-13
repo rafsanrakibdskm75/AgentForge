@@ -110,11 +110,11 @@ describe('FeedPanel pausado', () => {
     expect(retained.map((f) => f.id)).toEqual(fresh.slice(70).map((f) => f.id));
     p.view.render();
     expect(p.list.children.map((e) => e.dataset.key)).toEqual(['antes']);
-    expect(p.pill.textContent).toBe('99 novas');
+    expect(p.pill.textContent).toBe('99 new');
     p.prefs.hiddenAccounts = ['.claude-2'];
     p.view.render();
     expect(p.pill.hidden).toBe(false);
-    expect(p.pill.textContent).toBe('70 novas');
+    expect(p.pill.textContent).toBe('70 new');
     p.prefs.hiddenAccounts = [];
     p.pill.fire('click');
     p.view.render();
@@ -124,7 +124,7 @@ describe('FeedPanel pausado', () => {
     p.scroller.fire('scroll');
     p.receive([item('depois', shown)]);
     p.view.render();
-    expect(p.pill.textContent).toBe('1 nova');
+    expect(p.pill.textContent).toBe('1 new');
   });
 
   it.each(['retomar', 'recolher'])('preserva os metadados das linhas e pendências, liberando o resto ao %s', (action) => {

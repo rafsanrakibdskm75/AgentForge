@@ -1,4 +1,4 @@
-// Gerador de imagens via OpenRouter para os assets do Habblaud.
+// Gerador de imagens via OpenRouter para os assets do AgentForge.
 //
 // Uso (a partir da raiz do projeto, com OPENROUTER_KEY exportada):
 //   node scripts/assets/generate.mjs models                 lista os modelos com saída de imagem
@@ -126,7 +126,7 @@ async function requestImage(model, prompt, aspect) {
     headers: {
       Authorization: `Bearer ${apiKey()}`,
       'Content-Type': 'application/json',
-      'X-Title': 'Habblaud assets',
+      'X-Title': 'AgentForge assets',
     },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(TIMEOUT_MS),

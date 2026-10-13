@@ -24,11 +24,11 @@ describe('registro de sessões', () => {
     expect(registryStatus(parseRegistryEntry(entry(1, { status: 'shell' }))!)).toEqual({ status: 'shell' });
     expect(registryStatus(parseRegistryEntry(entry(1, { status: 'waiting', waitingFor: 'input needed' }))!)).toEqual({
       status: 'waiting',
-      waitingFor: 'responder uma pergunta',
+      waitingFor: 'answer a question',
     });
     expect(registryStatus(parseRegistryEntry(entry(1, { status: 'waiting', waitingFor: 'Allow Bash(rm -rf x)?' }))!)).toEqual({
       status: 'waiting',
-      waitingFor: 'aprovar uma permissão',
+      waitingFor: 'approve a permission',
     });
     expect(registryStatus(parseRegistryEntry(entry(1, { status: undefined }))!)).toEqual({});
   });

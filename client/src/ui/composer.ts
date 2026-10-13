@@ -1,5 +1,5 @@
-// Caixa de mensagem: manda um texto ao agente principal pelo Habblaud (POST /api/messages) e o plugin
-// habblaud-mensagens o entrega à sessão como se você o tivesse digitado (no Codex, `codex queue` a põe na fila da
+// Caixa de mensagem: manda um texto ao agente principal pelo AgentForge (POST /api/messages) e o plugin
+// agentforge-mensagens o entrega à sessão como se você o tivesse digitado (no Codex, `codex queue` a põe na fila da
 // sessão, que a usa quando fica ociosa). Fica na gaveta do agente e no rodapé do
 // terminal (só a sessão ao vivo). Enter manda, Shift+Enter quebra a linha; a linha de situação acompanha a entrega
 // (GET /api/messages/:id) até ela se resolver. As teclas digitadas aqui não disparam os atalhos globais. O rascunho de

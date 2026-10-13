@@ -292,7 +292,7 @@ export class OfficeStore {
         body: JSON.stringify(body),
       });
     } catch {
-      return tr('Sem conexão com o Habblaud.');
+      return tr('Sem conexão com o AgentForge.');
     }
     if (res.ok) return undefined;
     try {

@@ -61,8 +61,8 @@ function sent(r: SendResult): string {
   return r.message.id;
 }
 
-describe('MessageRegistry: presença', () => {
-  it('a sessão que pergunta pela caixa de entrada passa a receber mensagens (canMessage) e o snapshot muda só na transição', () => {
+describe('MessageRegistry: presence', () => {
+  it('the session that asks for the inbox starts receiving messages (canMessage) and the snapshot only changes on transition', () => {
     const { office, registry, clock } = setup();
     expect(snapAgent(office, MAIN)?.canMessage).toBeUndefined();
     expect(office.commit().changed).toBe(false);
@@ -91,7 +91,7 @@ describe('MessageRegistry: presença', () => {
     expect(c2.snapshot.agents.find((a) => a.id === MAIN)?.canMessage).toBeUndefined();
   });
 
-  it('sessão desconhecida, de outra conta, de quem saiu ou corpo inválido: nenhuma presença', () => {
+  it('unknown session, from another account, from someone who left, or invalid body: no presence', () => {
     const { office, registry } = setup();
     expect(registry.inbox({ session: 'nao-existe' })).toEqual([]);
     expect(registry.inbox({ session: SESSION, account: 'outra-conta' })).toEqual([]);
@@ -102,37 +102,37 @@ describe('MessageRegistry: presença', () => {
     for (const bad of [null, {}, { session: '' }, { session: 42 }, []]) expect(() => registry.inbox(bad)).toThrow(/session/);
   });
 
-  it('subagente nunca recebe (mesma sessão do principal: a presença vai para o principal)', () => {
+  it('subagent never receives (same session as the main: presence goes to the main)', () => {
     const { office, registry } = setup();
     office.addSub({ id: SUB, parentId: MAIN, sessionId: SESSION, role: 'Explore', background: false, startedAt: 0 });
     registry.inbox({ session: SESSION });
     const snap = office.commit().snapshot;
     expect(snap.agents.find((a) => a.id === MAIN)?.canMessage).toBe(true);
     expect(snap.agents.find((a) => a.id === SUB)?.canMessage).toBeUndefined();
-    expect(registry.send({ agentId: SUB, text: 'oi' })).toEqual({ error: 'unavailable', reason: expect.stringMatching(/subagentes/) });
+    expect(registry.send({ agentId: SUB, text: 'oi' })).toEqual({ error: 'unavailable', reason: expect.stringMatching(/subagents/) });
   });
 });
 
-describe('MessageRegistry: mandar', () => {
-  it('valida o corpo: agentId e texto, vazio e acima de 20.000 caracteres', () => {
+describe('MessageRegistry: sending', () => {
+  it('validates the body: agentId and text, empty and above 20,000 characters', () => {
     const { registry } = setup();
     registry.inbox({ session: SESSION });
     for (const bad of [null, {}, { agentId: MAIN }, { text: 'oi' }, { agentId: MAIN, text: 3 }]) expect(() => registry.send(bad)).toThrow(/agentId/);
-    expect(() => registry.send({ agentId: MAIN, text: '  \n ' })).toThrow(/vazia/);
-    expect(() => registry.send({ agentId: MAIN, text: 'x'.repeat(20_001) })).toThrow(/20\.000/);
+    expect(() => registry.send({ agentId: MAIN, text: '  \n ' })).toThrow(/empty/);
+    expect(() => registry.send({ agentId: MAIN, text: 'x'.repeat(20_001) })).toThrow(/20,000/);
     expect('message' in registry.send({ agentId: MAIN, text: 'x'.repeat(20_000) })).toBe(true);
   });
 
-  it('agente desconhecido (not-found), sem o plugin conectado ou que saiu (unavailable, com o motivo)', () => {
+  it('unknown agent (not-found), without the plugin connected or who left (unavailable, with the reason)', () => {
     const { office, registry } = setup();
     expect(registry.send({ agentId: 'nao-existe', text: 'oi' })).toEqual({ error: 'not-found' });
-    expect(registry.send({ agentId: MAIN, text: 'oi' })).toEqual({ error: 'unavailable', reason: expect.stringMatching(/habblaud-mensagens/) });
+    expect(registry.send({ agentId: MAIN, text: 'oi' })).toEqual({ error: 'unavailable', reason: expect.stringMatching(/agentforge-mensagens/) });
     registry.inbox({ session: SESSION });
     office.closeMain(MAIN);
-    expect(registry.send({ agentId: MAIN, text: 'oi' })).toEqual({ error: 'unavailable', reason: expect.stringMatching(/saiu/) });
+    expect(registry.send({ agentId: MAIN, text: 'oi' })).toEqual({ error: 'unavailable', reason: expect.stringMatching(/left the office/) });
   });
 
-  it(`no máximo ${MAX_OPEN} mensagens não resolvidas por agente (too-many); resolvidas não contam`, () => {
+  it(`at most ${MAX_OPEN} unresolved messages per agent (too-many); resolved ones don't count`, () => {
     const { registry } = setup();
     registry.inbox({ session: SESSION });
     registry.inbox({ session: 'sess-2' });
@@ -146,7 +146,7 @@ describe('MessageRegistry: mandar', () => {
     expect('message' in registry.send({ agentId: MAIN, text: 'agora cabe' })).toBe(true);
   });
 
-  it('a resposta (201/GET) é só a situação: o texto nunca sai para a página', () => {
+  it('the response (201/GET) is just the status: the text never leaves for the page', () => {
     const { registry, clock } = setup();
     registry.inbox({ session: SESSION });
     const r = registry.send({ agentId: MAIN, text: 'segredo do usuário' });
@@ -156,8 +156,8 @@ describe('MessageRegistry: mandar', () => {
   });
 });
 
-describe('MessageRegistry: entrega pelo plugin', () => {
-  it('a rodada entrega as mensagens do próprio agente na ordem (até 5) com o texto como foi digitado e marca sent', () => {
+describe('MessageRegistry: delivery via the plugin', () => {
+  it("the round delivers the agent's own messages in order (up to 5) with the text as typed and marks sent", () => {
     const { registry, clock } = setup();
     registry.inbox({ session: SESSION });
     registry.inbox({ session: 'sess-2' });
@@ -177,7 +177,7 @@ describe('MessageRegistry: entrega pelo plugin', () => {
     expect(registry.inbox({ session: 'sess-2' }).map((m) => m.text)).toEqual(['para o outro']);
   });
 
-  it('confirmação: ok → delivered com a atividade (mascarada e cortada) no feed; falha → failed com o motivo', () => {
+  it('confirmation: ok → delivered with the activity (masked and cut) in the feed; failure → failed with the reason', () => {
     const { office, registry, clock } = setup();
     registry.inbox({ session: SESSION });
     const secret = 'sk-ant-api03-abcdefghijklmnopqrstuvwxyz0123456789';
@@ -195,13 +195,13 @@ describe('MessageRegistry: entrega pelo plugin', () => {
     const commit = office.commit();
     const feed = commit.feed.map((f) => f.activity);
     expect(feed).toHaveLength(1);
-    expect(feed[0]).toMatchObject({ kind: 'communicate', icon: '✉️', text: 'Mensagem pelo Habblaud', at: clock.now() });
+    expect(feed[0]).toMatchObject({ kind: 'communicate', icon: '✉️', text: 'Message via AgentForge', at: clock.now() });
     expect(feed[0].detail).not.toContain(secret);
     expect(feed[0].detail!.length).toBeLessThanOrEqual(300);
     expect(feed[0].detail).toMatch(/^Use /);
   });
 
-  it('confirmação de outra sessão, de id desconhecido ou de mensagem não buscada é ignorada; corpo inválido lança', () => {
+  it('confirmation from another session, unknown id, or unfetched message is ignored; invalid body throws', () => {
     const { registry } = setup();
     registry.inbox({ session: SESSION });
     const queued = sent(registry.send({ agentId: MAIN, text: 'na fila' }));
@@ -214,8 +214,8 @@ describe('MessageRegistry: entrega pelo plugin', () => {
   });
 });
 
-describe('MessageRegistry: prazos e limpeza', () => {
-  it('na fila sem ser buscada: falha em 60 s; buscada sem confirmação: falha em 30 s', () => {
+describe('MessageRegistry: timeouts and cleanup', () => {
+  it('queued without being fetched: fails in 60 s; fetched without confirmation: fails in 30 s', () => {
     const { registry, clock } = setup();
     registry.inbox({ session: SESSION });
     const a = sent(registry.send({ agentId: MAIN, text: 'a' }));
@@ -239,7 +239,7 @@ describe('MessageRegistry: prazos e limpeza', () => {
     expect(registry.get(b)).toMatchObject({ status: 'failed', error: ERR_NOT_CONFIRMED });
   });
 
-  it('confirmação atrasada (depois do prazo) ainda corrige a situação: o plugin é quem sabe se entrou', () => {
+  it('late confirmation (after the deadline) still fixes the status: the plugin is the one that knows if it got in', () => {
     const { office, registry, clock } = setup();
     registry.inbox({ session: SESSION });
     const id = sent(registry.send({ agentId: MAIN, text: 'entrou tarde' }));
@@ -257,7 +257,7 @@ describe('MessageRegistry: prazos e limpeza', () => {
     expect(registry.get(id)?.status).toBe('delivered');
   });
 
-  it('agente que sai: as mensagens não resolvidas falham e a presença some', () => {
+  it('agent that leaves: unresolved messages fail and presence disappears', () => {
     const { office, registry } = setup();
     registry.inbox({ session: SESSION });
     const a = sent(registry.send({ agentId: MAIN, text: 'a' }));
@@ -270,7 +270,7 @@ describe('MessageRegistry: prazos e limpeza', () => {
     expect(registry.reachable().size).toBe(0);
   });
 
-  it('/clear ou /resume antes da busca: a mensagem não vai para a sessão nova e falha', () => {
+  it("/clear or /resume before the fetch: the message doesn't go to the new session and fails", () => {
     const { office, registry } = setup();
     registry.inbox({ session: SESSION });
     const id = sent(registry.send({ agentId: MAIN, text: 'para a conversa antiga' }));
@@ -283,7 +283,7 @@ describe('MessageRegistry: prazos e limpeza', () => {
     expect(registry.inbox({ session: 'sess-nova' }).map((m) => m.id)).toEqual([next]);
   });
 
-  it('resolvidas ficam 10 min para a consulta e depois somem', () => {
+  it('resolved ones stay 10 min for querying and then disappear', () => {
     const { registry, clock } = setup();
     registry.inbox({ session: SESSION });
     const id = sent(registry.send({ agentId: MAIN, text: 'a' }));
@@ -299,7 +299,7 @@ describe('MessageRegistry: prazos e limpeza', () => {
 });
 
 describe('MessageRegistry: demo', () => {
-  it('agente do demo: entrega fictícia em ~1 s com a atividade no agente; nunca sai pela caixa de entrada', () => {
+  it('demo agent: fake delivery in ~1 s with the activity on the agent; never leaves via the inbox', () => {
     const { office, registry, clock } = setup();
     office.setDemo(true);
     const demo = office.commit().snapshot.agents.find((a) => a.id.startsWith('demo:') && a.kind === 'main' && a.status !== 'offline')!;
@@ -315,10 +315,10 @@ describe('MessageRegistry: demo', () => {
     registry.tick();
     expect(registry.get(id)?.status).toBe('delivered');
     const after = office.commit().snapshot.agents.find((a) => a.id === demo.id)!;
-    expect(after.recent.at(-1)).toMatchObject({ kind: 'communicate', text: 'Mensagem pelo Habblaud', detail: 'oi, demo' });
+    expect(after.recent.at(-1)).toMatchObject({ kind: 'communicate', text: 'Message via AgentForge', detail: 'oi, demo' });
   });
 
-  it('demo desligado no meio do caminho: a mensagem falha (o agente saiu)', () => {
+  it('demo turned off halfway: the message fails (the agent left)', () => {
     const { office, registry } = setup();
     office.setDemo(true);
     const demo = office.commit().snapshot.agents.find((a) => a.id.startsWith('demo:') && a.kind === 'main' && a.status !== 'offline')!;

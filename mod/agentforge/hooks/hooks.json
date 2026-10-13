@@ -1,0 +1,4 @@
+{
+  "description": "Módulo de hooks do mod do AgentForge (uso do plano, aviso embaixo do prompt e /agentforge)",
+  "modules": ["./register.ts"]
+}

@@ -71,7 +71,7 @@ class MergeTest(unittest.TestCase):
 
 class FontTest(unittest.TestCase):
     def test_acentos_e_largura(self) -> None:
-        self.assertEqual(pixelart.text_width("Habblaud"), 47)
+        self.assertEqual(pixelart.text_width("AgentForge"), 47)
         img = pixelart.text_image("escritório ação", "#ffffff")
         self.assertEqual(img.height, pixelart.CELL_HEIGHT)
         with self.assertRaises(KeyError):

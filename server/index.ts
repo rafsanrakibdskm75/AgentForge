@@ -1,4 +1,4 @@
-// Servidor do Habblaud: observa as sessões abertas do Claude Code (todas as contas),
+// Servidor do AgentForge: observa as sessões abertas do Claude Code (todas as contas),
 // mantém o modelo do escritório e transmite via SSE. Sem dependências de runtime.
 //   npm run dev    -> tsx server/index.ts --dev (Vite em middleware mode, HMR no mesmo servidor)
 //   npm start      -> node dist/server/index.js (serve dist/client)
@@ -16,6 +16,8 @@ import { TerminalStreams } from './http/terminal';
 import { createTimelineHandler } from './http/timeline';
 import { TIMELINE_DIR, TimelineRecorder } from './history/timeline';
 import { DayStatsService } from './history/daystats';
+import { AlertService } from './alerts/service';
+import { createAlertsRoutes } from './alerts/http';
 import { describeStateMigration, legacyEnvWarning, migrateLegacyStateDir } from './legacy';
 import { errMsg, log } from './log';
 import { NameStore } from './model/names';
@@ -37,6 +39,9 @@ import { ClaudeWatcher } from './sources/watcher';
 import { discoverCodexDirs } from './sources/codex/accounts';
 import { CodexHistory } from './sources/codex/history';
 import { CodexSource } from './sources/codex/source';
+import { discoverGeminiDirs } from './sources/gemini/accounts';
+import { GeminiHistory } from './sources/gemini/history';
+import { GeminiSource } from './sources/gemini/source';
 import { createBuildReader } from './build';
 import { UpdateChecker } from './updates/checker';
 import { tr } from '../shared/i18n';
@@ -53,7 +58,7 @@ import { FileFetcher } from './deliveries/fetcher';
 const config = loadConfig();
 const startedAt = Date.now();
 
-// Nome antigo (CodeTown, até a 0.3.2): leva ~/.codetown para ~/.habblaud antes de ler qualquer estado e avisa
+// Nome antigo (CodeTown, até a 0.3.2): leva ~/.codetown para ~/.agentforge antes de ler qualquer estado e avisa
 // das variáveis CODETOWN_* que não valem mais. No Docker, quem migra é o docker:up.
 if (!config.inDocker) {
   const r = migrateLegacyStateDir(config.home);
@@ -71,7 +76,7 @@ roomAliases.load();
 
 // Office, contas e fontes de agentes se referenciam (avisos de mudança / fontes): ligação tardia.
 const late: { office?: Office; agents?: SourceSet; permissions?: PermissionRegistry; messages?: MessageRegistry; ptys?: PtyManager; ptyOff?: string } = {};
-// Versão nova: consulta a release mais recente no GitHub a cada 6 h (HABBLAUD_UPDATE_CHECK=0 desliga).
+// Versão nova: consulta a release mais recente no GitHub a cada 6 h (AGENTFORGE_UPDATE_CHECK=0 desliga).
 const updates = new UpdateChecker({
   current: config.version,
   repo: config.repo,
@@ -104,15 +109,15 @@ const office = new Office({
   updates: () => updates.status(),
 });
 // Fontes de agentes, uma por ferramenta (sources/source.ts): a do Claude Code e, depois dela, a do Codex (quando há
-// pastas do Codex; HABBLAUD_CODEX=0 desliga), com o histórico dela no HistorySet abaixo e as contas registradas por
+// pastas do Codex; AGENTFORGE_CODEX=0 desliga), com o histórico dela no HistorySet abaixo e as contas registradas por
 // ela mesma (accounts.setProviderAccounts). `codex` também recebe os eventos dos hooks do Codex (CodexLive).
 const claude = new ClaudeWatcher({ accounts, office, inDocker: config.inDocker });
 const agents = new SourceSet([claude]);
 const codexDirs = config.codex ? discoverCodexDirs(process.env, config.home) : [];
 const codex = codexDirs.length ? new CodexSource({ accounts, office, dirs: codexDirs, env: process.env, home: config.home }) : undefined;
 if (codex) agents.add(codex);
-// Eventos dos hooks do Codex (POST /api/codex/events, mod/habblaud-codex/hook.mjs): vão para a fonte do Codex ao vivo
-// (CodexLive); sem ela (nenhuma pasta do Codex ou HABBLAUD_CODEX=0) a rota responde {ok: false}.
+// Eventos dos hooks do Codex (POST /api/codex/events, mod/agentforge-codex/hook.mjs): vão para a fonte do Codex ao vivo
+// (CodexLive); sem ela (nenhuma pasta do Codex ou AGENTFORGE_CODEX=0) a rota responde {ok: false}.
 const codexLive: CodexLive | undefined = codex;
 late.office = office;
 late.agents = agents;
@@ -123,6 +128,10 @@ const hub = new Hub(office, {
 // "Meu dia": amostra o escritório a cada segundo e persiste em <dataDir>/stats/ (ver history/daystats.ts).
 const stats = new DayStatsService({ dir: join(config.dataDir, 'stats'), snapshot: () => hub.current() });
 stats.load();
+// "Needs you" phone alerts via ntfy (server/alerts/): watches for agents entering `waiting`.
+// AGENTFORGE_ALERTS=0 disables; AGENTFORGE_ALERTS_TOPIC sets the topic; AGENTFORGE_ALERTS_SERVER overrides ntfy.sh.
+const alerts = new AlertService({ dataDir: config.dataDir, env: process.env, snapshot: () => hub.current() });
+alerts.start();
 // Terminal: só existe com bind local (ver terminalOffReason em config.ts).
 // Cada agente com o parser da ferramenta dele (o do Claude Code por padrão).
 const terminals = config.terminal
@@ -133,6 +142,11 @@ const history = config.terminal
   ? new HistorySet([new SessionHistory({ accounts: () => accounts.entries(), openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) })])
   : undefined;
 if (history && codex) history.add(new CodexHistory({ accounts: () => accounts.entriesOf('codex'), openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) }));
+// Gemini CLI: sessões em ~/.muse/tmp/<projeto>/chats/ (AGENTFORGE_GEMINI=0 desliga), com o histórico no HistorySet.
+const geminiDirs = config.gemini ? discoverGeminiDirs(process.env, config.home) : [];
+const gemini = geminiDirs.length ? new GeminiSource({ accounts, office, dirs: geminiDirs, env: process.env, home: config.home }) : undefined;
+if (gemini) agents.add(gemini);
+if (history && gemini) history.add(new GeminiHistory({ accounts: () => accounts.entriesOf('gemini'), openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) }));
 // Entregas: o fim de cada pedido, lido dos transcripts do histórico (mesma trava do terminal). Os arquivos entregues
 // são lidos aqui (Node, ou pasta de conta montada no Docker) ou pelo auxiliar do host.
 const deliveries = history
@@ -180,14 +194,14 @@ const permissions = config.terminal
     })
   : undefined;
 late.permissions = permissions;
-// Mensagens pelo escritório (plugin habblaud-mensagens): entram na sessão como se você as tivesse digitado, então
-// seguem a mesma trava (e HABBLAUD_MENSAGENS=0 desliga só elas). Ao Codex vão por `codex queue` (messages/codex.ts):
-// fora do Docker o próprio servidor roda o comando (HABBLAUD_CODEX_BIN ou `codex` do PATH); no Docker, o auxiliar do
+// Mensagens pelo escritório (plugin agentforge-mensagens): entram na sessão como se você as tivesse digitado, então
+// seguem a mesma trava (e AGENTFORGE_MENSAGENS=0 desliga só elas). Ao Codex vão por `codex queue` (messages/codex.ts):
+// fora do Docker o próprio servidor roda o comando (AGENTFORGE_CODEX_BIN ou `codex` do PATH); no Docker, o auxiliar do
 // host (npm run codex:bridge).
 const codexBin = config.messages && !config.inDocker ? findCodexBin(process.env) : undefined;
 // Terminal interativo e Novo agente: os dois rodam o Claude Code neste computador, então pedem a mesma liberação,
-// HABBLAUD_PTY=1 (aceita os mesmos valores do HABBLAUD_TERMINAL).
-const ptyFlag = process.env.HABBLAUD_PTY?.trim();
+// AGENTFORGE_PTY=1 (aceita os mesmos valores do AGENTFORGE_TERMINAL).
+const ptyFlag = process.env.AGENTFORGE_PTY?.trim();
 const ptyOptIn = isTruthy(ptyFlag);
 // Novo agente pelo escritório (sessão do Claude Code em segundo plano, ou a tela do app do Claude preenchida): a
 // liberação acima mais a trava das mensagens. No Docker, quem roda é o auxiliar do host (npm run codex:bridge).
@@ -215,18 +229,18 @@ const messages = config.messages
   : undefined;
 late.messages = messages;
 
-// Terminal interativo (abrir/assumir sessões e encerrar agentes): opt-in com HABBLAUD_PTY=1, só com bind local, fora
+// Terminal interativo (abrir/assumir sessões e encerrar agentes): opt-in com AGENTFORGE_PTY=1, só com bind local, fora
 // do Docker, com node-pty e o executável do claude no PATH.
-const claudeBinSetting = process.env.HABBLAUD_CLAUDE_BIN?.trim();
+const claudeBinSetting = process.env.AGENTFORGE_CLAUDE_BIN?.trim();
 const claudeBin = claudeBinFrom();
 let spawnPty: SpawnPty | null = null;
 let ptyScreen: ScreenFactory | undefined;
 let ptyOff: string | undefined;
-if (!ptyOptIn) ptyOff = ptyFlag ? tr('desligado por HABBLAUD_PTY={0}', [ptyFlag]) : tr('desligado (ligue com HABBLAUD_PTY=1)');
+if (!ptyOptIn) ptyOff = ptyFlag ? tr('desligado por AGENTFORGE_PTY={0}', [ptyFlag]) : tr('desligado (ligue com AGENTFORGE_PTY=1)');
 else if (config.inDocker) ptyOff = tr('indisponível no Docker (rode com npm start)');
 else if (!config.terminal) ptyOff = tr('mesma trava do terminal ({0})', [terminalOffReason(process.env, config.host, config.inDocker)]);
-else if (!claudeBin) ptyOff = claudeBinSetting ? tr('HABBLAUD_CLAUDE_BIN não encontrado no PATH ({0})', [claudeBinSetting]) : tr('executável "claude" não encontrado no PATH (defina HABBLAUD_CLAUDE_BIN)');
-else if (!isExecutableFile(claudeBin)) ptyOff = tr('o executável do Claude Code não roda: {0} (confira o HABBLAUD_CLAUDE_BIN)', [claudeBin]);
+else if (!claudeBin) ptyOff = claudeBinSetting ? tr('AGENTFORGE_CLAUDE_BIN não encontrado no PATH ({0})', [claudeBinSetting]) : tr('executável "claude" não encontrado no PATH (defina AGENTFORGE_CLAUDE_BIN)');
+else if (!isExecutableFile(claudeBin)) ptyOff = tr('o executável do Claude Code não roda: {0} (confira o AGENTFORGE_CLAUDE_BIN)', [claudeBin]);
 else {
   const loaded = await loadPty();
   spawnPty = loaded.spawn;
@@ -310,6 +324,7 @@ const api = createApiHandler({
   codexLive,
   stats,
   updates,
+  alerts: createAlertsRoutes(alerts),
   remote: config.remote ? { is: isRemoteRequest, allows: (f) => config.remote!.allow.has(f) } : undefined,
 });
 
@@ -357,7 +372,7 @@ server.on('request', (req, res) => {
 });
 
 server.on('error', (err: NodeJS.ErrnoException) => {
-  if (err.code === 'EADDRINUSE') log.error(tr('A porta {0} já está em uso (defina HABBLAUD_PORT para usar outra).', [config.port]));
+  if (err.code === 'EADDRINUSE') log.error(tr('A porta {0} já está em uso (defina AGENTFORGE_PORT para usar outra).', [config.port]));
   else log.error(tr('Erro no servidor HTTP: {0}', [errMsg(err)]));
   process.exit(1);
 });
@@ -394,10 +409,10 @@ if (config.remote) {
   );
   remoteListener.server.once('listening', () => {
     const allow = [...remote.allow].join(', ') || tr('só ver');
-    const where = config.inDocker ? tr('publicada pelo HABBLAUD_REMOTE_BIND') : remote.host;
-    const scheme = remote.tls ? 'HTTPS' : tr('HTTP SEM criptografia (HABBLAUD_REMOTE_INSECURE_HTTP)');
+    const where = config.inDocker ? tr('publicada pelo AGENTFORGE_REMOTE_BIND') : remote.host;
+    const scheme = remote.tls ? 'HTTPS' : tr('HTTP SEM criptografia (AGENTFORGE_REMOTE_INSECURE_HTTP)');
     log.info(tr('   Acesso remoto: ligado na porta {0} ({1}), {2}, com login; libera: {3}.', [remote.port, where, scheme, allow]));
-    if (remote.allow.has('spawn') && !spawn) log.warn(tr('   Acesso remoto: "spawn" liberado, mas o Novo agente está desligado (ligue com HABBLAUD_PTY=1).'));
+    if (remote.allow.has('spawn') && !spawn) log.warn(tr('   Acesso remoto: "spawn" liberado, mas o Novo agente está desligado (ligue com AGENTFORGE_PTY=1).'));
   });
 } else if (config.remoteWarning) {
   log.warn(`   ${config.remoteWarning}.`);
@@ -405,9 +420,9 @@ if (config.remote) {
 
 server.listen(config.port, config.host, () => {
   const host = config.host === '0.0.0.0' || config.host === '::' ? 'localhost' : config.host;
-  log.info(tr('🏢 Habblaud {0}{1}{2} em http://{3}:{4}', [config.version, config.dev ? ' (dev)' : '', config.inDocker ? ' (docker)' : '', host, config.port]));
+  log.info(tr('🏢 AgentForge {0}{1}{2} em http://{3}:{4}', [config.version, config.dev ? ' (dev)' : '', config.inDocker ? ' (docker)' : '', host, config.port]));
   const list = accounts.entries();
-  if (!list.length) log.warn(tr('Nenhuma pasta do Claude Code encontrada (defina HABBLAUD_CLAUDE_DIRS).'));
+  if (!list.length) log.warn(tr('Nenhuma pasta do Claude Code encontrada (defina AGENTFORGE_CLAUDE_DIRS).'));
   for (const dir of codexDirsRefused(process.env, config.home)) {
     log.warn(tr('{0} é uma pasta do Codex, não do Claude Code: fica fora das contas do Claude Code.', [dir]));
   }
@@ -424,7 +439,17 @@ server.listen(config.port, config.host, () => {
       log.info(tr('   Conta {0} do Codex ({1}): uso: {2} · {3}', [a.detected.short, a.id, accounts.usageView(a.id).status, a.detected.configDir]));
     }
   } else {
-    log.info(tr('   Codex: {0}.', [config.codex ? tr('nenhuma pasta do Codex encontrada (defina HABBLAUD_CODEX_DIRS)') : tr('desligado (HABBLAUD_CODEX=0)')]));
+    log.info(tr('   Codex: {0}.', [config.codex ? tr('nenhuma pasta do Codex encontrada (defina AGENTFORGE_CODEX_DIRS)') : tr('desligado (AGENTFORGE_CODEX=0)')]));
+  }
+  if (gemini) {
+    const geminiAccounts = gemini.accountEntries();
+    const open = gemini.sources().reduce((n, s) => n + s.sessions, 0);
+    log.info(tr('   Gemini: {0} conta(s), {1} sessão(ões) aberta(s).', [geminiAccounts.length, open]));
+    for (const a of geminiAccounts) {
+      log.info(tr('   Conta {0} do Gemini ({1}): {2}', [a.detected.short, a.id, a.detected.configDir]));
+    }
+  } else {
+    log.info(tr('   Gemini: {0}.', [config.gemini ? tr('nenhuma pasta do Gemini encontrada (defina AGENTFORGE_GEMINI_DIRS)') : tr('desligado (AGENTFORGE_GEMINI=0)')]));
   }
   if (office.isDemo()) log.info(tr('   Modo demonstração ligado (agentes simulados misturados aos reais).'));
   if (config.terminal) log.info(tr('   Terminal: ligado (acesso só local).'));
@@ -432,18 +457,18 @@ server.listen(config.port, config.host, () => {
   log.info(ptys ? tr('   Terminal interativo: ligado ({0}).', [claudeBin]) : tr('   Terminal interativo: {0}.', [ptyOff ?? tr('desligado')]));
   log.info(
     !spawn
-      ? tr('   Novo agente: desligado ({0}).', [!ptyOptIn ? tr('ligue com HABBLAUD_PTY=1') : tr('mesma trava das mensagens')])
+      ? tr('   Novo agente: desligado ({0}).', [!ptyOptIn ? tr('ligue com AGENTFORGE_PTY=1') : tr('mesma trava das mensagens')])
       : config.inDocker
         ? tr('   Novo agente: ligado, pelo auxiliar do host (deixe npm run codex:bridge rodando no computador).')
         : spawnBin
           ? tr('   Novo agente: ligado ({0} --bg; pasta ainda não confiável abre no app do Claude).', [spawnBin])
           : tr('   Novo agente: ligado, só pelo app do Claude (claude não encontrado no PATH).'),
   );
-  log.info(timeline ? tr('   Linha do tempo (timelapse): gravando em {0}.', [timelineDir]) : tr('   Linha do tempo (timelapse): gravação desligada (HABBLAUD_TIMELINE).'));
+  log.info(timeline ? tr('   Linha do tempo (timelapse): gravando em {0}.', [timelineDir]) : tr('   Linha do tempo (timelapse): gravação desligada (AGENTFORGE_TIMELINE).'));
   log.info(tr('   Responder pelo escritório: {0}.', [config.terminal ? tr('ligado (precisa do mod: npm run mod:install; ou do hook antigo: npm run hooks:install)') : tr('desligado (mesma trava do terminal)')]));
   log.info(
     config.messages
-      ? tr('   Mensagens pelo escritório: ligadas (precisa do plugin habblaud-mensagens: npm run mod:install).')
+      ? tr('   Mensagens pelo escritório: ligadas (precisa do plugin agentforge-mensagens: npm run mod:install).')
       : tr('   Mensagens pelo escritório: desligadas ({0}).', [messagesOffReason(process.env, config.host, config.inDocker)]),
   );
   if (config.messages) {
@@ -452,13 +477,13 @@ server.listen(config.port, config.host, () => {
         ? tr('   Mensagens ao Codex: pelo codex queue ({0}).', [codexBin])
         : config.inDocker
           ? tr('   Mensagens ao Codex: pelo auxiliar do host (deixe npm run codex:bridge rodando no Mac).')
-          : tr('   Mensagens ao Codex: sem o binário do Codex (codex no PATH ou HABBLAUD_CODEX_BIN); o auxiliar npm run codex:bridge também serve.'),
+          : tr('   Mensagens ao Codex: sem o binário do Codex (codex no PATH ou AGENTFORGE_CODEX_BIN); o auxiliar npm run codex:bridge também serve.'),
     );
   }
   log.info(
     updates.enabled
       ? tr('   Versão nova: verificando as releases de github.com/{0} a cada 6 h.', [config.repo])
-      : tr('   Versão nova: verificação desligada ({0}).', [config.repo ? 'HABBLAUD_UPDATE_CHECK' : tr('package.json sem repositório no GitHub')]),
+      : tr('   Versão nova: verificação desligada ({0}).', [config.repo ? 'AGENTFORGE_UPDATE_CHECK' : tr('package.json sem repositório no GitHub')]),
   );
 });
 
@@ -469,6 +494,7 @@ function shutdown(signal: string): void {
   log.info(tr('Encerrando ({0})…', [signal]));
   clearInterval(ticker);
   stats.stop();
+  alerts.stop();
   agents.stop();
   accounts.stop();
   hub.stop();

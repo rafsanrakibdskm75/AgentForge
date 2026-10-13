@@ -17,8 +17,8 @@ function memStorage(): StorageLike & { data: Map<string, string> } {
   return { data, getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v) };
 }
 
-describe('personalidade', () => {
-  it('é determinística pela semente: 2 ou 3 traços, sem repetição nem pares que não combinam', () => {
+describe('personality', () => {
+  it('is deterministic by seed: 2 or 3 traits, no repeats nor mismatched pairs', () => {
     for (let seed = 1; seed < 400; seed++) {
       const p = personaFor(seed * 7919);
       expect(personaFor(seed * 7919)).toEqual(p);
@@ -34,7 +34,7 @@ describe('personalidade', () => {
     }
   });
 
-  it('rótulos são substantivos (não dependem do gênero de ninguém) e todo traço tem descrição', () => {
+  it('labels are nouns (depend on nobody\'s gender) and every trait has a description', () => {
     for (const id of TRAIT_IDS) {
       // nada de adjetivo com gênero ("Competitivo/Competitiva", "Vaidoso/Vaidosa", "Fofoqueiro/Fofoqueira")
       expect(TRAITS[id].label).not.toMatch(/(iv[oa]|os[oa]|ad[oa]|eir[oa])$/i);
@@ -43,7 +43,7 @@ describe('personalidade', () => {
     }
   });
 
-  it('vínculos são simétricos e raros o bastante (amizade mais comum que rivalidade)', () => {
+  it('bonds are symmetric and rare enough (friendship more common than rivalry)', () => {
     let friends = 0;
     let rivals = 0;
     const n = 60;
@@ -65,15 +65,15 @@ describe('personalidade', () => {
     expect(bondBetween(5, 5)).toBeNull();
   });
 
-  it('os traços puxam os passeios sozinho (vaidade -> espelho, cafeína -> café)', () => {
+  it('traits pull the solo outings (vanity -> mirror, caffeine -> coffee)', () => {
     expect(soloWeights(persona(['vaidade'])).mirror).toBeGreaterThan(IDLE_WEIGHTS.mirror * 3);
     expect(soloWeights(persona(['cafeina'])).coffee).toBeGreaterThan(IDLE_WEIGHTS.coffee * 2);
     expect(soloWeights(persona(['calma'])).coffee).toBe(IDLE_WEIGHTS.coffee);
   });
 });
 
-describe('falas', () => {
-  it('preenche os campos; sem valor para um campo, a fala é descartada', () => {
+describe('lines', () => {
+  it('fills the fields; with no value for a field, the line is dropped', () => {
     expect(fill('Viram o commit de {nome}?', { nome: 'Rafaela' })).toBe('Viram o commit de Rafaela?');
     expect(fill('Jokenpô valendo 🪙{v}?', { v: 10 })).toBe('Jokenpô valendo 🪙10?');
     expect(fill('Ei, {nome}!', {})).toBeNull();
@@ -82,18 +82,18 @@ describe('falas', () => {
     expect(pick(['A', 'B'], rng, {}, 'A')).toBe('B');
   });
 
-  it('dia e hora mudam o papo', () => {
-    expect(timeLine(new Date(2026, 9, 9, 15, 0))).toBe('Sextou! 🎉'); // sexta à tarde
-    expect(timeLine(new Date(2026, 9, 5, 9, 0))).toBe('Segunda-feira, né…');
-    expect(timeLine(new Date(2026, 9, 7, 12, 30))).toMatch(/almoço/);
+  it('day and time change the chatter', () => {
+    expect(timeLine(new Date(2026, 9, 9, 15, 0))).toBe('TGIF! 🎉'); // friday afternoon
+    expect(timeLine(new Date(2026, 9, 5, 9, 0))).toBe('Monday, huh…');
+    expect(timeLine(new Date(2026, 9, 7, 12, 30))).toMatch(/lunch/);
     expect(timeLine(new Date(2026, 9, 7, 16, 0))).toBeNull();
   });
 });
 
-describe('carteira', () => {
+describe('wallet', () => {
   const ana = { id: 'ana', name: 'Ana', kind: 'main' as const, tasks: [] as { id: string; title: string; status: string }[] };
 
-  it('quem chega entra com o saldo inicial; tarefas já concluídas são pagas em silêncio, uma vez', () => {
+  it('newcomers enter with the starting balance; already-done tasks are paid silently, once', () => {
     const w = new Wallets(null);
     const sub = { id: 's1', name: 'Rui', kind: 'sub' as const, tasks: [] };
     expect(w.ensure(sub, T0).created).toBe(true);
@@ -105,7 +105,7 @@ describe('carteira', () => {
     expect(w.ensure(done, T0).created).toBe(false);
   });
 
-  it('cada tarefa concluída paga uma vez (lista refeita com o mesmo id e outro título paga de novo)', () => {
+  it('each completed task pays once (a remade list with the same id and another title pays again)', () => {
     const w = new Wallets(null);
     w.ensure(ana, T0);
     const t1 = { ...ana, tasks: [{ id: '1', title: 'Login', status: 'completed' }] };
@@ -113,12 +113,12 @@ describe('carteira', () => {
     expect(w.payTasks(t1, T0)).toBe(0);
     const t2 = { ...ana, tasks: [{ id: '1', title: 'Cadastro', status: 'completed' }] };
     expect(w.payTasks(t2, T0)).toBe(TASK_REWARD);
-    expect(w.get('ana')!.ledger[0]).toMatchObject({ delta: TASK_REWARD, text: 'Tarefa concluída: Cadastro' });
+    expect(w.get('ana')!.ledger[0]).toMatchObject({ delta: TASK_REWARD, text: 'Task done: Cadastro' });
     expect(w.credit('ana', DELIVERY_REWARD, '📦', 'Entregou', T0)).toBe(DELIVERY_REWARD);
     expect(w.get('ana')!.earned).toBe(START_COINS.main + 2 * TASK_REWARD + DELIVERY_REWARD);
   });
 
-  it('aposta: nunca deixa saldo negativo; placar e extrato dos dois lados', () => {
+  it('bet: never leaves a negative balance; score and ledger on both sides', () => {
     const w = new Wallets(null);
     w.ensure(ana, T0);
     w.ensure({ id: 'bia', name: 'Bia', kind: 'sub', tasks: [] }, T0);
@@ -126,14 +126,14 @@ describe('carteira', () => {
     expect(w.coins('bia')).toBe(0);
     expect(w.coins('ana')).toBe(START_COINS.main + START_COINS.sub);
     expect(w.transfer('bia', 'ana', 10, '✊', 'no jokenpô', T0)).toBe(0);
-    expect(w.get('ana')!.ledger[0].text).toBe('Ganhou no jokenpô de Bia');
-    expect(w.get('bia')!.ledger[0].text).toBe('Perdeu no jokenpô para Ana');
+    expect(w.get('ana')!.ledger[0].text).toBe('Won no jokenpô against Bia');
+    expect(w.get('bia')!.ledger[0].text).toBe('Lost no jokenpô to Ana');
     w.recordMatch('ana', 'bia');
     expect(w.get('ana')).toMatchObject({ wins: 1, losses: 0, vs: { bia: [1, 0] } });
     expect(w.get('bia')).toMatchObject({ wins: 0, losses: 1, vs: { ana: [0, 1] } });
   });
 
-  it('fica salva no navegador e esquece quem sumiu há dias', () => {
+  it('persists in the browser and forgets whoever vanished days ago', () => {
     const st = memStorage();
     const w = new Wallets(st);
     w.ensure(ana, T0);
@@ -149,8 +149,8 @@ describe('carteira', () => {
   });
 });
 
-describe('regras das rodas', () => {
-  it('jokenpô: pedra ganha da tesoura, tesoura do papel, papel da pedra', () => {
+describe('gathering rules', () => {
+  it('rock-paper-scissors: rock beats scissors, scissors beats paper, paper beats rock', () => {
     const g: Gesture[] = ['rock', 'paper', 'scissors'];
     expect(rpsResult('rock', 'scissors')).toBe(1);
     expect(rpsResult('scissors', 'paper')).toBe(1);
@@ -159,7 +159,7 @@ describe('regras das rodas', () => {
     for (const x of g) expect(rpsResult(x, x)).toBe(0);
   });
 
-  it('aposta: jokenpô sempre vale algo (até o menor saldo); sem moedinhas, só pela honra; economia aposta pouco', () => {
+  it('bet: rock-paper-scissors always stakes something (even the smallest balance); no coins, just honor; thrift bets little', () => {
     const rng = () => 0.5;
     const a = persona(['calma']);
     expect(betFor('rps', a, a, 100, 100, null, rng)).toBe(10);
@@ -173,13 +173,13 @@ describe('regras das rodas', () => {
     expect(betFor('pingpong', a, a, 100, 100, 'rivalidade', rng)).toBe(15);
   });
 
-  it('habilidade pesa, mas ninguém ganha (ou perde) sempre', () => {
+  it('skill matters, but nobody wins (or loses) every time', () => {
     expect(winChance(0.5, 0.5)).toBeCloseTo(0.5);
     expect(winChance(0.95, 0.05)).toBe(0.85);
     expect(winChance(0.05, 0.95)).toBe(0.15);
   });
 
-  it('a personalidade escolhe a roda entre as possíveis', () => {
+  it('personality picks the gathering among the possible ones', () => {
     expect(kindWeight('tv', persona(['series']))).toBeGreaterThan(kindWeight('tv', persona(['calma'])));
     expect(kindWeight('rps', persona(['apostas']))).toBeGreaterThan(kindWeight('kitchen', persona(['apostas'])));
     let seq = 0;

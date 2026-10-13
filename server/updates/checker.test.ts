@@ -90,7 +90,7 @@ describe('UpdateChecker', () => {
     expect(c.status()).toMatchObject({ state: 'pending', available: false });
     const s = await c.check();
     expect(f.calls[0].url).toBe(`https://api.github.com/repos/${REPO}/releases/latest`);
-    expect(f.calls[0].headers['User-Agent']).toBe('habblaud/0.2.0');
+    expect(f.calls[0].headers['User-Agent']).toBe('agentforge/0.2.0');
     expect(s).toEqual({
       state: 'ok',
       repo: REPO,
@@ -142,10 +142,10 @@ describe('UpdateChecker', () => {
     await c.check();
     const limits = await c.check();
     expect(limits).toMatchObject({ state: 'error', latest: '0.3.0', available: true });
-    expect(limits.error).toMatch(/limite de consultas/);
-    expect((await c.check()).error).toBe('sem conexão com o GitHub');
-    expect((await c.check()).error).toBe('o GitHub não respondeu a tempo');
-    expect((await c.check()).error).toBe('o GitHub respondeu 502');
+    expect(limits.error).toMatch(/rate limit/);
+    expect((await c.check()).error).toBe('no connection to GitHub');
+    expect((await c.check()).error).toBe('GitHub didn\'t respond in time');
+    expect((await c.check()).error).toBe('GitHub responded 502');
   });
 
   it('desligado: não consulta nada', async () => {
@@ -157,7 +157,7 @@ describe('UpdateChecker', () => {
     expect(f.calls).toHaveLength(0);
   });
 
-  it('"Verificar agora" seguidos: no máximo uma consulta a cada 30 s', async () => {
+  it('"Check now" seguidos: no máximo uma consulta a cada 30 s', async () => {
     const f = fakeFetch([json(RELEASE), json(RELEASE)]);
     let t = 10_000;
     const c = make({ fetch: f.fetch, now: () => t });

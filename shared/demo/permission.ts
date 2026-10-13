@@ -1,6 +1,6 @@
 // Pedidos de permissão (e perguntas) fictícios do modo demonstração (responder pelo escritório sem sessões reais),
 // do Claude Code e do Codex (só aprovação, sem "sempre permitir").
-// Puro: usado pelo simulador no servidor (HABBLAUD_DEMO=1) e no navegador (?mock=1).
+// Puro: usado pelo simulador no servidor (AGENTFORGE_DEMO=1) e no navegador (?mock=1).
 import type { PermissionRequestInfo } from '../types';
 import { describeTool } from '../activity';
 import { tr } from '../i18n';
@@ -128,7 +128,7 @@ export function demoPermission(id: string, src: DemoPermissionSource, rng: () =>
 }
 
 /**
- * Quanto o "hook" do Codex espera pela decisão do escritório (HABBLAUD_CODEX_PERMISSION_TIMEOUT, padrão 25 s). Depois
+ * Quanto o "hook" do Codex espera pela decisão do escritório (AGENTFORGE_CODEX_PERMISSION_TIMEOUT, padrão 25 s). Depois
  * disso o Codex segue o fluxo normal e a aprovação aparece no terminal.
  */
 export const DEMO_CODEX_PERMISSION_MS = 25_000;

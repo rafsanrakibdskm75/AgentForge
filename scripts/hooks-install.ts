@@ -1,22 +1,22 @@
-// Instala (ou remove) o hook de permissão do Habblaud em cada conta do Claude Code. Roda no HOST, com tsx:
+// Instala (ou remove) o hook de permissão do AgentForge em cada conta do Claude Code. Roda no HOST, com tsx:
 //
 //   npm run hooks:install     # acrescenta o hook PermissionRequest em <conta>/settings.json (backup antes)
-//   npm run hooks:uninstall   # tira só o hook do Habblaud (os seus hooks ficam)
-//   npm run hooks:status      # mostra, por conta, se está instalado, e se o Habblaud está respondendo pedidos
+//   npm run hooks:uninstall   # tira só o hook do AgentForge (os seus hooks ficam)
+//   npm run hooks:status      # mostra, por conta, se está instalado, e se o AgentForge está respondendo pedidos
 //   (opções: --dry-run, --node <caminho>, --port <n>, --timeout <s>)
 //
-// No Claude Code 2.1.287+ o mesmo hook vem pronto no plugin `habblaud-permissoes` do marketplace do
-// repositório (mod/habblaud-permissoes, que roda o MESMO script); este instalador fica para as versões
+// No Claude Code 2.1.287+ o mesmo hook vem pronto no plugin `agentforge-permissoes` do marketplace do
+// repositório (mod/agentforge-permissoes, que roda o MESMO script); este instalador fica para as versões
 // anteriores e para tirar instalações antigas.
 //
-// O hook (mod/habblaud-permissoes/hooks/permission-hook.mjs) deixa aprovar ou recusar pelo escritório os
+// O hook (mod/agentforge-permissoes/hooks/permission-hook.mjs) deixa aprovar ou recusar pelo escritório os
 // pedidos de permissão ("Do you want to…"): o Claude Code continua mostrando o diálogo no terminal e vale o
-// que você responder primeiro. Sem o Habblaud no ar ou sem nenhuma página aberta, o hook sai na hora e nada muda.
+// que você responder primeiro. Sem o AgentForge no ar ou sem nenhuma página aberta, o hook sai na hora e nada muda.
 //
 // Em <conta>/settings.json só a lista hooks.PermissionRequest muda: entra um grupo {matcher: "*", hooks:
-// [{type: "command", command: 'node "<Habblaud>/mod/habblaud-permissoes/hooks/permission-hook.mjs"', timeout,
+// [{type: "command", command: 'node "<AgentForge>/mod/agentforge-permissoes/hooks/permission-hook.mjs"', timeout,
 // statusMessage}]} (os demais hooks e chaves ficam como estão). Antes de gravar, uma cópia vai para
-// settings.json.habblaud-backup-<data>. Rodar de novo atualiza o caminho/opções sem duplicar (e troca o
+// settings.json.agentforge-backup-<data>. Rodar de novo atualiza o caminho/opções sem duplicar (e troca o
 // caminho antigo, scripts/permission-hook.mjs, de antes da 0.3, e o do nome antigo, mod/codetown-permissoes/).
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -27,12 +27,12 @@ import { detectNodeCommand, quotePath, readSettings, tildify, writeSettings, typ
 import { tr } from '../shared/i18n';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const HOOK_SCRIPT = join(ROOT, 'mod', 'habblaud-permissoes', 'hooks', 'permission-hook.mjs');
+export const HOOK_SCRIPT = join(ROOT, 'mod', 'agentforge-permissoes', 'hooks', 'permission-hook.mjs');
 /** Onde o script ficava até a 0.2 (instalações antigas apontam para cá; o status avisa e manda reinstalar). */
 export const LEGACY_HOOK_SCRIPT = join(ROOT, 'scripts', 'permission-hook.mjs');
 /**
  * O hook é reconhecido pelo NOME do arquivo, em qualquer pasta: assim o caminho antigo (scripts/), o do nome
- * antigo (mod/codetown-permissoes/hooks/, que não existe mais) e o novo (mod/habblaud-permissoes/hooks/) contam
+ * antigo (mod/codetown-permissoes/hooks/, que não existe mais) e o novo (mod/agentforge-permissoes/hooks/) contam
  * como "nosso", e install/uninstall trocam ou tiram qualquer um deles.
  */
 const HOOK_NAME = 'permission-hook.mjs';
@@ -41,9 +41,9 @@ export const DEFAULT_PORT = 4747;
 export const DEFAULT_TIMEOUT_S = 300;
 /** Folga do tempo limite do Claude Code sobre o do hook (o hook sempre desiste antes). */
 const TIMEOUT_SLACK_S = 30;
-export const STATUS_MESSAGE = tr('Aguardando resposta no Habblaud');
+export const STATUS_MESSAGE = tr('Aguardando resposta no AgentForge');
 
-const USAGE = tr('Uso: npm run hooks:<install|uninstall|status> [-- opções]\n\n  install     acrescenta o hook de permissão do Habblaud em cada conta (faz backup do settings.json)\n  uninstall   tira o hook do Habblaud de cada conta (os outros hooks ficam)\n  status      mostra se o hook está instalado e se o Habblaud está respondendo pedidos\n\nOpções:\n  --dry-run        mostra o que mudaria, sem gravar nada\n  --node <cmd>     comando do node usado no hook (padrão: detectado no PATH)\n  --port <n>       porta do Habblaud (padrão: HABBLAUD_PORT ou {0})\n  --timeout <s>    quanto o hook espera sua resposta no Habblaud antes de devolver o pedido ao terminal\n                   (padrão: {1} s)\n  -h, --help       mostra esta ajuda\n\nContas: as mesmas do servidor (~/.claude* com projects/ ou sessions/, CLAUDE_CONFIG_DIR ou\nHABBLAUD_CLAUDE_DIRS).', [DEFAULT_PORT, DEFAULT_TIMEOUT_S]);
+const USAGE = tr('Uso: npm run hooks:<install|uninstall|status> [-- opções]\n\n  install     acrescenta o hook de permissão do AgentForge em cada conta (faz backup do settings.json)\n  uninstall   tira o hook do AgentForge de cada conta (os outros hooks ficam)\n  status      mostra se o hook está instalado e se o AgentForge está respondendo pedidos\n\nOpções:\n  --dry-run        mostra o que mudaria, sem gravar nada\n  --node <cmd>     comando do node usado no hook (padrão: detectado no PATH)\n  --port <n>       porta do AgentForge (padrão: AGENTFORGE_PORT ou {0})\n  --timeout <s>    quanto o hook espera sua resposta no AgentForge antes de devolver o pedido ao terminal\n                   (padrão: {1} s)\n  -h, --help       mostra esta ajuda\n\nContas: as mesmas do servidor (~/.claude* com projects/ ou sessions/, CLAUDE_CONFIG_DIR ou\nAGENTFORGE_CLAUDE_DIRS).', [DEFAULT_PORT, DEFAULT_TIMEOUT_S]);
 
 // ---------------------------------------------------------------------------------------------
 // Funções puras (testadas em server/test/hooks-install.test.ts)
@@ -93,7 +93,7 @@ function eventList(settings: Settings): { hooks: Rec; list: unknown[] } | string
   return { hooks, list: (hooks[EVENT] as unknown[] | undefined) ?? [] };
 }
 
-/** Lista sem os hooks do Habblaud (grupos que ficarem vazios saem); `removed` = quantos saíram. */
+/** Lista sem os hooks do AgentForge (grupos que ficarem vazios saem); `removed` = quantos saíram. */
 function withoutOurs(list: unknown[]): { list: unknown[]; removed: number } {
   let removed = 0;
   const out: unknown[] = [];
@@ -125,10 +125,10 @@ export function planInstall(settings: Settings, entry: Rec): PlanAction {
   }
   const rest = withoutOurs(ev.list).list;
   const next: Settings = { ...settings, hooks: { ...ev.hooks, [EVENT]: [...rest, { matcher: '*', hooks: [entry] }] } };
-  return { action: 'install', settings: next, message: mine.length ? tr('atualizado (novo caminho do Habblaud, do node ou das opções)') : tr('instalado') };
+  return { action: 'install', settings: next, message: mine.length ? tr('atualizado (novo caminho do AgentForge, do node ou das opções)') : tr('instalado') };
 }
 
-/** Plano de remoção: tira só os hooks do Habblaud (e o que ficar vazio por causa disso). */
+/** Plano de remoção: tira só os hooks do AgentForge (e o que ficar vazio por causa disso). */
 export function planUninstall(settings: Settings): PlanAction {
   const ev = eventList(settings);
   if (typeof ev === 'string') return { action: 'skip', message: ev };
@@ -140,10 +140,10 @@ export function planUninstall(settings: Settings): PlanAction {
   const next: Settings = { ...settings };
   if (Object.keys(hooks).length) next.hooks = hooks;
   else delete next.hooks;
-  return { action: 'uninstall', settings: next, message: tr('hook do Habblaud removido') };
+  return { action: 'uninstall', settings: next, message: tr('hook do AgentForge removido') };
 }
 
-/** Hook do Habblaud instalado nesta conta (o primeiro), ou undefined. */
+/** Hook do AgentForge instalado nesta conta (o primeiro), ou undefined. */
 export function installedHook(settings: Settings): Rec | undefined {
   const ev = eventList(settings);
   if (typeof ev === 'string') return undefined;
@@ -167,7 +167,7 @@ export function scriptPathOf(command: string): string | undefined {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Efeitos (arquivos e o /api/health do Habblaud)
+// Efeitos (arquivos e o /api/health do AgentForge)
 // ---------------------------------------------------------------------------------------------
 
 export interface RunOptions extends HookOptions {
@@ -182,7 +182,7 @@ export interface RunContext {
   now: Date;
   hookPath: string;
   out: (line: string) => void;
-  /** Consulta o /api/health do Habblaud (testes injetam um falso). */
+  /** Consulta o /api/health do AgentForge (testes injetam um falso). */
   health?: (port: number) => Promise<{ permissions?: boolean } | undefined>;
 }
 
@@ -192,7 +192,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
   let command: RunOptions['command'] | undefined;
   let dryRun = false;
   let nodeCmd: string | undefined;
-  const envPort = Number.parseInt(env.HABBLAUD_PORT ?? '', 10);
+  const envPort = Number.parseInt(env.AGENTFORGE_PORT ?? '', 10);
   let port = Number.isInteger(envPort) && envPort > 0 && envPort < 65_536 ? envPort : DEFAULT_PORT;
   let timeoutS = DEFAULT_TIMEOUT_S;
   for (let i = 0; i < argv.length; i++) {
@@ -230,7 +230,7 @@ export async function run(opts: RunOptions, ctx: RunContext): Promise<number> {
   const { env, home, out } = ctx;
   const dirs = discoverClaudeDirs(env, home);
   if (!dirs.length) {
-    out(tr('Nenhuma conta do Claude Code encontrada (~/.claude* com projects/ ou sessions/). Use HABBLAUD_CLAUDE_DIRS se estiverem em outro lugar.'));
+    out(tr('Nenhuma conta do Claude Code encontrada (~/.claude* com projects/ ou sessions/). Use AGENTFORGE_CLAUDE_DIRS se estiverem em outro lugar.'));
     return 1;
   }
   const nodeCmd = opts.nodeCmd ?? detectNodeCommand(env, home);
@@ -286,13 +286,13 @@ export async function run(opts: RunOptions, ctx: RunContext): Promise<number> {
   }
   if (opts.command === 'status') {
     const health = await (ctx.health ?? fetchHealth)(opts.port);
-    if (!health) out(tr('Habblaud em http://127.0.0.1:{0}: fora do ar (com ele parado, o hook sai na hora e o terminal segue normal).', [opts.port]));
-    else if (health.permissions) out(tr('Habblaud em http://127.0.0.1:{0}: respondendo pedidos de permissão (com alguma página aberta).', [opts.port]));
-    else out(tr('Habblaud em http://127.0.0.1:{0}: no ar, mas responder pelo escritório está desligado (porta exposta na rede ou HABBLAUD_TERMINAL=0).', [opts.port]));
+    if (!health) out(tr('AgentForge em http://127.0.0.1:{0}: fora do ar (com ele parado, o hook sai na hora e o terminal segue normal).', [opts.port]));
+    else if (health.permissions) out(tr('AgentForge em http://127.0.0.1:{0}: respondendo pedidos de permissão (com alguma página aberta).', [opts.port]));
+    else out(tr('AgentForge em http://127.0.0.1:{0}: no ar, mas responder pelo escritório está desligado (porta exposta na rede ou AGENTFORGE_TERMINAL=0).', [opts.port]));
   }
   if (opts.command === 'install' && changed) {
     out('');
-    out(tr('Pronto. Com o Habblaud aberto no navegador, os pedidos de permissão aparecem no escritório e você'));
+    out(tr('Pronto. Com o AgentForge aberto no navegador, os pedidos de permissão aparecem no escritório e você'));
     out(tr('pode aprovar ou recusar por lá; o diálogo continua no terminal e vale o que responder primeiro.'));
     out(tr('Sessões abertas costumam recarregar o settings.json sozinhas; se não, reabra a sessão.'));
     out(tr('Para desfazer: npm run hooks:uninstall'));

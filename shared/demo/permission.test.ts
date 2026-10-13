@@ -45,7 +45,7 @@ describe('DemoSimulator: pedidos de permissão', () => {
     const sim = new DemoSimulator({ seed: 4, idPrefix: 'demo:' }, start);
     const id = sim.forcePermission(start, 'permission')!;
     let a = sim.snapshot(start).agents.find((x) => x.id === id)!;
-    expect(a).toMatchObject({ status: 'waiting', waitingFor: 'aprovar uma permissão' });
+    expect(a).toMatchObject({ status: 'waiting', waitingFor: 'approve a permission' });
     const p = a.permission!;
     expect(p.id.startsWith('demo:perm-')).toBe(true);
     expect(sim.decidePermission('outro', { behavior: 'allow' }, start + 1)).toBe(false);
@@ -53,7 +53,7 @@ describe('DemoSimulator: pedidos de permissão', () => {
     a = sim.snapshot(start + 1).agents.find((x) => x.id === id)!;
     expect(a.status).toBe('working');
     expect(a.permission).toBeUndefined();
-    expect(a.recent.map((r) => r.text)).toContain('Aprovado no Habblaud (sempre permitir)');
+    expect(a.recent.map((r) => r.text)).toContain('Approved in AgentForge (always allow)');
     expect(sim.decidePermission(p.id, { behavior: 'allow' }, start + 2)).toBe(false);
   });
 
@@ -64,7 +64,7 @@ describe('DemoSimulator: pedidos de permissão', () => {
     sim.decidePermission(p1.id, { behavior: 'deny', message: 'agora não' }, start + 1);
     const after = sim.snapshot(start + 1).agents.find((x) => x.id === a1)!;
     expect(after.status).toBe('working');
-    expect(after.recent.at(-1)).toMatchObject({ icon: '🚫', text: 'Recusado no Habblaud' });
+    expect(after.recent.at(-1)).toMatchObject({ icon: '🚫', text: 'Denied in AgentForge' });
 
     const sim2 = new DemoSimulator({ seed: 6 }, start);
     const a2 = sim2.forcePermission(start, 'permission')!;
@@ -82,7 +82,7 @@ describe('DemoSimulator: pedidos de permissão', () => {
     const sim = new DemoSimulator({ seed: 7, idPrefix: 'demo:' }, start);
     const id = sim.forcePermission(start, 'question')!;
     const a = sim.snapshot(start).agents.find((x) => x.id === id)!;
-    expect(a).toMatchObject({ status: 'waiting', waitingFor: 'responder uma pergunta' });
+    expect(a).toMatchObject({ status: 'waiting', waitingFor: 'answer a question' });
     const p = a.permission!;
     expect(p.tool).toBe('AskUserQuestion');
     const [single, multi] = p.questions!;
@@ -99,16 +99,16 @@ describe('DemoSimulator: pedidos de permissão', () => {
     expect(after.status).toBe('working');
     expect(after.permission).toBeUndefined();
     const act = after.recent.at(-1)!;
-    expect(act).toMatchObject({ icon: '💬', text: 'Respondido no Habblaud' });
+    expect(act).toMatchObject({ icon: '💬', text: 'Answered in AgentForge' });
     expect(act.detail).toBe(`${single!.header}: ${single!.options[1]!.label} · ${multi!.header}: ${multi!.options[0]!.label}, ${multi!.options[2]!.label}, “lint também”`);
   });
 
-  it('pergunta: recusar e "responder no terminal" também valem', () => {
+  it('pergunta: recusar e "answer in the terminal" também valem', () => {
     const sim = new DemoSimulator({ seed: 8 }, start);
     const id = sim.forcePermission(start, 'question')!;
     const p = sim.snapshot(start).agents.find((x) => x.id === id)!.permission!;
     expect(sim.decidePermission(p.id, { behavior: 'deny', message: 'decida você' }, start + 1)).toBe(true);
-    expect(sim.snapshot(start + 1).agents.find((x) => x.id === id)!.recent.at(-1)).toMatchObject({ icon: '🚫', text: 'Recusado no Habblaud' });
+    expect(sim.snapshot(start + 1).agents.find((x) => x.id === id)!.recent.at(-1)).toMatchObject({ icon: '🚫', text: 'Denied in AgentForge' });
   });
 
   it('com o tempo, as esperas por permissão trazem pedido e ele some quando a espera acaba', () => {
@@ -135,7 +135,7 @@ describe('pedidos do Codex (demo)', () => {
     const tools = new Set<string>();
     for (let seed = 1; seed < 80; seed++) {
       const p = demoCodexPermission(`c${seed}`, { files: ['src/app.ts'], commands: ['npm test'] }, mulberry32(seed), 1_000);
-      tools.add(p.text.startsWith('Acesso à rede') ? 'rede' : p.tool);
+      tools.add(p.text.startsWith('Network access:') ? 'rede' : p.tool);
       expect(p).toMatchObject({ provider: 'codex', createdAt: 1_000, expiresAt: 1_000 + DEMO_CODEX_PERMISSION_MS });
       expect(p.suggestions).toBeUndefined();
       expect(p.questions).toBeUndefined();
@@ -145,11 +145,11 @@ describe('pedidos do Codex (demo)', () => {
     expect(tools).toEqual(new Set(['Bash', 'apply_patch', 'rede']));
   });
 
-  it('forcePermission no Codex: espera "aprovar um comando"; recusa só com motivo; sem sempre permitir nem interromper', () => {
+  it('forcePermission no Codex: espera "approve a command"; recusa só com motivo; sem sempre permitir nem interromper', () => {
     const sim = new DemoSimulator({ seed: 4, idPrefix: 'demo:' }, start);
     const id = sim.forcePermission(start, 'question', 'codex')!;
     const a = sim.snapshot(start).agents.find((x) => x.id === id)!;
-    expect(a).toMatchObject({ provider: 'codex', status: 'waiting', waitingFor: 'aprovar um comando' });
+    expect(a).toMatchObject({ provider: 'codex', status: 'waiting', waitingFor: 'approve a command' });
     const p = a.permission!;
     expect(p.provider).toBe('codex');
     expect(p.tool).not.toBe('AskUserQuestion');
@@ -159,7 +159,7 @@ describe('pedidos do Codex (demo)', () => {
     expect(sim.decidePermission(p.id, { behavior: 'deny', message: 'não', interrupt: true }, start + 1)).toBe(false);
     expect(sim.decidePermission(p.id, { behavior: 'answer', answers: [] }, start + 1)).toBe(false);
     expect(sim.decidePermission(p.id, { behavior: 'deny', message: 'use pnpm' }, start + 1)).toBe(true);
-    expect(sim.snapshot(start + 1).agents.find((x) => x.id === id)!.recent.at(-1)).toMatchObject({ text: 'Recusado no Habblaud' });
+    expect(sim.snapshot(start + 1).agents.find((x) => x.id === id)!.recent.at(-1)).toMatchObject({ text: 'Denied in AgentForge' });
   });
 
   it('o prazo do Codex acaba: o pedido sai do escritório e o agente segue esperando no terminal', () => {

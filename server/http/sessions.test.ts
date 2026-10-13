@@ -65,7 +65,7 @@ async function serve(opts: { terminal?: boolean; extra?: (root: string) => Histo
   const history = new HistorySet([new SessionHistory({ accounts: () => accounts.entries(), openAgentOf: (acc, sid) => openMainAgent(office.list(), acc, sid) })]);
   if (opts.extra) history.add(opts.extra(tmp.dir));
   const api = createApiHandler({ office, hub, accounts, sources: () => [], version: 't', inDocker: false, terminal, terminals, sessions: history });
-  const guard = createRequestGuard({ allowedHosts: new Set(['habblaud.lan']) });
+  const guard = createRequestGuard({ allowedHosts: new Set(['agentforge.lan']) });
   const server = http.createServer((req, res) => {
     if (guard(req, res)) return;
     if (!api(req, res, new URL(req.url ?? '/', 'http://x'))) res.writeHead(404).end();
@@ -134,14 +134,14 @@ function request(base: string, path: string, opts: { method?: string; headers?: 
 const terminalRoute = (account: string, sid: string) => `/api/sessions/${encodeURIComponent(account)}/${encodeURIComponent(sid)}/terminal`;
 const waitFor = (fn: () => void) => vi.waitFor(fn, { timeout: 3_000, interval: 10 });
 
-describe('histórico de sessões: trava', () => {
-  it('recurso desligado: 403 nas duas rotas', async () => {
+describe('session history: lock', () => {
+  it('feature off: 403 on both routes', async () => {
     const env = await serve({ terminal: false });
     try {
       for (const path of ['/api/sessions/recent', terminalRoute('.claude', SID)]) {
         const r = await request(env.base, path);
         expect(r.status).toBe(403);
-        expect(JSON.parse(r.body).error).toMatch(/desligado/);
+        expect(JSON.parse(r.body).error).toMatch(/disabled/);
       }
       expect(env.terminals.size).toBe(0);
     } finally {
@@ -149,14 +149,14 @@ describe('histórico de sessões: trava', () => {
     }
   });
 
-  it('Host que não é local (IP da rede ou nome de HABBLAUD_ALLOWED_HOSTS): 403; localhost abre', async () => {
+  it('non-local Host (network IP or AGENTFORGE_ALLOWED_HOSTS name): 403; localhost opens', async () => {
     const env = await serve();
     try {
-      for (const host of [`192.168.0.10:${env.port}`, `habblaud.lan:${env.port}`]) {
+      for (const host of [`192.168.0.10:${env.port}`, `agentforge.lan:${env.port}`]) {
         for (const path of ['/api/sessions/recent', terminalRoute('.claude', SID)]) {
           const r = await request(env.base, path, { headers: { Host: host } });
           expect(r.status).toBe(403);
-          expect(JSON.parse(r.body).error).toMatch(/próprio computador/);
+          expect(JSON.parse(r.body).error).toMatch(/computer running/);
         }
       }
       expect(env.terminals.size).toBe(0);
@@ -168,8 +168,8 @@ describe('histórico de sessões: trava', () => {
   });
 });
 
-describe('histórico de sessões: listagem', () => {
-  it('GET /api/sessions/recent: aberta (com o agente) e encerrada, da mais recente para a mais antiga', async () => {
+describe('session history: listing', () => {
+  it('GET /api/sessions/recent: open (with the agent) and closed, newest to oldest', async () => {
     const env = await serve();
     try {
       const r = await request(env.base, '/api/sessions/recent');
@@ -187,7 +187,7 @@ describe('histórico de sessões: listagem', () => {
     }
   });
 
-  it('métodos: POST/PUT -> 405; HEAD vale só na listagem; subrota desconhecida -> 404', async () => {
+  it('methods: POST/PUT -> 405; HEAD only on the listing; unknown subroute -> 404', async () => {
     const env = await serve();
     try {
       const json = { 'Content-Type': 'application/json' };
@@ -208,8 +208,8 @@ describe('histórico de sessões: listagem', () => {
   });
 });
 
-describe('histórico de sessões: validação (path traversal)', () => {
-  it('id que não é UUID: 400; conta desconhecida ou fora de projects/: 404; nunca abre o arquivo de fora', async ({ skip }) => {
+describe('session history: validation (path traversal)', () => {
+  it('non-UUID id: 400; unknown account or outside projects/: 404; never opens the outside file', async ({ skip }) => {
     const env = await serve();
     try {
       writeFileSync(join(env.root, 'segredo.jsonl'), `${L.prompt('não pode sair')}\n`);
@@ -246,7 +246,7 @@ describe('histórico de sessões: validação (path traversal)', () => {
       mkdirSync(join(env.dir, 'projects', 'vazio'), { recursive: true });
       const r = await request(env.base, terminalRoute('.claude', linked));
       expect(r.status).toBe(404);
-      expect(JSON.parse(r.body)).toEqual({ error: 'sessão não encontrada' });
+      expect(JSON.parse(r.body)).toEqual({ error: 'session not found' });
       expect(env.terminals.size).toBe(0);
     } finally {
       await env.close();
@@ -254,7 +254,7 @@ describe('histórico de sessões: validação (path traversal)', () => {
   });
 });
 
-describe('histórico de sessões: outra ferramenta', () => {
+describe('session history: another tool', () => {
   const XID = '019a0000-0000-7000-8000-0000000000d4';
   /** Provedor fictício da conta ".codex": uma sessão, lida com um parser próprio (cada linha vira "cx-<n>"). */
   const codexHistory = (root: string): HistoryProvider => {
@@ -268,11 +268,11 @@ describe('histórico de sessões: outra ferramenta', () => {
       resolve: (_account, sessionId) =>
         sessionId === XID
           ? { path, createParser: () => ({ push: (): TerminalEntry[] => [{ kind: 'user', id: `cx-${++n}`, at: 0, text: 'cx' }] }) }
-          : { status: 404, error: 'sessão não encontrada' },
+          : { status: 404, error: 'session not found' },
     };
   };
 
-  it('listagem junta as ferramentas; o terminal da sessão usa o parser da ferramenta dela', async () => {
+  it('the listing merges the tools; the session terminal uses its tool parser', async () => {
     const env = await serve({ extra: codexHistory });
     try {
       const body = JSON.parse((await request(env.base, '/api/sessions/recent')).body) as RecentSessionsResponse;
@@ -294,7 +294,7 @@ describe('histórico de sessões: outra ferramenta', () => {
       expect((c.events[0].data as TerminalInit).entries.map((e) => e.kind)).toEqual(['user', 'assistant']);
       c.close();
       expect((await request(env.base, terminalRoute('.codex', '00000000-0000-4000-8000-000000000999'))).status).toBe(404);
-      expect(JSON.parse((await request(env.base, terminalRoute('.outra', SID))).body)).toEqual({ error: 'conta desconhecida' });
+      expect(JSON.parse((await request(env.base, terminalRoute('.outra', SID))).body)).toEqual({ error: 'unknown account' });
       expect((await request(env.base, terminalRoute('.outra', 'x'))).status).toBe(400);
     } finally {
       await env.close();
@@ -302,8 +302,8 @@ describe('histórico de sessões: outra ferramenta', () => {
   });
 });
 
-describe('histórico de sessões: SSE da sessão encerrada', () => {
-  it('init com a conversa do transcript (parser real); depois append do que for acrescentado', async () => {
+describe('session history: SSE of the closed session', () => {
+  it('init with the transcript conversation (real parser); then append of whatever is added', async () => {
     const env = await serve();
     try {
       const s = await request(env.base, terminalRoute('.claude', SID));

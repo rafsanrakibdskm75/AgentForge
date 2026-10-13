@@ -1,6 +1,6 @@
 // Ordem dos agentes de cada projeto escolhida pelo usuário (arrastando as linhas da lista lateral): uma ordem só por
 // projeto, guardada no navegador pela sessão do Claude Code (não pelo processo, que muda ao retomar uma sessão).
-const ORDER_KEY = 'habblaud.tabs.order';
+const ORDER_KEY = 'agentforge.tabs.order';
 /** Projetos lembrados (os mais recentes). */
 const MAX_ROOMS = 50;
 

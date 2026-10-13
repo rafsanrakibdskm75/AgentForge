@@ -1,8 +1,8 @@
-// Todos os dicionários de uma vez: o servidor, os scripts e os testes usam este módulo. No navegador, o vite.config.ts
-// o troca por locales/none.ts, e o cliente carrega só o dicionário do idioma ativo (client/src/main.ts).
+// All dictionaries at once: the server, the scripts and the tests use this module. In the browser,
+// vite.config.ts swaps it for locales/none.ts, and the client loads only the active language's dictionary
+// (client/src/main.ts).
 import type { Locale } from '../i18n';
+import { BN } from './bn';
 import { EN } from './en';
-import { ES } from './es';
-import { FR } from './fr';
 
-export const DICTIONARIES: Partial<Record<Locale, Readonly<Record<string, string>>>> = { en: EN, es: ES, fr: FR };
+export const DICTIONARIES: Partial<Record<Locale, Readonly<Record<string, string>>>> = { en: EN, bn: BN };

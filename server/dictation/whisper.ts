@@ -1,6 +1,6 @@
-// Ditado: transforma o áudio gravado no navegador em texto com o Whisper LOCAL (whisper.cpp: `whisper-cli`), sem mandar
-// a voz para nenhum serviço. O idioma é detectado sozinho (`-l auto`); como o ditado é em português ou inglês, um
-// resultado em outra língua (o Whisper às vezes confunde português com espanhol ou galego) é refeito em português.
+// Dictation: turns audio recorded in the browser into text with the LOCAL Whisper (whisper.cpp: `whisper-cli`),
+// without sending the voice to any service. The language is detected alone (`-l auto`); since dictation is in
+// English or Bangla, a result in another language is redone in English.
 // Precisa do whisper-cli, do ffmpeg (o áudio do celular vem em mp4/webm) e de um modelo multilíngue ggml-*.bin (os
 // ".en" só entendem inglês e ficam de fora). Roda onde está o Whisper: o servidor no modo Node, o auxiliar do host
 // (scripts/codex-bridge.ts) no Docker. Sem shell (execFile), com prazo, numa pasta temporária apagada no fim.
@@ -13,7 +13,7 @@ import { tr } from '../../shared/i18n';
 
 export const TRANSCRIBE_TIMEOUT_MS = 120_000;
 /** Idiomas do ditado: o primeiro é o de reserva quando o detectado não está na lista. */
-export const DEFAULT_LANGS = ['pt', 'en'] as const;
+export const DEFAULT_LANGS = ['en', 'bn'] as const;
 /** Do melhor para o mais leve: usa o primeiro que existir. */
 const MODELS = ['ggml-large-v3-turbo.bin', 'ggml-large-v3.bin', 'ggml-medium.bin', 'ggml-small.bin', 'ggml-base.bin', 'ggml-tiny.bin'];
 
@@ -44,16 +44,16 @@ function onPath(name: string, env: NodeJS.ProcessEnv): string | undefined {
 /** Acha o whisper-cli, o ffmpeg e o melhor modelo multilíngue; undefined (com o motivo) se faltar algum. */
 export function findWhisper(env: NodeJS.ProcessEnv = process.env, exists: (p: string) => boolean = existsSync): WhisperSetup | { missing: string } {
   const home = env.HOME || homedir();
-  const bin = env.HABBLAUD_WHISPER_BIN?.trim() || ['/opt/homebrew/bin/whisper-cli', '/usr/local/bin/whisper-cli'].find(exists) || onPath('whisper-cli', env);
+  const bin = env.AGENTFORGE_WHISPER_BIN?.trim() || ['/opt/homebrew/bin/whisper-cli', '/usr/local/bin/whisper-cli'].find(exists) || onPath('whisper-cli', env);
   if (!bin || !exists(bin)) return { missing: 'whisper-cli (brew install whisper-cpp)' };
-  const ffmpeg = env.HABBLAUD_FFMPEG_BIN?.trim() || ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg'].find(exists) || onPath('ffmpeg', env);
+  const ffmpeg = env.AGENTFORGE_FFMPEG_BIN?.trim() || ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg'].find(exists) || onPath('ffmpeg', env);
   if (!ffmpeg || !exists(ffmpeg)) return { missing: 'ffmpeg (brew install ffmpeg)' };
   const dirs = [join(home, '.local', 'share', 'whisper'), join(home, '.whisper'), '/opt/homebrew/share/whisper-cpp', '/usr/local/share/whisper-cpp'];
   const model =
-    env.HABBLAUD_WHISPER_MODEL?.trim() ||
+    env.AGENTFORGE_WHISPER_MODEL?.trim() ||
     MODELS.flatMap((m) => dirs.map((d) => join(d, m))).find(exists);
   if (!model || !exists(model)) return { missing: tr('um modelo multilíngue do Whisper (ggml-small.bin ou ggml-base.bin em ~/.local/share/whisper)') };
-  const langs = (env.HABBLAUD_DICTATION_LANGS ?? '')
+  const langs = (env.AGENTFORGE_DICTATION_LANGS ?? '')
     .split(',')
     .map((l) => l.trim().toLowerCase())
     .filter((l) => /^[a-z]{2,3}$/.test(l));
@@ -85,7 +85,7 @@ export function parseWhisperJson(raw: string): Transcript {
 /** Transcritor com o whisper-cli; a pasta temporária some no fim, com ou sem erro. */
 export function createWhisperTranscriber(setup: WhisperSetup, timeoutMs = TRANSCRIBE_TIMEOUT_MS): Transcriber {
   return async (audio) => {
-    const dir = mkdtempSync(join(tmpdir(), 'habblaud-dictation-'));
+    const dir = mkdtempSync(join(tmpdir(), 'agentforge-dictation-'));
     try {
       const input = join(dir, 'audio.in');
       const wav = join(dir, 'audio.wav');
@@ -100,7 +100,7 @@ export function createWhisperTranscriber(setup: WhisperSetup, timeoutMs = TRANSC
       };
       const first = await pass('auto');
       if (!first.lang || setup.langs.includes(first.lang) || !first.text) return first;
-      // Detectou uma língua fora da lista (ex.: "es" para português): refaz no idioma principal.
+      // Detected a language outside the list: redo in the primary language.
       const again = await pass(setup.langs[0]);
       return { text: again.text, lang: setup.langs[0] };
     } finally {

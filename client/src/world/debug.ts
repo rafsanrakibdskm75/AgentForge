@@ -1,4 +1,4 @@
-// API de depuração do mundo (console: `habblaud.world.debug`), usada em testes visuais para
+// API de depuração do mundo (console: `agentforge.world.debug`), usada em testes visuais para
 // forçar cenários: sessões simuladas chegando/saindo, salas fechando, hora do dia, câmera e a
 // espera de shell (shells rodando, envelhecer a espera, terminar com sucesso/falha).
 import type { Activity, AgentInfo, AgentStatus, RoomInfo, ShellJob } from '../../../shared/types';

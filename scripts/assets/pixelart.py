@@ -1,6 +1,6 @@
 """Pixel art desenhada à mão (mapas de caracteres) para os tamanhos em que a redução automática
 da arte da IA não fica nítida: o mark em 32x32 e 16x16 ("hinting" do desenho da IA, com a mesma
-paleta) e a placa "Habblaud" e textos do og-image com uma fonte bitmap proporcional (5x7, com acentos).
+paleta) e a placa "AgentForge" e textos do og-image com uma fonte bitmap proporcional (5x7, com acentos).
 
 O desenho de referência é a tomada escolhida de `logo-mark` (prédio frontal, telhado verde-azulado,
 faixas de madeira, janelas acesas em amarelo e duas telas azuis, porta de vidro com toldo).
@@ -259,7 +259,7 @@ def text_image(text: str, color: str, scale: int = 1, shadow: str | None = None)
 
 
 def signage() -> Image.Image:
-    """Placa da recepção, 64x16: chapa azul-marinho com bisel, parafusos e "Habblaud"."""
+    """Placa da recepção, 64x16: chapa azul-marinho com bisel, parafusos e "AgentForge"."""
     w, h = 64, 16
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     px = img.load()
@@ -280,7 +280,7 @@ def signage() -> Image.Image:
         px[sx, 7] = hex_rgba("#c9d3e3")
         px[sx, 8] = hex_rgba("#7d8aa3")
     # texto centralizado com sombra de 1px; "Hab" claro e "blaud" na cor das janelas acesas
-    tx, ty = (w - text_width("Habblaud")) // 2, 4
+    tx, ty = (w - text_width("AgentForge")) // 2, 4
     blaud_x = tx + text_width("Hab") + 1
     draw_text(img, tx, ty + 1, "Hab", "#151c33")
     draw_text(img, blaud_x, ty + 1, "blaud", "#151c33")

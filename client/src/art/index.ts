@@ -1,4 +1,4 @@
-// Módulo de arte (pixel art procedural) do Habblaud — implementação do contrato ArtModule (./api.ts).
+// Módulo de arte (pixel art procedural) do AgentForge — implementação do contrato ArtModule (./api.ts).
 //
 // Tudo é desenhado em código: a geração acontece em PixelBuf (puro, testável em Node) e só no fim
 // vira canvas, uma única vez por combinação de parâmetros (cache). As funções draw* chamadas a cada

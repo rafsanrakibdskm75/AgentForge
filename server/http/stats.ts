@@ -41,7 +41,7 @@ export function parseStatsQuery(url: URL, defaultTz: string, today: (tz: string)
   const day = d.value ?? now;
   if (!parseDayKey(day)) return { ok: false, status: 400, error: tr('dia inválido: use AAAA-MM-DD (ex.: 2026-10-08)') };
   if (day > now) return { ok: false, status: 400, error: tr('dia no futuro') };
-  if (day < addDays(now, -RETENTION_DAYS)) return { ok: false, status: 404, error: tr('o Habblaud guarda só os últimos {0} dias', [RETENTION_DAYS]) };
+  if (day < addDays(now, -RETENTION_DAYS)) return { ok: false, status: 404, error: tr('o AgentForge guarda só os últimos {0} dias', [RETENTION_DAYS]) };
   const s = single(url, 'source');
   if (s.error) return { ok: false, status: 400, error: s.error };
   if (s.value !== undefined && s.value !== 'real' && s.value !== 'demo') return { ok: false, status: 400, error: tr('fonte inválida: use real ou demo') };

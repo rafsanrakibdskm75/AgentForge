@@ -8,7 +8,7 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
-      # Os tipos acompanham a menor versão do Node que o Habblaud suporta (engines: >=22.12). Com os de uma versão
+      # Os tipos acompanham a menor versão do Node que o AgentForge suporta (engines: >=22.12). Com os de uma versão
       # mais nova, o typecheck deixaria passar APIs que não existem nela. Sobe à mão, junto com o engines e o CI.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]

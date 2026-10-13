@@ -50,7 +50,7 @@ describe('terminal — prompts do usuário', () => {
       userBlocks([{ type: 'text', text: '[Image #1] quero assim' }, img]),
       userBlocks([img]),
     ]);
-    expect(only(e, 'user').map((x) => x.text)).toEqual(['olha isso\n[imagem] [imagem]', '[Image #1] quero assim', '[imagem]']);
+    expect(only(e, 'user').map((x) => x.text)).toEqual(['olha isso\n[image] [image]', '[Image #1] quero assim', '[image]']);
   });
 
   it('comandos de barra viram "/x args" e a saída local vira system (inclusive nas linhas system local_command)', () => {
@@ -63,16 +63,16 @@ describe('terminal — prompts do usuário', () => {
     ]);
     expect(e.map((x) => [x.kind, x.kind === 'system' ? `${x.text} | ${x.detail}` : 'text' in x ? x.text : ''])).toEqual([
       ['user', '/review 123'],
-      ['system', 'Saída de /review | Revisão pronta'],
+      ['system', 'Output of /review | Revisão pronta'],
       ['user', '/model'],
-      ['system', 'Saída de /model | Modelo mantido'],
+      ['system', 'Output of /model | Modelo mantido'],
     ]);
   });
 
   it('modo bash do usuário: "! cmd" e a saída como system', () => {
     const e = run([L.prompt('<bash-input>ls -la</bash-input>'), L.prompt('<bash-stdout>a.txt\nb.txt</bash-stdout><bash-stderr></bash-stderr>')]);
     expect(e[0]).toMatchObject({ kind: 'user', text: '! ls -la' });
-    expect(e[1]).toMatchObject({ kind: 'system', text: 'Saída do comando', detail: 'a.txt\nb.txt', level: 'info' });
+    expect(e[1]).toMatchObject({ kind: 'system', text: 'Command output', detail: 'a.txt\nb.txt', level: 'info' });
   });
 
   it('prompt digitado com o agente ocupado (queued_command) vira user; mensagens de outros agentes (meta) não', () => {
@@ -81,7 +81,7 @@ describe('terminal — prompts do usuário', () => {
       queued([{ type: 'text', text: 'olha a tela' }, { type: 'image', source: { type: 'base64', data: 'AA' } }], { commandMode: 'prompt' }),
       queued('mensagem de outro agente', { commandMode: 'prompt', isMeta: true, origin: { kind: 'peer' } }),
     ]);
-    expect(only(e, 'user').map((x) => x.text)).toEqual(['e também o rodapé', 'olha a tela\n[imagem]']);
+    expect(only(e, 'user').map((x) => x.text)).toEqual(['e também o rodapé', 'olha a tela\n[image]']);
     expect(e).toHaveLength(2);
   });
 
@@ -95,8 +95,8 @@ describe('terminal — eventos da sessão', () => {
   it('interrupção (com e sem ferramenta) vira aviso', () => {
     const e = run([L.prompt('[Request interrupted by user]'), userBlocks([{ type: 'text', text: '[Request interrupted by user for tool use]' }])]);
     expect(e.map((x) => x.kind === 'system' && [x.text, x.level])).toEqual([
-      ['Interrompido pelo usuário', 'warn'],
-      ['Interrompido pelo usuário', 'warn'],
+      ['Interrupted by user', 'warn'],
+      ['Interrupted by user', 'warn'],
     ]);
   });
 
@@ -112,9 +112,9 @@ describe('terminal — eventos da sessão', () => {
     ]);
     const s = only(e, 'system');
     expect(s.map((x) => [x.text, x.level])).toEqual([
-      ['Tarefa em segundo plano concluída: Background command "Rodar testes" completed (exit code 0)', 'info'],
-      ['Tarefa em segundo plano falhou: Background command "build" failed', 'warn'],
-      ['Tarefa em segundo plano concluída: Agent "Mapear arquivos" completed', 'info'],
+      ['Background task completed: Background command "Rodar testes" completed (exit code 0)', 'info'],
+      ['Background task failed: Background command "build" failed', 'warn'],
+      ['Background task completed: Agent "Mapear arquivos" completed', 'info'],
     ]);
     expect(s[0].detail).toBeUndefined();
     expect(s[2].detail).toBe('Encontrei 3 arquivos.');
@@ -129,7 +129,7 @@ describe('terminal — eventos da sessão', () => {
       L.system('compact_boundary', { compactMetadata: { trigger: 'manual' } }),
     ]);
     const s = only(e, 'system');
-    expect(s.map((x) => x.text)).toEqual(['Conversa compactada automaticamente', 'Resumo da conversa compactada', 'Conversa compactada (/compact)']);
+    expect(s.map((x) => x.text)).toEqual(['Conversation compacted automatically', 'Compacted conversation summary', 'Conversation compacted (/compact)']);
     expect(s[1].detail!.startsWith('Resumo da conversa anterior.')).toBe(true);
     expect(s[1].detail!.length).toBeLessThanOrEqual(DETAIL_MAX + 2);
     expect(s[1].detail!.endsWith('\n…')).toBe(true);
@@ -146,7 +146,7 @@ describe('terminal — eventos da sessão', () => {
       L.assistant([L.text('No response requested.')], { model: '<synthetic>' }),
     ]);
     expect(e.map((x) => x.kind === 'system' && [x.text, x.level])).toEqual([
-      ['Erro da API: Servidor sobrecarregado (529) — tentando de novo (até 10 vezes)', 'error'],
+      ['API error: Servidor sobrecarregado (529) — retrying (up to 10 times)', 'error'],
       ['API Error: 529 Overloaded. Try again.', 'error'],
     ]);
   });
@@ -160,9 +160,9 @@ describe('terminal — eventos da sessão', () => {
       L.system('bridge_status', { content: '/remote-control is active · https://exemplo.invalid/sessao' }),
     ]);
     expect(e.map((x) => x.kind === 'system' && [x.text, x.level])).toEqual([
-      ['Turno concluído em 1min 5s', 'info'],
+      ['Turn completed in 1min 5s', 'info'],
       ['Unknown command: /xyz', 'warn'],
-      ['Recapitulação: Você pediu X e está pronto.', 'info'],
+      ['Recap: Você pediu X e está pronto.', 'info'],
     ]);
   });
 
@@ -252,8 +252,8 @@ describe('terminal — respostas e ferramentas', () => {
     expect(view('t9')).toEqual({ title: 'WebSearch(pix devolução api)', input: undefined, kind: undefined });
     expect(view('t10')).toEqual({ title: 'Agent(Explore: Mapear arquivos)', input: 'Liste os arquivos do checkout', kind: 'text' });
     expect(view('t11')).toEqual({ title: 'Exemplo - buscar_itens (MCP)', input: '{\n  "termo": "x",\n  "limite": 3\n}', kind: 'json' });
-    expect(view('t12')).toEqual({ title: 'TodoWrite(1/3 concluídas)', input: '☒ Ler código\n◐ Corrigir\n☐ Testar', kind: 'text' });
-    expect(view('t13').title).toBe('TaskUpdate(#3 → concluída)');
+    expect(view('t12')).toEqual({ title: 'TodoWrite(1/3 done)', input: '☒ Ler código\n◐ Corrigir\n☐ Testar', kind: 'text' });
+    expect(view('t13').title).toBe('TaskUpdate(#3 → completed)');
     expect(view('t14')).toEqual({ title: 'FerramentaNova(servidor)', input: '{\n  "vezes": 2\n}', kind: 'json' });
     expect(view('t15')).toEqual({ title: 'srv - ping (MCP)', input: undefined, kind: undefined });
     expect(view('t16')).toEqual({ title: 'MultiEdit(b.ts)', input: '- x\n+ y\n@@\n- p\n+ q', kind: 'diff' });
@@ -271,10 +271,10 @@ describe('terminal — respostas e ferramentas', () => {
     const r = only(e, 'result');
     expect(r.map((x) => [x.id, x.toolUseId, x.text, x.error ?? false])).toEqual([
       ['a:r', 'a', '✓ 42 testes passaram', false],
-      ['b:r', 'b', 'Imagem lida\n[imagem]', false],
+      ['b:r', 'b', 'Imagem lida\n[image]', false],
       ['c:r', 'c', 'Arquivo inexistente', true],
-      ['d:r', 'd', 'Recusado pelo usuário: usa a outra pasta', true],
-      ['e:r', 'e', '(sem saída)', false],
+      ['d:r', 'd', 'Denied by the user: usa a outra pasta', true],
+      ['e:r', 'e', '(no output)', false],
     ]);
     expect(r[0].at).toBe(T0 + 2_000);
     expect(r.every((x) => x.truncated === undefined)).toBe(true);

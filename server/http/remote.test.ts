@@ -38,34 +38,34 @@ const CREDS = { user: 'ana', password: PASSWORD };
 const TLS_FILES = (p: string) => p.endsWith('server.key') || p.endsWith('server.crt');
 
 describe('parseRemoteConfig', () => {
-  const base = { HABBLAUD_REMOTE_USER: 'ana', HABBLAUD_REMOTE_PASSWORD_HASH: HASH_TEXT };
-  it('fica desligado sem as variáveis', () => {
+  const base = { AGENTFORGE_REMOTE_USER: 'ana', AGENTFORGE_REMOTE_PASSWORD_HASH: HASH_TEXT };
+  it('stays off without the variables', () => {
     expect(parseRemoteConfig({}, false)).toEqual({});
   });
-  it('recusa senha em texto puro e hash ausente ou inválido', () => {
-    expect(parseRemoteConfig({ HABBLAUD_REMOTE_USER: 'a', HABBLAUD_REMOTE_PASSWORD: '12345678' }, false).warning).toMatch(/texto puro/);
-    expect(parseRemoteConfig({ HABBLAUD_REMOTE_USER: 'a' }, false).warning).toMatch(/remote:setup/);
-    expect(parseRemoteConfig({ HABBLAUD_REMOTE_USER: 'a', HABBLAUD_REMOTE_PASSWORD_HASH: 'scrypt:1:2' }, false, TLS_FILES).warning).toMatch(/inválido/);
+  it('refuses plain-text passwords and missing or invalid hashes', () => {
+    expect(parseRemoteConfig({ AGENTFORGE_REMOTE_USER: 'a', AGENTFORGE_REMOTE_PASSWORD: '12345678' }, false).warning).toMatch(/plain-text/);
+    expect(parseRemoteConfig({ AGENTFORGE_REMOTE_USER: 'a' }, false).warning).toMatch(/remote:setup/);
+    expect(parseRemoteConfig({ AGENTFORGE_REMOTE_USER: 'a', AGENTFORGE_REMOTE_PASSWORD_HASH: 'scrypt:1:2' }, false, TLS_FILES).warning).toMatch(/invalid/);
   });
-  it('exige HTTPS: sem certificado não sobe, a menos de HABBLAUD_REMOTE_INSECURE_HTTP=1', () => {
-    expect(parseRemoteConfig(base, false, () => false).warning).toMatch(/HTTPS é obrigatório/);
-    const insecure = parseRemoteConfig({ ...base, HABBLAUD_REMOTE_INSECURE_HTTP: '1' }, false, () => false).config;
+  it('requires HTTPS: no certificate, no start, unless AGENTFORGE_REMOTE_INSECURE_HTTP=1', () => {
+    expect(parseRemoteConfig(base, false, () => false).warning).toMatch(/HTTPS is required/);
+    const insecure = parseRemoteConfig({ ...base, AGENTFORGE_REMOTE_INSECURE_HTTP: '1' }, false, () => false).config;
     expect(insecure?.tls).toBeUndefined();
   });
-  it('liga com padrões: porta 4748, só permissões, certificado da pasta padrão', () => {
+  it('starts with defaults: port 4748, permissions only, certificate from the default folder', () => {
     const { config } = parseRemoteConfig({ ...base, HOME: '/h' }, false, TLS_FILES);
     expect(config).toMatchObject({ port: 4748, host: '0.0.0.0', user: 'ana' });
-    expect(config?.tls?.certFile).toBe('/h/.habblaud/remote-tls/server/server.crt');
+    expect(config?.tls?.certFile).toBe('/h/.agentforge/remote-tls/server/server.crt');
     expect([...config!.allow]).toEqual(['permissions']);
   });
-  it('no Docker ignora porta e host (o container escuta sempre em 0.0.0.0:4748) e lê o certificado de /remote-tls', () => {
-    const env = { ...base, HABBLAUD_REMOTE_PORT: '9999', HABBLAUD_REMOTE_HOST: '10.0.0.1' };
+  it('in Docker ignores port and host (the container always listens on 0.0.0.0:4748) and reads the certificate from /remote-tls', () => {
+    const env = { ...base, AGENTFORGE_REMOTE_PORT: '9999', AGENTFORGE_REMOTE_HOST: '10.0.0.1' };
     const docker = parseRemoteConfig(env, true, TLS_FILES).config;
     expect(docker).toMatchObject({ port: 4748, host: '0.0.0.0' });
     expect(docker?.tls?.dir).toBe('/remote-tls');
     expect(parseRemoteConfig(env, false, TLS_FILES).config).toMatchObject({ port: 9999, host: '10.0.0.1' });
   });
-  it('HABBLAUD_REMOTE_ALLOW: lista, ignora nomes desconhecidos, "none" = só ver', () => {
+  it('AGENTFORGE_REMOTE_ALLOW: list, ignores unknown names, "none" = view only', () => {
     expect([...parseAllow('messages, Terminal, bogus')]).toEqual(['messages', 'terminal']);
     expect([...parseAllow('none')]).toEqual([]);
     expect([...parseAllow('')]).toEqual(['permissions']);
@@ -73,7 +73,7 @@ describe('parseRemoteConfig', () => {
 });
 
 describe('RemoteSessions', () => {
-  it('aceita o próprio token e recusa adulterado, vencido ou de outra senha', () => {
+  it('accepts its own token and refuses tampered, expired or other-password ones', () => {
     let now = 1_800_000_000_000;
     const sessions = new RemoteSessions(SECRET, CFG, () => now);
     const { token, maxAgeS } = sessions.issue();
@@ -88,7 +88,7 @@ describe('RemoteSessions', () => {
     expect(sessions.verify(token)).toBe(false);
   });
 
-  it('revoke encerra só aquele token, e a lista sobrevive a um reinício', () => {
+  it('revoke ends only that token, and the list survives a restart', () => {
     const now = 1_800_000_000_000;
     const tmp = tempDir();
     const file = join(tmp.dir, 'data', 'remote-revoked.json');
@@ -106,7 +106,7 @@ describe('RemoteSessions', () => {
     tmp.cleanup();
   });
 
-  it('loadSecret cria o segredo com permissão 600 e o reaproveita', () => {
+  it('loadSecret creates the secret with 600 permissions and reuses it', () => {
     const tmp = tempDir();
     const file = join(tmp.dir, 'data', 'remote-secret');
     const a = loadSecret(file);
@@ -118,7 +118,7 @@ describe('RemoteSessions', () => {
 });
 
 describe('LoginThrottle', () => {
-  it('libera 4 falhas, depois espera 1 s, 2 s... e zera ao acertar', () => {
+  it('allows 4 failures, then waits 1s, 2s... and resets on success', () => {
     let now = 0;
     const t = new LoginThrottle(() => now);
     for (let i = 0; i < 4; i++) t.fail();
@@ -132,7 +132,7 @@ describe('LoginThrottle', () => {
     expect(t.retryAfter()).toBe(0);
   });
 
-  it('uma tentativa por vez, contada como falha antes de conferir a senha', () => {
+  it('one attempt at a time, counted as failure before checking the password', () => {
     let now = 0;
     const t = new LoginThrottle(() => now);
     for (let i = 0; i < 4; i++) {
@@ -153,8 +153,8 @@ describe('LoginThrottle', () => {
 });
 
 describe('readCookie', () => {
-  it('acha o cookie pelo nome', () => {
-    expect(readCookie('a=1; habblaud_remote=v1.x.y; b=2', COOKIE)).toBe('v1.x.y');
+  it('finds the cookie by name', () => {
+    expect(readCookie('a=1; agentforge_remote=v1.x.y; b=2', COOKIE)).toBe('v1.x.y');
     expect(readCookie(undefined, COOKIE)).toBeUndefined();
   });
 });
@@ -228,7 +228,7 @@ async function start(allow: RemoteFeature[] = ['permissions']): Promise<Harness>
   const gate = createRemoteGate({ config: CFG, sessions: new RemoteSessions(SECRET, CFG), secure: false });
   const page = (_req: http.IncomingMessage, res: http.ServerResponse) => {
     res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end('<!doctype html><title>Habblaud</title>');
+    res.end('<!doctype html><title>AgentForge</title>');
   };
   const local = http.createServer((req, res) => {
     if (guard(req, res)) return;
@@ -296,8 +296,8 @@ async function login(base: string): Promise<string> {
   return setCookie.split(';')[0];
 }
 
-describe('porta remota', () => {
-  it('logado: terminal interativo, rotas do hook e do plugin e o auxiliar nunca passam, nem com Host local', async () => {
+describe('remote port', () => {
+  it('logged in: interactive terminal, hook and plugin routes and the helper never pass, not even with local Host', async () => {
     const s = await start(['permissions', 'messages', 'terminal', 'spawn']);
     const cookie = await login(s.remoteBase);
     const headers = { Cookie: cookie, Host: 'localhost' };
@@ -332,7 +332,7 @@ describe('porta remota', () => {
     expect((await request(s.localBase, '/api/pty')).status).toBe(200);
   });
 
-  it('novo agente: só com spawn liberado no celular; o auxiliar do host nunca pela porta remota', async () => {
+  it('new agent: only with spawn allowed on the phone; the host helper never via the remote port', async () => {
     const s = await start(['permissions']);
     const cookie = await login(s.remoteBase);
     const body = { folder: '/Users/voce/projeto', prompt: 'oi' };
@@ -358,7 +358,7 @@ describe('porta remota', () => {
     expect((await request(t.localBase, '/api/spawn', { method: 'POST', body: { folder: 'relativa', prompt: '' } })).status).toBe(400);
   });
 
-  it('login com o corpo pela metade não trava o login de mais ninguém', async () => {
+  it('login with a half-sent body does not block other logins', async () => {
     const s = await start();
     const hanging = http.request(new URL('/api/remote/login', s.remoteBase), {
       method: 'POST',
@@ -371,7 +371,7 @@ describe('porta remota', () => {
     hanging.destroy();
   });
 
-  it('Sair: apaga o cookie e o mesmo token deixa de valer (mesmo guardado numa cópia)', async () => {
+  it('Sign out: deletes the cookie and the same token stops working (even kept in a copy)', async () => {
     const s = await start();
     const cookie = await login(s.remoteBase);
     expect((await request(s.remoteBase, '/api/access', { headers: { Cookie: cookie } })).status).toBe(200);
@@ -383,7 +383,7 @@ describe('porta remota', () => {
     expect((await request(s.remoteBase, '/', { headers: { Cookie: cookie } })).headers.location).toBe('/login');
   });
 
-  it('sem login: a página vira /login e a API responde 401', async () => {
+  it('no login: the page becomes /login and the API answers 401', async () => {
     const h = await start();
     const page = await request(h.remoteBase, '/');
     expect(page.status).toBe(302);
@@ -399,7 +399,7 @@ describe('porta remota', () => {
     expect(h.permissionCalls).toEqual([]);
   });
 
-  it('sem login: só manifesto e ícones passam (o resto vira /login)', async () => {
+  it('no login: only manifest and icons pass (the rest becomes /login)', async () => {
     const h = await start();
     for (const path of ['/manifest.webmanifest', '/assets/brand/icon-192.png']) {
       expect((await request(h.remoteBase, path)).status, path).not.toBe(302);
@@ -409,7 +409,7 @@ describe('porta remota', () => {
     }
   });
 
-  it('senha errada: 401 sem cookie; certa: cookie de sessão e acesso à API', async () => {
+  it('wrong password: 401 without cookie; right: session cookie and API access', async () => {
     const h = await start();
     const wrong = await request(h.remoteBase, '/api/remote/login', { method: 'POST', body: { user: 'ana', password: 'nope nope' } });
     expect(wrong.status).toBe(401);
@@ -421,7 +421,7 @@ describe('porta remota', () => {
     expect((await request(h.remoteBase, '/login', { headers: { Cookie: cookie } })).headers.location).toBe('/');
   });
 
-  it('logado: aprova permissões (o padrão) e o health diz o que vale nesta porta', async () => {
+  it('logged in: approves permissions (the default) and health says what applies on this port', async () => {
     const h = await start();
     const cookie = await login(h.remoteBase);
     const health = JSON.parse((await request(h.remoteBase, '/api/health', { headers: { Cookie: cookie } })).body);
@@ -435,7 +435,7 @@ describe('porta remota', () => {
     expect(h.permissionCalls).toEqual(['remote POST /api/permissions/p1/decision']);
   });
 
-  it('logado com Host imitando localhost: continua sem o que não foi liberado', async () => {
+  it('logged in with Host imitating localhost: still without what was not allowed', async () => {
     const h = await start();
     const cookie = await login(h.remoteBase);
     const headers = { Cookie: cookie, Host: 'localhost' };
@@ -445,13 +445,13 @@ describe('porta remota', () => {
     ] as const) {
       const r = await request(h.remoteBase, path, { method: 'POST', headers, body });
       expect(r.status, path).toBe(403);
-      expect(JSON.parse(r.body).error).toMatch(/HABBLAUD_REMOTE_ALLOW/);
+      expect(JSON.parse(r.body).error).toMatch(/AGENTFORGE_REMOTE_ALLOW/);
     }
     expect((await request(h.remoteBase, '/api/agents/x/terminal', { headers })).status).toBe(403);
     expect((await request(h.remoteBase, '/api/sessions/recent', { headers })).status).toBe(403);
   });
 
-  it('HABBLAUD_REMOTE_ALLOW=messages libera mensagens e "none" tira até as permissões', async () => {
+  it('AGENTFORGE_REMOTE_ALLOW=messages allows messages and "none" removes even permissions', async () => {
     const withMessages = await start(['messages']);
     const c1 = await login(withMessages.remoteBase);
     expect((await request(withMessages.remoteBase, '/api/messages', { method: 'POST', headers: { Cookie: c1 }, body: {} })).status).toBe(200);
@@ -462,15 +462,15 @@ describe('porta remota', () => {
     expect((await request(viewOnly.remoteBase, '/api/snapshot', { headers: { Cookie: c2 } })).status).toBe(200);
   });
 
-  it('login de outra origem é barrado pelo guard (CSRF)', async () => {
+  it('login from another origin is blocked by the guard (CSRF)', async () => {
     const h = await start();
     const r = await request(h.remoteBase, '/api/remote/login', { method: 'POST', headers: { Origin: 'http://evil.example' }, body: CREDS });
     expect(r.status).toBe(403);
   });
 });
 
-describe('porta local (inalterada)', () => {
-  it('sem login, vale a trava do Host local como antes', async () => {
+describe('local port (unchanged)', () => {
+  it('no login, the local Host lock applies as before', async () => {
     const h = await start();
     const ok = await request(h.localBase, '/api/permissions/p1/decision', { method: 'POST', body: { behavior: 'allow' } });
     expect(ok.status).toBe(200);
@@ -480,7 +480,7 @@ describe('porta local (inalterada)', () => {
       body: { behavior: 'allow' },
     });
     expect(lanHost.status).toBe(403);
-    expect(JSON.parse(lanHost.body).error).toMatch(/próprio computador/);
+    expect(JSON.parse(lanHost.body).error).toMatch(/computer running/);
     expect(h.permissionCalls).toEqual(['local POST /api/permissions/p1/decision']);
     const health = JSON.parse((await request(h.localBase, '/api/health')).body);
     expect(health).toMatchObject({ remote: false, permissions: true, messages: true });
@@ -499,8 +499,8 @@ function openStream(base: string, headers: Record<string, string>): Promise<{ st
   });
 }
 
-describe('quem pode responder (o hook só espera se houver página que responda)', () => {
-  it('celular logado com permissions conta como página que responde', async () => {
+describe('who can answer (the hook only waits if there is a page that answers)', () => {
+  it('logged-in phone with permissions counts as an answering page', async () => {
     const h = await start(['permissions']);
     const cookie = await login(h.remoteBase);
     expect(h.hub.localSize).toBe(0);
@@ -510,7 +510,7 @@ describe('quem pode responder (o hook só espera se houver página que responda)
     s.close();
   });
 
-  it('celular só-ver não conta, nem imitando o Host local', async () => {
+  it('view-only phone does not count, not even imitating the local Host', async () => {
     const h = await start([]);
     const cookie = await login(h.remoteBase);
     const s = await openStream(h.remoteBase, { Cookie: cookie, Host: 'localhost' });
@@ -520,8 +520,8 @@ describe('quem pode responder (o hook só espera se houver página que responda)
   });
 });
 
-describe('GET /api/access (o que a página pode fazer)', () => {
-  it('porta remota: só o liberado; porta local: tudo pelo Host local; Host da rede na local: nada', async () => {
+describe('GET /api/access (what the page can do)', () => {
+  it('remote port: only the allowed; local port: everything via local Host; network Host on local: nothing', async () => {
     const h = await start(['permissions']);
     const cookie = await login(h.remoteBase);
     expect(JSON.parse((await request(h.remoteBase, '/api/access', { headers: { Cookie: cookie, Host: 'localhost' } })).body)).toEqual({
@@ -543,8 +543,8 @@ describe('GET /api/access (o que a página pode fazer)', () => {
   });
 });
 
-describe('cookie Secure e download da CA', () => {
-  it('com HTTPS o cookie leva Secure; /remote/ca.crt é público e só existe com a CA', async () => {
+describe('Secure cookie and CA download', () => {
+  it('with HTTPS the cookie gets Secure; /remote/ca.crt is public and only exists with the CA', async () => {
     const tmp = tempDir();
     const caFile = join(tmp.dir, 'ca.crt');
     const gate = createRemoteGate({ config: CFG, sessions: new RemoteSessions(SECRET, CFG), secure: true, caFile });

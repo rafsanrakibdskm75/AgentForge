@@ -191,7 +191,7 @@ export const SOURCES = {
 
 /** Um CODEX_HOME temporário (apagado com `cleanup`). */
 export function codexHome(name = '.codex') {
-  const tmp = tempDir('habblaud-codex-');
+  const tmp = tempDir('agentforge-codex-');
   const dir = join(tmp.dir, name);
   mkdirSync(join(dir, 'sessions'), { recursive: true });
   mkdirSync(join(dir, 'thread-writer-locks'), { recursive: true });

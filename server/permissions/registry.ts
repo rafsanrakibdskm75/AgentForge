@@ -1,7 +1,7 @@
 // Responder pelo escritório: registro dos pedidos de permissão pendentes.
 //
-// O hook PermissionRequest do Claude Code (mod/habblaud-permissoes/hooks/permission-hook.mjs, pelo plugin
-// habblaud-permissoes ou pelo npm run hooks:install) manda cada pedido para POST /api/permissions e fica esperando a decisão em GET /api/permissions/:id/wait (long-poll).
+// O hook PermissionRequest do Claude Code (mod/agentforge-permissoes/hooks/permission-hook.mjs, pelo plugin
+// agentforge-permissoes ou pelo npm run hooks:install) manda cada pedido para POST /api/permissions e fica esperando a decisão em GET /api/permissions/:id/wait (long-poll).
 // A página responde em POST /api/permissions/:id/decision. O registro:
 // - só aceita o pedido se alguma página local estiver aberta e a sessão for conhecida (senão o hook sai
 //   na hora e o terminal segue normal);
@@ -11,7 +11,7 @@
 // - descarta pedidos órfãos: tempo limite do hook, hook que morreu (sem ninguém esperando), agente que
 //   saiu e pedido respondido no próprio terminal (o tool_result aparece no transcript).
 //
-// O Codex usa as mesmas rotas (hook PermissionRequest de mod/habblaud-codex/hook.mjs, com `provider: "codex"` e a
+// O Codex usa as mesmas rotas (hook PermissionRequest de mod/agentforge-codex/hook.mjs, com `provider: "codex"` e a
 // conta no corpo). Diferenças: o agente casa pelo thread (agent_id ?? session_id) entre os agentes do Codex; sem
 // sugestões nem perguntas; recusar só com motivo (sem interromper); sem a busca da resposta no transcript (no Codex o
 // terminal só pede a aprovação depois que o hook termina, então ela nunca é respondida lá enquanto ele espera).
@@ -43,7 +43,7 @@ export const SCAN_EVERY_MS = 1_000;
 export const LEFT_WAITING_MS = 3_000;
 export const MAX_PENDING = 32;
 /**
- * Espera longa (HABBLAUD_PERMISSION_TIMEOUT acima do padrão) sem nenhuma página que responda há este tempo, e sem
+ * Espera longa (AGENTFORGE_PERMISSION_TIMEOUT acima do padrão) sem nenhuma página que responda há este tempo, e sem
  * celular que possa entrar depois: o pedido volta ao terminal (senão ficaria até 24 h onde ninguém o vê; nos
  * subagentes em segundo plano o terminal só mostra o diálogo quando o hook termina).
  */
@@ -123,7 +123,7 @@ interface Waiter {
 /** Formato ORIGINAL de uma pergunta do AskUserQuestion: para conferir as respostas, que voltam por posição. */
 interface AskFormat {
   multiSelect: boolean;
-  /** Quantas opções o original tem (inclusive as que o Habblaud não mostra). */
+  /** Quantas opções o original tem (inclusive as que o AgentForge não mostra). */
   options: number;
 }
 
@@ -225,7 +225,7 @@ function ruleText(raw: unknown): string | undefined {
 }
 
 /**
- * Sugestões "sempre permitir" que o Habblaud oferece: só `addRules` com `behavior: "allow"` num destino
+ * Sugestões "sempre permitir" que o AgentForge oferece: só `addRules` com `behavior: "allow"` num destino
  * conhecido. A página escolhe pela posição e o hook aplica a sugestão ORIGINAL que recebeu do Claude Code
  * (o servidor nunca inventa regras).
  */
@@ -524,8 +524,8 @@ export class PermissionRegistry {
     const now = this.now();
     const act: Activity =
       d.behavior === 'allow'
-        ? { id: `${p.agentId}#perm-ok:${id}`, at: now, kind: 'other', icon: '✅', text: d.suggestion !== undefined ? tr('Aprovado no Habblaud (sempre permitir)') : tr('Aprovado no Habblaud'), detail: p.info.title, tool: 'PermissionRequest' }
-        : { id: `${p.agentId}#perm-no:${id}`, at: now, kind: 'wait', icon: '🚫', text: tr('Recusado no Habblaud'), detail: d.message ? `${p.info.title} — ${d.message}` : p.info.title, tool: 'PermissionRequest' };
+        ? { id: `${p.agentId}#perm-ok:${id}`, at: now, kind: 'other', icon: '✅', text: d.suggestion !== undefined ? tr('Aprovado no AgentForge (sempre permitir)') : tr('Aprovado no AgentForge'), detail: p.info.title, tool: 'PermissionRequest' }
+        : { id: `${p.agentId}#perm-no:${id}`, at: now, kind: 'wait', icon: '🚫', text: tr('Recusado no AgentForge'), detail: d.message ? `${p.info.title} — ${d.message}` : p.info.title, tool: 'PermissionRequest' };
     this.opts.office.addActivity(p.agentId, act, false);
     return 'ok';
   }
@@ -539,7 +539,7 @@ export class PermissionRegistry {
     const answers = checkAnswers(questions, raw);
     if (!answers || answers.some((a) => !fitsFormat(p.askFormat?.[a.question], a))) return 'invalid-answer';
     this.resolve(p, { status: 'decided', behavior: 'answer', answers });
-    const act: Activity = { id: `${p.agentId}#perm-answer:${p.info.id}`, at: this.now(), kind: 'other', icon: '💬', text: tr('Respondido no Habblaud'), detail: answerSummary(questions, answers), tool: 'PermissionRequest' };
+    const act: Activity = { id: `${p.agentId}#perm-answer:${p.info.id}`, at: this.now(), kind: 'other', icon: '💬', text: tr('Respondido no AgentForge'), detail: answerSummary(questions, answers), tool: 'PermissionRequest' };
     this.opts.office.addActivity(p.agentId, act, false);
     return 'ok';
   }
@@ -581,7 +581,7 @@ export class PermissionRegistry {
 
   /**
    * Agente do Codex de um pedido: o do thread `agent_id ?? session_id` (o subagente tem thread próprio; o principal é o
-   * thread raiz). A conta só desempata (ids de thread são UUIDs). Subagente que o Habblaud não mostra: o pedido vai
+   * thread raiz). A conta só desempata (ids de thread são UUIDs). Subagente que o AgentForge não mostra: o pedido vai
    * para o principal, com o tipo dele.
    */
   private resolveCodexAgent(sessionId: string, agentId: string | undefined, agentType: string | undefined, account: string | undefined): { id: string; subagent?: string } | undefined {
@@ -612,7 +612,7 @@ export class PermissionRegistry {
   /** O tool_result da chamada apareceu no transcript (respondido no terminal)? Nunca lança. */
   private answeredInTerminal(p: Pending, now: number): boolean {
     p.lastScanAt = now;
-    // Subagente que o Habblaud não acompanha (pedido mostrado no principal): o transcript dele não é
+    // Subagente que o AgentForge não acompanha (pedido mostrado no principal): o transcript dele não é
     // conhecido e o do principal não tem a chamada; sobram a expiração e o órfão.
     if (p.hookAgentId && p.agentId !== `${p.sessionId}:${p.hookAgentId}`) return false;
     const path = this.opts.transcriptPathOf?.(p.agentId);

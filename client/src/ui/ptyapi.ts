@@ -17,7 +17,7 @@ export async function postPty<T = unknown>(url: string, body: unknown): Promise<
   try {
     res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body ?? {}) });
   } catch {
-    throw new Error(tr('o Habblaud não respondeu'));
+    throw new Error(tr('o AgentForge não respondeu'));
   }
   if (res.status === 204) return undefined;
   const j = (await res.json().catch(() => ({}))) as { error?: string };

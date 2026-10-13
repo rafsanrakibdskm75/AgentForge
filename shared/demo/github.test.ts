@@ -31,7 +31,7 @@ describe('demo: eventos do GitHub', () => {
         if (fx.kind === 'party') {
           seen.party++;
           expect(fx.until - fx.at).toBe(PARTY_MS);
-          if (fx.text === 'CI verde de novo!') seen.recovered++;
+          if (fx.text === 'CI green again!') seen.recovered++;
         } else seen.alarm++;
       }
     }

@@ -1,14 +1,14 @@
 // Contas do Codex: uma pasta CODEX_HOME por conta (~/.codex, ~/.codex-trabalho...). Node puro e sem dependências
 // do servidor: também é importado por scripts/docker-up.ts (via tsx) no host.
 //
-// Descoberta: HABBLAUD_CODEX_DIRS (lista separada por vírgula) substitui tudo; senão CODEX_HOME e `$HOME/.codex*`
+// Descoberta: AGENTFORGE_CODEX_DIRS (lista separada por vírgula) substitui tudo; senão CODEX_HOME e `$HOME/.codex*`
 // que tenham cara de pasta do Codex (isCodexHome). Letra da conta: o alias de shell `alias x='CODEX_HOME=... codex'`
 // (sem CODEX_HOME = a pasta padrão); sem alias, uma letra derivada que não colide com as do Claude Code. Cor: da
 // paleta das contas, sem repetir as do Claude Code. Nome: "Codex" (ou "Codex X" com mais de uma conta). O plano
 // vem depois, dos arquivos de sessão (rate_limits.plan_type).
 //
 // Privacidade: NUNCA lê `auth.json` nem `config.toml` (só confere se existem, em isCodexHome); dos arquivos de shell,
-// só as linhas `alias X='... codex ...'`. No Docker o host manda tudo pronto em HABBLAUD_ACCOUNTS (`provider:
+// só as linhas `alias X='... codex ...'`. No Docker o host manda tudo pronto em AGENTFORGE_ACCOUNTS (`provider:
 // 'codex'`, com o `configDir` do host: é nele que o `codex queue` roda).
 import { readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -51,12 +51,12 @@ export function defaultCodexHome(env: NodeJS.ProcessEnv, home: string): string {
 }
 
 /**
- * Pastas do Codex observadas. HABBLAUD_CODEX_DIRS (lista separada por vírgula) substitui a detecção e vale como
+ * Pastas do Codex observadas. AGENTFORGE_CODEX_DIRS (lista separada por vírgula) substitui a detecção e vale como
  * veio (só precisa existir: uma conta recém-criada ainda não tem sessões). Senão: CODEX_HOME e `$HOME/.codex*` que
  * passem em isCodexHome. Ordem estável: a padrão primeiro, depois alfabética.
  */
 export function discoverCodexDirs(env: NodeJS.ProcessEnv = process.env, home: string = env.HOME || homedir()): string[] {
-  const override = splitList(env.HABBLAUD_CODEX_DIRS);
+  const override = splitList(env.AGENTFORGE_CODEX_DIRS);
   if (override.length) return [...new Set(override.map((p) => expandHome(p, home)))].filter(isDir);
   const found: string[] = [];
   const main = defaultCodexHome(env, home);
@@ -76,7 +76,7 @@ export function discoverCodexDirs(env: NodeJS.ProcessEnv = process.env, home: st
   return dirs;
 }
 
-/** Overrides das contas do Codex em HABBLAUD_ACCOUNTS (vindos do host, no Docker). */
+/** Overrides das contas do Codex em AGENTFORGE_ACCOUNTS (vindos do host, no Docker). */
 export function codexOverrides(raw: string | undefined): AccountOverride[] {
   return parseAccountOverrides(raw).filter((o) => o.provider === 'codex');
 }
@@ -104,13 +104,13 @@ export interface CodexDetectOptions {
 
 /**
  * Uma conta por pasta do Codex, NA MESMA ORDEM de `dirs`. `configDir` é o caminho para exibição e para o `codex
- * queue` (no Docker, o do host, vindo de HABBLAUD_ACCOUNTS). Sem e-mail (não sai sem ler credenciais) e sem plano
+ * queue` (no Docker, o do host, vindo de AGENTFORGE_ACCOUNTS). Sem e-mail (não sai sem ler credenciais) e sem plano
  * (vem dos arquivos de sessão).
  */
 export function detectCodexAccounts(dirs: string[], opts: CodexDetectOptions = {}): DetectedAccount[] {
   const env = opts.env ?? process.env;
   const home = opts.home ?? (env.HOME || homedir());
-  const overrides = codexOverrides(env.HABBLAUD_ACCOUNTS);
+  const overrides = codexOverrides(env.AGENTFORGE_ACCOUNTS);
   const shortcuts = shortcutsByDir(readShellAliases(home, 'codex'), home, defaultCodexHome(env, home));
   const ids = accountIds(dirs);
   const usedShorts = new Set([...(opts.taken?.shorts ?? [])].map((s) => s.toUpperCase()));

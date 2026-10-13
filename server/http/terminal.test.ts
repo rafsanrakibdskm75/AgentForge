@@ -22,54 +22,54 @@ import { MAX_STREAMS, TerminalStreams, type TerminalOptions } from './terminal';
 
 setQuiet(true);
 
-describe('trava do terminal (config)', () => {
-  it('isLoopbackBind: 127.0.0.0/8, ::1 e localhost', () => {
+describe('terminal lock (config)', () => {
+  it('isLoopbackBind: 127.0.0.0/8, ::1 and localhost', () => {
     for (const v of ['127.0.0.1', '127.1.2.3', ' 127.0.0.1 ', '::1', '[::1]', '0:0:0:0:0:0:0:1', 'localhost', 'LocalHost']) expect(isLoopbackBind(v)).toBe(true);
     for (const v of [undefined, '', '0.0.0.0', '::', '[::]', '192.168.0.10', '10.0.0.5', 'fe80::1', '128.0.0.1', 'meu-mac.local', 'app.localhost', '127.0.0.1.nip.io']) {
       expect(isLoopbackBind(v)).toBe(false);
     }
   });
 
-  it('Node: decide o HABBLAUD_HOST', () => {
+  it('Node: decides AGENTFORGE_HOST', () => {
     for (const host of ['127.0.0.1', 'localhost', '::1']) expect(terminalOffReason({}, host, false)).toBeUndefined();
-    expect(terminalOffReason({}, '0.0.0.0', false)).toBe('a porta está exposta na rede: HABBLAUD_HOST=0.0.0.0');
-    for (const host of ['::', '192.168.0.10', 'meu-mac.local']) expect(terminalOffReason({}, host, false)).toMatch(/exposta na rede/);
-    // HABBLAUD_BIND só vale no Docker: não liga o modo Node exposto.
-    expect(terminalOffReason({ HABBLAUD_BIND: '127.0.0.1' }, '0.0.0.0', false)).toBeDefined();
+    expect(terminalOffReason({}, '0.0.0.0', false)).toBe('the port is exposed on the network: AGENTFORGE_HOST=0.0.0.0');
+    for (const host of ['::', '192.168.0.10', 'meu-mac.local']) expect(terminalOffReason({}, host, false)).toMatch(/exposed on the network/);
+    // AGENTFORGE_BIND só vale no Docker: não liga o modo Node exposto.
+    expect(terminalOffReason({ AGENTFORGE_BIND: '127.0.0.1' }, '0.0.0.0', false)).toBeDefined();
   });
 
-  it('Docker: decide o HABBLAUD_BIND (ausente ou vazio = desligado)', () => {
-    expect(terminalOffReason({ HABBLAUD_BIND: '127.0.0.1' }, '0.0.0.0', true)).toBeUndefined();
-    expect(terminalOffReason({ HABBLAUD_BIND: '[::1]' }, '0.0.0.0', true)).toBeUndefined();
-    expect(terminalOffReason({}, '0.0.0.0', true)).toMatch(/HABBLAUD_BIND não chegou/);
-    expect(terminalOffReason({ HABBLAUD_BIND: '  ' }, '0.0.0.0', true)).toMatch(/HABBLAUD_BIND não chegou/);
-    expect(terminalOffReason({ HABBLAUD_BIND: '0.0.0.0' }, '0.0.0.0', true)).toBe('a porta está exposta na rede: HABBLAUD_BIND=0.0.0.0');
-    expect(terminalOffReason({ HABBLAUD_BIND: '192.168.0.10' }, '0.0.0.0', true)).toMatch(/exposta na rede/);
+  it('Docker: decides AGENTFORGE_BIND (missing or empty = off)', () => {
+    expect(terminalOffReason({ AGENTFORGE_BIND: '127.0.0.1' }, '0.0.0.0', true)).toBeUndefined();
+    expect(terminalOffReason({ AGENTFORGE_BIND: '[::1]' }, '0.0.0.0', true)).toBeUndefined();
+    expect(terminalOffReason({}, '0.0.0.0', true)).toMatch(/AGENTFORGE_BIND didn't reach/);
+    expect(terminalOffReason({ AGENTFORGE_BIND: '  ' }, '0.0.0.0', true)).toMatch(/AGENTFORGE_BIND didn't reach/);
+    expect(terminalOffReason({ AGENTFORGE_BIND: '0.0.0.0' }, '0.0.0.0', true)).toBe('the port is exposed on the network: AGENTFORGE_BIND=0.0.0.0');
+    expect(terminalOffReason({ AGENTFORGE_BIND: '192.168.0.10' }, '0.0.0.0', true)).toMatch(/exposed on the network/);
     // No container o host do processo não conta (é sempre 0.0.0.0).
-    expect(terminalOffReason({ HABBLAUD_BIND: '0.0.0.0' }, '127.0.0.1', true)).toBeDefined();
+    expect(terminalOffReason({ AGENTFORGE_BIND: '0.0.0.0' }, '127.0.0.1', true)).toBeDefined();
   });
 
-  it('HABBLAUD_TERMINAL só desliga: não há como ligar com a porta exposta', () => {
+  it('AGENTFORGE_TERMINAL only turns off: no way to turn on with the port exposed', () => {
     for (const v of ['0', 'false', 'off', 'nao']) {
-      expect(terminalOffReason({ HABBLAUD_TERMINAL: v }, '127.0.0.1', false)).toBe(`HABBLAUD_TERMINAL=${v}`);
-      expect(terminalOffReason({ HABBLAUD_TERMINAL: v, HABBLAUD_BIND: '127.0.0.1' }, '0.0.0.0', true)).toMatch(/HABBLAUD_TERMINAL/);
+      expect(terminalOffReason({ AGENTFORGE_TERMINAL: v }, '127.0.0.1', false)).toBe(`AGENTFORGE_TERMINAL=${v}`);
+      expect(terminalOffReason({ AGENTFORGE_TERMINAL: v, AGENTFORGE_BIND: '127.0.0.1' }, '0.0.0.0', true)).toMatch(/AGENTFORGE_TERMINAL/);
     }
-    expect(terminalOffReason({ HABBLAUD_TERMINAL: '1' }, '127.0.0.1', false)).toBeUndefined();
-    expect(terminalOffReason({ HABBLAUD_TERMINAL: '' }, '127.0.0.1', false)).toBeUndefined();
-    expect(terminalOffReason({ HABBLAUD_TERMINAL: '1' }, '0.0.0.0', false)).toBeDefined();
-    expect(terminalOffReason({ HABBLAUD_TERMINAL: 'sim', HABBLAUD_BIND: '0.0.0.0' }, '0.0.0.0', true)).toBeDefined();
+    expect(terminalOffReason({ AGENTFORGE_TERMINAL: '1' }, '127.0.0.1', false)).toBeUndefined();
+    expect(terminalOffReason({ AGENTFORGE_TERMINAL: '' }, '127.0.0.1', false)).toBeUndefined();
+    expect(terminalOffReason({ AGENTFORGE_TERMINAL: '1' }, '0.0.0.0', false)).toBeDefined();
+    expect(terminalOffReason({ AGENTFORGE_TERMINAL: 'sim', AGENTFORGE_BIND: '0.0.0.0' }, '0.0.0.0', true)).toBeDefined();
   });
 
-  it('loadConfig preenche ServerConfig.terminal', () => {
+  it('loadConfig fills ServerConfig.terminal', () => {
     const tmp = tempDir();
     try {
-      const terminal = (env: NodeJS.ProcessEnv) => loadConfig({ HOME: tmp.dir, HABBLAUD_IN_DOCKER: '0', ...env }, []).terminal;
+      const terminal = (env: NodeJS.ProcessEnv) => loadConfig({ HOME: tmp.dir, AGENTFORGE_IN_DOCKER: '0', ...env }, []).terminal;
       expect(terminal({})).toBe(true);
-      expect(terminal({ HABBLAUD_HOST: '0.0.0.0' })).toBe(false);
-      expect(terminal({ HABBLAUD_TERMINAL: '0' })).toBe(false);
-      expect(terminal({ HABBLAUD_IN_DOCKER: '1', HABBLAUD_HOST: '0.0.0.0' })).toBe(false);
-      expect(terminal({ HABBLAUD_IN_DOCKER: '1', HABBLAUD_HOST: '0.0.0.0', HABBLAUD_BIND: '127.0.0.1' })).toBe(true);
-      expect(terminal({ HABBLAUD_IN_DOCKER: '1', HABBLAUD_HOST: '0.0.0.0', HABBLAUD_BIND: '0.0.0.0' })).toBe(false);
+      expect(terminal({ AGENTFORGE_HOST: '0.0.0.0' })).toBe(false);
+      expect(terminal({ AGENTFORGE_TERMINAL: '0' })).toBe(false);
+      expect(terminal({ AGENTFORGE_IN_DOCKER: '1', AGENTFORGE_HOST: '0.0.0.0' })).toBe(false);
+      expect(terminal({ AGENTFORGE_IN_DOCKER: '1', AGENTFORGE_HOST: '0.0.0.0', AGENTFORGE_BIND: '127.0.0.1' })).toBe(true);
+      expect(terminal({ AGENTFORGE_IN_DOCKER: '1', AGENTFORGE_HOST: '0.0.0.0', AGENTFORGE_BIND: '0.0.0.0' })).toBe(false);
     } finally {
       tmp.cleanup();
     }
@@ -127,7 +127,7 @@ async function serve(opts: { terminal?: boolean; streams?: Partial<TerminalOptio
   const paths = new Map<string, string>();
   const terminals = new TerminalStreams({ office, transcriptPathOf: (id) => paths.get(id), createParser: fakeParser, pollMs: 20, demoPollMs: 20, ...opts.streams });
   const api = createApiHandler({ office, hub, accounts, sources: () => [], version: 't', inDocker: false, terminal, terminals });
-  const guard = createRequestGuard({ allowedHosts: new Set(['habblaud.lan']) });
+  const guard = createRequestGuard({ allowedHosts: new Set(['agentforge.lan']) });
   const server = http.createServer((req, res) => {
     if (guard(req, res)) return;
     if (!api(req, res, new URL(req.url ?? '/', 'http://x'))) res.writeHead(404).end();
@@ -221,14 +221,14 @@ const waitFor = (fn: () => void) => vi.waitFor(fn, { timeout: 3_000, interval: 1
 
 // ------------------------------------------------------------------ rota
 
-describe('terminal: rota', () => {
-  it('recurso desligado: 403 JSON; /api/health e meta.terminal dizem false', async () => {
+describe('terminal: route', () => {
+  it('feature off: 403 JSON; /api/health and meta.terminal say false', async () => {
     const env = await serve({ terminal: false });
     try {
       env.paths.set(MAIN, join(env.dir, 'x.jsonl'));
       const r = await open(env.base, route(MAIN));
       expect(r.status).toBe(403);
-      expect(JSON.parse(r.body).error).toMatch(/desligado/);
+      expect(JSON.parse(r.body).error).toMatch(/disabled/);
       expect(await health(env.base)).toMatchObject({ ok: true, terminal: false });
       expect(env.office.commit().snapshot.meta.terminal).toBe(false);
       expect(env.terminals.size).toBe(0);
@@ -237,16 +237,16 @@ describe('terminal: rota', () => {
     }
   });
 
-  it('Host que não é local (IP da rede ou nome de HABBLAUD_ALLOWED_HOSTS): 403; localhost abre', async () => {
+  it('non-local Host (network IP or AGENTFORGE_ALLOWED_HOSTS name): 403; localhost opens', async () => {
     const env = await serve();
     try {
       const file = join(env.dir, 't.jsonl');
       writeLines(file, [line('a')]);
       env.paths.set(MAIN, file);
-      for (const host of [`192.168.0.10:${env.port}`, `habblaud.lan:${env.port}`]) {
+      for (const host of [`192.168.0.10:${env.port}`, `agentforge.lan:${env.port}`]) {
         const r = await open(env.base, route(MAIN), { headers: { Host: host } });
         expect(r.status).toBe(403);
-        expect(JSON.parse(r.body).error).toMatch(/próprio computador/);
+        expect(JSON.parse(r.body).error).toMatch(/computer running/);
       }
       expect(env.terminals.size).toBe(0);
       const ok = await open(env.base, route(MAIN), { headers: { Host: `localhost:${env.port}` } });
@@ -258,17 +258,17 @@ describe('terminal: rota', () => {
     }
   });
 
-  it('404 para agente ou transcript desconhecido; 405 para outros métodos', async () => {
+  it('404 for unknown agent or transcript; 405 for other methods', async () => {
     const env = await serve();
     try {
       for (const id of ['nao-existe', 'demo:nao-existe']) {
         const r = await open(env.base, route(id));
         expect(r.status).toBe(404);
-        expect(JSON.parse(r.body)).toEqual({ error: 'agente não encontrado' });
+        expect(JSON.parse(r.body)).toEqual({ error: 'agent not found' });
       }
       const noPath = await open(env.base, route(MAIN));
       expect(noPath.status).toBe(404);
-      expect(JSON.parse(noPath.body)).toEqual({ error: 'transcript do agente não encontrado' });
+      expect(JSON.parse(noPath.body)).toEqual({ error: 'agent transcript not found' });
       const post = await open(env.base, route(MAIN), { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       expect(post.status).toBe(405);
       expect(post.headers.allow).toBe('GET');
@@ -280,7 +280,7 @@ describe('terminal: rota', () => {
     }
   });
 
-  it(`429 acima de ${MAX_STREAMS} terminais abertos; fechar um libera a vaga`, async () => {
+  it(`429 above ${MAX_STREAMS} open terminals; closing one frees the slot`, async () => {
     const env = await serve();
     try {
       const file = join(env.dir, 't.jsonl');
@@ -291,7 +291,7 @@ describe('terminal: rota', () => {
       expect(env.terminals.size).toBe(MAX_STREAMS);
       const extra = await open(env.base, route(MAIN));
       expect(extra.status).toBe(429);
-      expect(JSON.parse(extra.body).error).toMatch(/terminais abertos demais/);
+      expect(JSON.parse(extra.body).error).toMatch(/too many open terminals/);
       open8[0].close();
       await waitFor(() => expect(env.terminals.size).toBe(MAX_STREAMS - 1));
       const again = await open(env.base, route(MAIN));
@@ -307,8 +307,8 @@ describe('terminal: rota', () => {
 
 // ------------------------------------------------------------------ transporte
 
-describe('terminal: transporte', () => {
-  it('init com a conversa do transcript; depois append só com as linhas novas', async () => {
+describe('terminal: transport', () => {
+  it('init with the transcript conversation; then append only with the new lines', async () => {
     const env = await serve();
     try {
       const file = join(env.dir, 't.jsonl');
@@ -335,7 +335,7 @@ describe('terminal: transporte', () => {
     }
   });
 
-  it('transcript truncado ou substituído: parser novo e init de novo', async () => {
+  it('truncated or replaced transcript: new parser and init again', async () => {
     let parsers = 0;
     const env = await serve({ streams: { createParser: () => (parsers++, fakeParser()) } });
     try {
@@ -363,7 +363,7 @@ describe('terminal: transporte', () => {
     }
   });
 
-  it('truncated: janela do fim do arquivo (offset > 0) ou entradas descartadas', async () => {
+  it('truncated: end-of-file window (offset > 0) or discarded entries', async () => {
     const env = await serve({ streams: { initTailBytes: 60, initEntries: 3 } });
     try {
       const big = join(env.dir, 'big.jsonl');
@@ -390,7 +390,7 @@ describe('terminal: transporte', () => {
     }
   });
 
-  it('transcript que ainda não existe (ou sumiu): init vazio e continua tentando', async () => {
+  it('transcript that does not exist yet (or vanished): empty init and keeps trying', async () => {
     const env = await serve();
     try {
       const file = join(env.dir, 'depois', 't.jsonl');
@@ -407,7 +407,7 @@ describe('terminal: transporte', () => {
     }
   });
 
-  it('/clear no mesmo processo: o transcript do principal muda e chega um init do novo', async () => {
+  it('/clear in the same process: the main transcript changes and an init of the new one arrives', async () => {
     const env = await serve();
     try {
       const first = join(env.dir, 's1.jsonl');
@@ -430,7 +430,7 @@ describe('terminal: transporte', () => {
     }
   });
 
-  it('stop() encerra os streams abertos', async () => {
+  it('stop() ends the open streams', async () => {
     const env = await serve();
     try {
       const file = join(env.dir, 't.jsonl');
@@ -445,7 +445,7 @@ describe('terminal: transporte', () => {
     }
   });
 
-  it('parser por agente (parserFor, o da ferramenta dele); sem parser próprio, o padrão; um novo a cada init', async () => {
+  it('per-agent parser (parserFor, its tool one); without its own parser, the default; a new one per init', async () => {
     const OTHER = '.codex:019a0000-0000-7000-8000-000000000001';
     let codexParsers = 0;
     /** Parser "de outra ferramenta": as mesmas linhas viram entradas com o prefixo "cx-". */
@@ -490,8 +490,8 @@ describe('terminal: transporte', () => {
 
 // ------------------------------------------------------------------ demo
 
-describe('terminal: agentes do demo', () => {
-  it('conversa fictícia (demoTerminalEntries): init com o id do agente', async () => {
+describe('terminal: demo agents', () => {
+  it('fake conversation (demoTerminalEntries): init with the agent id', async () => {
     const env = await serve();
     try {
       env.office.setDemo(true);
@@ -509,7 +509,7 @@ describe('terminal: agentes do demo', () => {
     }
   });
 
-  it('append só com ids novos; o agente sumiu = para o polling (o stream continua aberto)', async () => {
+  it('append only with new ids; agent gone = stops polling (the stream stays open)', async () => {
     const items = [user('d1'), user('d2')];
     const env = await serve({ streams: { demoEntries: () => items.slice() } });
     try {
@@ -540,7 +540,7 @@ describe('terminal: agentes do demo', () => {
 // ------------------------------------------------------------------ watcher
 
 describe('ClaudeWatcher.transcriptPathOf', () => {
-  it('principal "<conta>:<pid>" e subagente "<sessionId>:<agentId>"', () => {
+  it('main "<account>:<pid>" and subagent "<sessionId>:<agentId>"', () => {
     const tmp = tempDir();
     const dir = join(tmp.dir, '.claude');
     const cwd = '/projetos/loja';

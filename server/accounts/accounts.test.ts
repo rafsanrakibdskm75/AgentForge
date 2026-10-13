@@ -12,8 +12,8 @@ setQuiet(true);
 // Raiz absoluta também no Windows (lá o resolve põe a letra do drive).
 const H = resolve('/Users/fulano');
 
-describe('aliases de shell', () => {
-  it('só linhas alias que invocam o claude; CLAUDE_CONFIG_DIR expandido', () => {
+describe('shell aliases', () => {
+  it('only alias lines that invoke claude; CLAUDE_CONFIG_DIR expanded', () => {
     const rc = [
       'export OPENAI_API_KEY="sk-segredo"',
       "alias ll='ls -la'",
@@ -35,7 +35,7 @@ describe('aliases de shell', () => {
     ]);
   });
 
-  it('prefere o alias mais curto (empate: o primeiro) e usa maiúscula', () => {
+  it('prefers the shortest alias (tie: the first) and capitalizes', () => {
     const m = shortcutsByDir(
       [{ name: 'claude2', configDir: join(H, '.claude-conta2') }, { name: 'c' }, { name: 'f' }, { name: 'd', configDir: join(H, '.claude-conta2') }],
       H,
@@ -44,12 +44,12 @@ describe('aliases de shell', () => {
     expect(m.get(join(H, '.claude-conta2'))).toBe('D');
   });
 
-  it('ids desambiguados quando dois dirs têm o mesmo basename', () => {
+  it('disambiguated ids when two dirs share the same basename', () => {
     expect(accountIds(['/a/.claude', '/b/.claude', '/c/.claude-x'])).toEqual(['.claude', '.claude~2', '.claude-x']);
   });
 });
 
-describe('detecção de contas', () => {
+describe('account detection', () => {
   let tmp: ReturnType<typeof tempDir>;
   let home: string;
   beforeEach(() => {
@@ -66,15 +66,15 @@ describe('detecção de contas', () => {
   });
   afterEach(() => tmp.cleanup());
 
-  it('descobre $HOME/.claude* com projects/ ou sessions/, padrão primeiro', () => {
+  it('discovers $HOME/.claude* with projects/ or sessions/, default first', () => {
     expect(discoverClaudeDirs({}, home)).toEqual([join(home, '.claude'), join(home, '.claude-conta2')]);
     const extra = join(home, 'outra');
     mkdirSync(extra);
     expect(discoverClaudeDirs({ CLAUDE_CONFIG_DIR: extra }, home)).toContain(extra);
-    expect(discoverClaudeDirs({ HABBLAUD_CLAUDE_DIRS: ' /x/a , ~/b ' }, home)).toEqual([resolve('/x/a'), join(home, 'b')]);
+    expect(discoverClaudeDirs({ AGENTFORGE_CLAUDE_DIRS: ' /x/a , ~/b ' }, home)).toEqual([resolve('/x/a'), join(home, 'b')]);
   });
 
-  it('pasta do Codex (CODEX_HOME) não vira conta do Claude Code, por nenhum caminho', () => {
+  it('Codex folder (CODEX_HOME) never becomes a Claude Code account, by any path', () => {
     // Um CODEX_HOME sintético: sessions/AAAA/MM/DD (rollouts), locks, config.toml e auth.json (nunca abertos).
     const codex = join(home, '.codex');
     mkdirSync(join(codex, 'sessions', '2026', '10', '09'), { recursive: true });
@@ -105,16 +105,16 @@ describe('detecção de contas', () => {
 
     expect(discoverClaudeDirs({}, home)).toEqual([join(home, '.claude'), join(home, '.claude-conta2'), misto]);
     expect(codexDirsRefused({}, home)).toEqual([disfarcado]);
-    // CLAUDE_CONFIG_DIR e HABBLAUD_CLAUDE_DIRS apontando para o Codex: fora (o resto da lista segue igual).
+    // CLAUDE_CONFIG_DIR e AGENTFORGE_CLAUDE_DIRS apontando para o Codex: fora (o resto da lista segue igual).
     expect(discoverClaudeDirs({ CLAUDE_CONFIG_DIR: codex }, home)).not.toContain(codex);
     expect(codexDirsRefused({ CLAUDE_CONFIG_DIR: codex }, home)).toEqual([disfarcado, codex]);
-    expect(discoverClaudeDirs({ HABBLAUD_CLAUDE_DIRS: `~/.claude,~/.codex,/x/a` }, home)).toEqual([join(home, '.claude'), resolve('/x/a')]);
-    expect(codexDirsRefused({ HABBLAUD_CLAUDE_DIRS: `~/.claude,~/.codex,/x/a` }, home)).toEqual([codex]);
-    const env = { HABBLAUD_ACCOUNTS: JSON.stringify([{ id: '.codex', mountDir: codex }]) };
+    expect(discoverClaudeDirs({ AGENTFORGE_CLAUDE_DIRS: `~/.claude,~/.codex,/x/a` }, home)).toEqual([join(home, '.claude'), resolve('/x/a')]);
+    expect(codexDirsRefused({ AGENTFORGE_CLAUDE_DIRS: `~/.claude,~/.codex,/x/a` }, home)).toEqual([codex]);
+    const env = { AGENTFORGE_ACCOUNTS: JSON.stringify([{ id: '.codex', mountDir: codex }]) };
     expect(discoverClaudeDirs(env, home)).not.toContain(codex);
   });
 
-  it('lê só os campos permitidos do .claude.json, atalhos e cores', () => {
+  it('reads only the allowed .claude.json fields, shortcuts and colors', () => {
     writeFileSync(
       join(home, '.claude.json'),
       JSON.stringify({
@@ -131,35 +131,35 @@ describe('detecção de contas', () => {
     );
     const accs = detectAccounts([join(home, '.claude'), join(home, '.claude-conta2'), join(home, '.claude-vazio')], { home, env: {} });
     expect(accs).toEqual([
-      { id: '.claude', configDir: join(home, '.claude'), short: 'C', name: 'Conta C', color: '#f08a3c', email: 'a@empresa.com', organization: 'Empresa' },
+      { id: '.claude', configDir: join(home, '.claude'), short: 'C', name: 'Account C', color: '#f08a3c', email: 'a@empresa.com', organization: 'Empresa' },
       {
         id: '.claude-conta2',
         configDir: join(home, '.claude-conta2'),
         short: 'D',
-        name: 'Conta D',
+        name: 'Account D',
         color: '#4aa8e8',
         email: 'b@pessoal.com',
         cachedUsage: { fetchedAtMs: 1000, utilization: { five_hour: { utilization: 10, resets_at: null } } },
       },
-      { id: '.claude-vazio', configDir: join(home, '.claude-vazio'), short: 'A', name: 'Conta A', color: '#5cc97b' },
+      { id: '.claude-vazio', configDir: join(home, '.claude-vazio'), short: 'A', name: 'Account A', color: '#5cc97b' },
     ]);
     expect(JSON.stringify(accs)).not.toContain('nao-pode-vazar');
   });
 
-  it('HABBLAUD_ACCOUNTS (Docker) sobrepõe metadados casando por id ou mountDir', () => {
+  it('AGENTFORGE_ACCOUNTS (Docker) overrides metadata matching by id or mountDir', () => {
     const env = {
-      HABBLAUD_ACCOUNTS: JSON.stringify([
+      AGENTFORGE_ACCOUNTS: JSON.stringify([
         { id: '.claude', configDir: '/Users/x/.claude', mountDir: join(home, '.claude'), short: 'C', email: 'host@x.com', plan: 'Max', color: '#000000' },
         { mountDir: join(home, '.claude-conta2'), configDir: '/Users/x/.claude-conta2', short: 'D', name: 'Pessoal', cachedUsage: { fetchedAtMs: 5 } },
       ]),
     };
     const accs = detectAccounts([join(home, '.claude'), join(home, '.claude-conta2')], { home: '/nenhum', env });
-    expect(accs[0]).toMatchObject({ id: '.claude', configDir: '/Users/x/.claude', short: 'C', name: 'Conta C', email: 'host@x.com', plan: 'Max', color: '#000000' });
+    expect(accs[0]).toMatchObject({ id: '.claude', configDir: '/Users/x/.claude', short: 'C', name: 'Account C', email: 'host@x.com', plan: 'Max', color: '#000000' });
     expect(accs[1]).toMatchObject({ id: '.claude-conta2', configDir: '/Users/x/.claude-conta2', short: 'D', name: 'Pessoal', cachedUsage: { fetchedAtMs: 5 } });
   });
 });
 
-describe('uso (5h e semanal)', () => {
+describe('usage (5h and weekly)', () => {
   const NOW = Date.parse('2026-10-06T12:00:00Z');
   const windows = {
     five_hour: { utilization: 42.5, resets_at: '2026-10-06T14:00:00.123+00:00' },
@@ -169,7 +169,7 @@ describe('uso (5h e semanal)', () => {
     extra_usage: { is_enabled: false },
   };
 
-  it('normaliza as janelas no formato do Claude Code', () => {
+  it('normalizes the windows to the Claude Code format', () => {
     expect(usageFromWindows(windows, 'cache', NOW)).toEqual({
       source: 'cache',
       fetchedAt: NOW,
@@ -180,7 +180,7 @@ describe('uso (5h e semanal)', () => {
     expect(usageFromWindows({}, 'cache', NOW)).toBeUndefined();
   });
 
-  it('cache: fetchedAtMs vira fetchedAt; antigo = stale; sem nada = disabled', () => {
+  it('cache: fetchedAtMs becomes fetchedAt; old = stale; nothing = disabled', () => {
     const store = new UsageStore();
     expect(store.view('x', NOW).status).toBe('disabled');
     store.set('x', usageFromCache({ fetchedAtMs: NOW - 5 * 60_000, utilization: windows })!);
@@ -188,7 +188,7 @@ describe('uso (5h e semanal)', () => {
     expect(store.view('x', NOW + STALE_AFTER_MS).status).toBe('stale');
   });
 
-  it('janelas cujo reinício já passou ficam sem dados (nunca um 0% inventado)', () => {
+  it('windows whose reset already passed get no data (never an invented 0%)', () => {
     const u = usageFromWindows(windows, 'cache', NOW)!;
     // Antes do reinício da semana, mas depois do da sessão de 5h.
     const r = rollover(u, Date.parse('2026-10-06T15:00:00Z'));
@@ -204,7 +204,7 @@ describe('uso (5h e semanal)', () => {
     expect(u.fiveHour?.utilization).toBe(42.5);
   });
 
-  it('vale a fonte com números mais recentes; limpar uma fonte devolve a outra', () => {
+  it('the source with the most recent numbers wins; clearing one source falls back to the other', () => {
     const store = new UsageStore();
     store.set('x', usageFromWindows(windows, 'cache', NOW - 3_600_000)!);
     store.set('x', usageFromWindows({ ...windows, five_hour: { utilization: 77, resets_at: null } }, 'statusline', NOW - 60_000)!);
@@ -213,7 +213,7 @@ describe('uso (5h e semanal)', () => {
     expect(store.view('x', NOW)).toMatchObject({ status: 'stale', usage: { source: 'cache' } });
   });
 
-  it('AccountsService: contas de outra ferramenta (lista vinda de fora), ids únicos e uso empurrado', () => {
+  it('AccountsService: accounts from another tool (externally provided list), unique ids and pushed usage', () => {
     const tmp = tempDir();
     try {
       const dir = join(tmp.dir, '.claude');
@@ -281,7 +281,7 @@ describe('uso (5h e semanal)', () => {
     }
   });
 
-  it('AccountsService lê o cache do /usage do .claude.json da conta', () => {
+  it('AccountsService reads the /usage cache from the account .claude.json', () => {
     const tmp = tempDir();
     try {
       const dir = join(tmp.dir, '.claude-conta2');

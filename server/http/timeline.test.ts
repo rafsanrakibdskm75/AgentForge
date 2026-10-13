@@ -31,7 +31,7 @@ interface Env {
 }
 
 async function start(): Promise<Env> {
-  const tmp = tempDir('habblaud-tlapi-');
+  const tmp = tempDir('agentforge-tlapi-');
   const dir = join(tmp.dir, 'timeline');
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, '2026-10-07.jsonl'), `${DAY}\n`);

@@ -35,15 +35,15 @@ class FakeSource implements EventSourceLike {
 }
 
 describe('mockOptionsFrom', () => {
-  it('usa os padrões sem parâmetros', () => {
+  it('uses the defaults without parameters', () => {
     expect(mockOptionsFrom('')).toEqual({ speed: 1, sessions: 4 });
   });
 
-  it('aceita sessions=0 (escritório vazio)', () => {
+  it('accepts sessions=0 (empty office)', () => {
     expect(mockOptionsFrom('?mock=1&sessions=0').sessions).toBe(0);
   });
 
-  it('ignora valores inválidos e limita os exagerados', () => {
+  it('ignores invalid values and caps the exaggerated ones', () => {
     expect(mockOptionsFrom('?sessions=abc&speed=-2')).toEqual({ speed: 1, sessions: 4 });
     expect(mockOptionsFrom('?sessions=&speed=')).toEqual({ speed: 1, sessions: 4 });
     expect(mockOptionsFrom('?sessions=6.7&speed=2')).toEqual({ speed: 2, sessions: 6 });
@@ -57,12 +57,12 @@ describe('mockOptionsFrom', () => {
 });
 
 describe('reconnectDelay', () => {
-  it('dobra a cada tentativa até 30 s', () => {
+  it('doubles on each attempt up to 30 s', () => {
     expect([0, 1, 2, 3, 4, 5, 9].map(reconnectDelay)).toEqual([2_000, 4_000, 8_000, 16_000, 30_000, 30_000, 30_000]);
   });
 });
 
-describe('OfficeStore: reconexão', () => {
+describe('OfficeStore: reconnection', () => {
   let sources: FakeSource[];
   let store: OfficeStore;
   const last = () => sources[sources.length - 1];
@@ -84,7 +84,7 @@ describe('OfficeStore: reconexão', () => {
     vi.useRealTimers();
   });
 
-  it('connect() repetido mantém um único stream, fechado por disconnect()', () => {
+  it('repeated connect() keeps a single stream, closed by disconnect()', () => {
     store.connect();
     store.connect();
     last().open();
@@ -123,7 +123,7 @@ describe('OfficeStore: reconexão', () => {
     expect(states).toEqual(['closed', 'connecting', 'closed', 'connecting', 'open', 'closed', 'connecting']);
   });
 
-  it('erro transitório (o navegador ainda tenta) não agenda reconexão própria', () => {
+  it('transient error (the browser still tries) does not schedule its own reconnection', () => {
     store.connect();
     last().open();
     last().readyState = 0;
@@ -179,7 +179,7 @@ describe('OfficeStore: reconexão', () => {
     }
   });
 
-  it('disconnect() não reconecta e eventos do stream antigo são ignorados', () => {
+  it('disconnect() does not reconnect and events from the old stream are ignored', () => {
     store.connect();
     const old = last();
     store.disconnect();
@@ -189,7 +189,7 @@ describe('OfficeStore: reconexão', () => {
     expect(store.connection).toBe('connecting');
   });
 
-  it('aplica snapshot, feed e avisos; JSON inválido é ignorado', () => {
+  it('applies snapshot, feed and notices; invalid JSON is ignored', () => {
     const notices: unknown[] = [];
     store.on('notice', (n) => notices.push(n));
     store.connect();
@@ -217,8 +217,8 @@ const snap = (rev: number, build?: string): OfficeSnapshot => ({
   meta: { demo: false, sources: [], startedAt: 1, version: '0.1.0', build },
 });
 
-describe('detecção de versão nova', () => {
-  it('lê o build da URL do bundle e ignora o código-fonte do modo dev', () => {
+describe('new version detection', () => {
+  it('reads the build from the bundle URL and ignores the dev-mode source', () => {
     expect(pageBuild('http://localhost:4747/bundle/main-BFqheOCa.js')).toBe('main-BFqheOCa');
     expect(pageBuild('http://192.168.0.10:4747/bundle/main-a_b-C1.js')).toBe('main-a_b-C1');
     expect(pageBuild('http://localhost:5173/src/net/store.ts')).toBeUndefined();
@@ -238,7 +238,7 @@ describe('detecção de versão nova', () => {
     expect(seen).toEqual(['main-velho->main-novo']);
   });
 
-  it('não avisa sem build no servidor, no modo dev nem no mock', () => {
+  it('does not warn without a build on the server, in dev mode or in mock', () => {
     const dev = new OfficeStore();
     dev.pageBuildId = undefined;
     const mock = new OfficeStore({ mock: true });
@@ -312,15 +312,15 @@ describe('personagem do projeto (store)', () => {
     expect(await store.saveCharacter('.claude:1', { name: 'Ana', seed: 1, parts: {} })).toBeUndefined();
   });
 
-  it('resetCharacter: DELETE com corpo JSON; sem conexão vira mensagem; no mock não chama a rede', async () => {
+  it('resetCharacter: DELETE with JSON body; offline becomes a message; in mock it never hits the network', async () => {
     const fetchMock = vi.fn(async () => new Response('{"ok":true}', { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     expect(await new OfficeStore().resetCharacter('a')).toBeUndefined();
     expect(fetchMock).toHaveBeenLastCalledWith('/api/agents/a/character', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     fetchMock.mockRejectedValueOnce(new TypeError('failed to fetch'));
-    expect(await new OfficeStore().resetCharacter('a')).toBe('Sem conexão com o Habblaud.');
+    expect(await new OfficeStore().resetCharacter('a')).toBe('No connection to AgentForge.');
     const calls = fetchMock.mock.calls.length;
-    expect(await new OfficeStore({ mock: true }).resetCharacter('a')).toMatch(/ao vivo/);
+    expect(await new OfficeStore({ mock: true }).resetCharacter('a')).toMatch(/live office/);
     expect(fetchMock.mock.calls.length).toBe(calls);
   });
 });

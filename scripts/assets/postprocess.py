@@ -1,4 +1,4 @@
-"""Pós-processamento e composição dos assets do Habblaud (pixel art a partir das imagens da IA).
+"""Pós-processamento e composição dos assets do AgentForge (pixel art a partir das imagens da IA).
 
 Uso (a partir da raiz do projeto; requer Pillow e numpy):
     python3 -E scripts/assets/postprocess.py                  # gera tudo + manifest + folha de contato
@@ -215,7 +215,7 @@ def build_brand(detailed: Image.Image | None, out_root: Path) -> dict:
 
 
 def build_og(detailed: Image.Image | None, illustration: Image.Image | None, out_root: Path) -> str:
-    """Card de compartilhamento: ilustração no alto, painel com o prédio, "Habblaud" e a frase."""
+    """Card de compartilhamento: ilustração no alto, painel com o prédio, "AgentForge" e a frase."""
     w, h = 600, 315
     # fundo = azul-marinho do canto da ilustração, para a emenda com ela não aparecer
     night = illustration.convert("RGBA").getpixel((0, 0)) if illustration is not None else px.hex_rgb(NIGHT) + (255,)

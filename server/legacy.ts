@@ -1,19 +1,22 @@
-// Migração do nome antigo do projeto (CodeTown, até a 0.3.2) para Habblaud. O que ainda precisa conhecer o
-// nome antigo fica aqui, para sair de uma vez quando ninguém mais vier de uma instalação da 0.3.
+// Migração dos nomes antigos do projeto (CodeTown, até a 0.3.2; Habblaud, até a 0.10.0) para AgentForge. O que ainda
+// precisa conhecer os nomes antigos fica aqui, para sair de uma vez quando ninguém mais vier dessas instalações.
 import { existsSync, readdirSync, renameSync, rmdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { tr } from '../shared/i18n';
 
-/** Nome antigo em minúsculas: pasta de estado, plugins, marketplace, projeto e volume do Docker. */
-export const LEGACY_NAME = 'codetown';
-const LEGACY_ENV_PREFIX = 'CODETOWN_';
-const ENV_PREFIX = 'HABBLAUD_';
+/** Nomes antigos em minúsculas, do mais antigo ao mais recente: pasta de estado, plugins, marketplace e projeto. */
+export const LEGACY_NAMES = ['codetown', 'habblaud'] as const;
+/** O mais antigo (usado onde só um cabe: nomes do Docker e marketplace do mod-install). */
+export const LEGACY_NAME: string = LEGACY_NAMES[0];
+const LEGACY_ENV_PREFIXES = ['CODETOWN_', 'HABBLAUD_'] as const;
+const ENV_PREFIX = 'AGENTFORGE_';
 
-/** Variáveis do nome antigo (CODETOWN_*) presentes em `keys`, com o nome novo de cada uma. */
+/** Variáveis dos nomes antigos (CODETOWN_*, HABBLAUD_*) presentes em `keys`, com o nome novo de cada uma. */
 export function legacyEnvVars(keys: Iterable<string>): Array<{ from: string; to: string }> {
   const out: Array<{ from: string; to: string }> = [];
   for (const k of keys) {
-    if (k.startsWith(LEGACY_ENV_PREFIX)) out.push({ from: k, to: ENV_PREFIX + k.slice(LEGACY_ENV_PREFIX.length) });
+    const prefix = LEGACY_ENV_PREFIXES.find((p) => k.startsWith(p));
+    if (prefix) out.push({ from: k, to: ENV_PREFIX + k.slice(prefix.length) });
   }
   return out.sort((a, b) => a.from.localeCompare(b.from));
 }
@@ -64,30 +67,36 @@ function mergeInto(from: string, to: string, moved: string[], rel: string): void
 }
 
 /**
- * Leva o estado de ~/.codetown para ~/.habblaud (uso capturado pelo mod/tap e, fora do Docker, nomes, linha do
- * tempo e estatísticas). Sem a pasta nova, é um rename; se ela já existe (o mod gravou o uso antes), move o que
- * falta lá e o que for mais recente. Devolve o que foi movido (vazio = nada a fazer) e nunca lança.
+ * Leva o estado dos nomes antigos (~/.codetown, ~/.habblaud) para ~/.agentforge (uso capturado pelo mod/tap e,
+ * fora do Docker, nomes, linha do tempo e estatísticas). Sem a pasta nova, é um rename; se ela já existe (o mod
+ * gravou o uso antes), move o que falta lá e o que for mais recente. Devolve o que foi movido (vazio = nada a
+ * fazer) e nunca lança.
  */
-export function migrateLegacyStateDir(home: string): { moved: string[]; error?: string } {
-  const from = join(home, `.${LEGACY_NAME}`);
-  const to = join(home, '.habblaud');
+export function migrateLegacyStateDir(home: string): { moved: string[]; error?: string; from?: string } {
+  const to = join(home, '.agentforge');
   const moved: string[] = [];
-  if (!isDir(from)) return { moved };
-  try {
-    if (!existsSync(to)) {
-      renameSync(from, to);
-      moved.push('.');
-    } else if (isDir(to)) mergeInto(from, to, moved, '');
-    else return { moved, error: tr('{0} existe e não é uma pasta', [to]) };
-    return { moved };
-  } catch (err) {
-    return { moved, error: (err as Error).message };
+  let from: string | undefined;
+  for (const name of LEGACY_NAMES) {
+    const dir = join(home, `.${name}`);
+    if (!isDir(dir)) continue;
+    from ??= name;
+    try {
+      if (!existsSync(to)) {
+        renameSync(dir, to);
+        moved.push('.');
+      } else if (isDir(to)) mergeInto(dir, to, moved, '');
+      else return { moved, error: tr('{0} existe e não é uma pasta', [to]), from };
+    } catch (err) {
+      return { moved, error: (err as Error).message, from };
+    }
   }
+  return from ? { moved, from } : { moved };
 }
 
 /** Frase curta para o log de quem migrou (undefined se nada mudou). */
-export function describeStateMigration(r: { moved: string[]; error?: string }): string | undefined {
-  if (r.error) return tr('não consegui levar ~/.{0} para ~/.habblaud ({1}); mova a pasta à mão.', [LEGACY_NAME, r.error]);
+export function describeStateMigration(r: { moved: string[]; error?: string; from?: string }): string | undefined {
+  const name = r.from ?? LEGACY_NAME;
+  if (r.error) return tr('não consegui levar ~/.{0} para ~/.agentforge ({1}); mova a pasta à mão.', [name, r.error]);
   if (!r.moved.length) return undefined;
-  return r.moved[0] === '.' ? tr('~/.{0} (nome antigo) agora é ~/.habblaud.', [LEGACY_NAME]) : tr('de ~/.{0} (nome antigo) para ~/.habblaud: {1}.', [LEGACY_NAME, r.moved.join(', ')]);
+  return r.moved[0] === '.' ? tr('~/.{0} (nome antigo) agora é ~/.agentforge.', [name]) : tr('de ~/.{0} (nome antigo) para ~/.agentforge: {1}.', [name, r.moved.join(', ')]);
 }

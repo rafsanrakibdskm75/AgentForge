@@ -1,21 +1,21 @@
 #!/usr/bin/env node
-// Tap de statusline do Habblaud: captura o uso do plano (5h e semanal) SEM ler credenciais.
+// Tap de statusline do AgentForge: captura o uso do plano (5h e semanal) SEM ler credenciais.
 //
 // O Claude Code envia ao comando de statusline, pelo stdin, um JSON com `rate_limits`
 // ({five_hour:{used_percentage, resets_at}, seven_day:{...}}, resets_at em segundos). Este script
 // fica "na frente" do statusline original:
 //
-//   node /caminho/do/habblaud/scripts/statusline-tap.mjs -- <comando original do statusline>
+//   node /caminho/do/agentforge/scripts/statusline-tap.mjs -- <comando original do statusline>
 //
 // 1. lê todo o stdin;
-// 2. se houver rate_limits, grava <HABBLAUD_USAGE_DIR ou ~/.habblaud/usage>/<pasta da conta>.json com
+// 2. se houver rate_limits, grava <AGENTFORGE_USAGE_DIR ou ~/.agentforge/usage>/<pasta da conta>.json com
 //    SÓ {accountId, configDir, fetchedAt, five_hour, seven_day} (nada mais do stdin, por privacidade);
 // 3. roda o comando original com o MESMO stdin, herdando stdout/stderr, e sai com o código dele (no shell em que o
 //    Claude Code o rodaria: ver originalShell).
 //    Sem comando original, não imprime nada.
 //
 // Regras: Node puro e sem dependências; qualquer falha na captura é ignorada em silêncio — o
-// statusline nunca pode quebrar nem ficar lento por causa do Habblaud. Instalação automática
+// statusline nunca pode quebrar nem ficar lento por causa do AgentForge. Instalação automática
 // (com backup do settings.json): npm run usage:install.
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, realpathSync, renameSync, statSync, writeFileSync } from 'node:fs';
@@ -73,8 +73,8 @@ export function usageRecord(input, now, env = process.env, home = env.HOME || ho
 }
 
 export function usageDirOf(env = process.env, home = env.HOME || homedir()) {
-  const d = (env.HABBLAUD_USAGE_DIR ?? '').trim();
-  return d ? resolve(d.replace(/^~(?=\/|$)/, home)) : join(home, '.habblaud', 'usage');
+  const d = (env.AGENTFORGE_USAGE_DIR ?? '').trim();
+  return d ? resolve(d.replace(/^~(?=\/|$)/, home)) : join(home, '.agentforge', 'usage');
 }
 
 /** Grava de forma atômica (tmp + rename, modo 600). Devolve false quando nada precisou mudar. */

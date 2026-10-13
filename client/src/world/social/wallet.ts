@@ -14,7 +14,7 @@ export const DELIVERY_REWARD = 15;
 /** Pedido do usuário atendido (fim de turno). */
 export const TURN_REWARD = 5;
 
-const STORAGE_KEY = 'habblaud.wallets.v1';
+const STORAGE_KEY = 'agentforge.wallets.v1';
 const LEDGER_MAX = 12;
 const PAID_MAX = 300;
 /** Carteiras de agentes que não aparecem há mais que isso são esquecidas. */

@@ -1,4 +1,4 @@
-// Interface do Habblaud (painéis DOM sobre o canvas do escritório).
+// Interface do AgentForge (painéis DOM sobre o canvas do escritório).
 // Recebe o OfficeStore (dados) e o WorldApi (canvas) e monta: barra superior com uso por conta,
 // barra lateral, gaveta de detalhes, feed, avisos, configurações, ajuda e estados de carregamento/vazio.
 // DOM incremental: os snapshots (até ~5/s) só marcam a UI como "suja"; tudo é reconciliado uma vez por quadro.

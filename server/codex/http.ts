@@ -1,4 +1,4 @@
-// Eventos dos hooks do Codex (mod/habblaud-codex/hook.mjs, que npm run codex:install acrescenta em
+// Eventos dos hooks do Codex (mod/agentforge-codex/hook.mjs, que npm run codex:install acrescenta em
 // <CODEX_HOME>/hooks.json): SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PermissionRequest, Stop,
 // SubagentStart, SubagentStop e SessionEnd chegam aqui com a conta e vão para a fonte do Codex (CodexLive), que
 // atualiza o agente na hora, sem esperar a conversa chegar ao arquivo. Os eventos só observam (a resposta nunca volta

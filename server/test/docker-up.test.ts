@@ -37,7 +37,7 @@ describe('docker-up', () => {
     expect(parseArgs([])).toEqual({ down: false, build: true, help: false });
     expect(parseArgs(['--no-build'])).toEqual({ down: false, build: false, help: false });
     expect(parseArgs(['--down'])).toMatchObject({ down: true });
-    expect(() => parseArgs(['--xyz'])).toThrow(/opção desconhecida/);
+    expect(() => parseArgs(['--xyz'])).toThrow(/unknown option/);
   });
 
   it('monta só projects/ e sessions/ que existem', () => {
@@ -66,10 +66,10 @@ describe('docker-up', () => {
 
   it('override: somente leitura, sem criar pastas no host, `$` escapado e a pasta do statusline em /usage', () => {
     const mounts = planMounts(['/Users/fu$lano/.claude'], [acc('.claude', { email: 'a@b.c', cachedUsage: { fetchedAtMs: 1, utilization: {} } })], slash);
-    const yml = renderOverride(mounts, new Date('2026-10-06T00:00:00Z'), '/Users/fulano/.habblaud/usage');
+    const yml = renderOverride(mounts, new Date('2026-10-06T00:00:00Z'), '/Users/fulano/.agentforge/usage');
     expect(yml).toContain('source: "/Users/fu$$lano/.claude/projects"');
-    expect(yml).toContain('HABBLAUD_USAGE_DIR: "/usage"');
-    expect(yml).toContain('source: "/Users/fulano/.habblaud/usage"\n        target: "/usage"\n        read_only: true');
+    expect(yml).toContain('AGENTFORGE_USAGE_DIR: "/usage"');
+    expect(yml).toContain('source: "/Users/fulano/.agentforge/usage"\n        target: "/usage"\n        read_only: true');
     const binds = yml.split('- type: bind').length - 1;
     expect(binds).toBe(3);
     expect(yml.match(/read_only: true/g)).toHaveLength(3);
@@ -99,20 +99,20 @@ describe('docker-up', () => {
     ]);
     const claude = planMounts(['/Users/fulano/.claude'], [acc('.claude')], slash);
     const yml = renderOverride(claude, new Date(0), undefined, undefined, codex);
-    expect(yml).toContain('HABBLAUD_CODEX_DIRS: "/codex/.codex"');
+    expect(yml).toContain('AGENTFORGE_CODEX_DIRS: "/codex/.codex"');
     expect(yml).toContain(`source: "/real${host}/thread-writer-locks"\n        target: "/codex/.codex/thread-writer-locks"\n        read_only: true`);
     expect(yml.match(/read_only: true/g)).toHaveLength(4);
     for (const secret of ['auth.json', 'config.toml', 'history.jsonl', 'shell_snapshots', 'sqlite', 'logs_']) expect(yml).not.toContain(secret);
-    const accounts = JSON.parse(JSON.parse(/HABBLAUD_ACCOUNTS: (".*")/.exec(yml)![1]) as string) as Array<Record<string, unknown>>;
+    const accounts = JSON.parse(JSON.parse(/AGENTFORGE_ACCOUNTS: (".*")/.exec(yml)![1]) as string) as Array<Record<string, unknown>>;
     expect(accounts.map((a) => [a.id, a.provider, a.configDir])).toEqual([
       ['.claude', undefined, '/Users/fulano/.claude'],
       ['.codex', 'codex', host],
     ]);
-    // Sem Codex: nada de HABBLAUD_CODEX_DIRS.
-    expect(renderOverride(claude)).not.toContain('HABBLAUD_CODEX_DIRS');
-    expect(codexDisabled({ HABBLAUD_CODEX: '0' })).toBe(true);
-    expect(codexDisabled({ HABBLAUD_CODEX: 'off' })).toBe(true);
-    expect(codexDisabled({ HABBLAUD_CODEX: '1' })).toBe(false);
+    // Sem Codex: nada de AGENTFORGE_CODEX_DIRS.
+    expect(renderOverride(claude)).not.toContain('AGENTFORGE_CODEX_DIRS');
+    expect(codexDisabled({ AGENTFORGE_CODEX: '0' })).toBe(true);
+    expect(codexDisabled({ AGENTFORGE_CODEX: 'off' })).toBe(true);
+    expect(codexDisabled({ AGENTFORGE_CODEX: '1' })).toBe(false);
     expect(codexDisabled({})).toBe(false);
   });
 
@@ -127,33 +127,50 @@ describe('docker-up', () => {
   });
 });
 
-describe('docker-up: migração do nome antigo (CodeTown)', () => {
-  const none: DockerState = { legacyContainer: false, legacyNetwork: false, legacyVolume: false, legacyImage: false, dataVolume: false };
+describe('docker-up: migração dos nomes antigos (CodeTown, Habblaud)', () => {
+  const ctDocker = { era: 'codetown', label: 'CodeTown', container: 'codetown', network: 'codetown_default', volume: 'codetown_codetown-data', image: 'codetown:local' } as const;
+  const hbDocker = { era: 'habblaud', label: 'Habblaud', container: 'habblaud', network: 'habblaud_default', volume: 'habblaud_habblaud-data', image: 'habblaud:local' } as const;
+  const leg = (
+    docker: typeof ctDocker | typeof hbDocker,
+    o: Partial<{ container: boolean; network: boolean; volume: boolean; image: boolean }> = {},
+  ) => ({ docker, container: false, network: false, volume: false, image: false, ...o });
+  const none: DockerState = { legacies: [], dataVolume: false };
   const upBuild = { kind: 'compose', args: ['up', '-d', '--build'] };
 
-  it('sem nada do CodeTown: só o compose up de sempre', () => {
+  it('sem nada antigo: só o compose up de sempre', () => {
     expect(planUp(none, true)).toEqual({ steps: [upBuild], cleanup: [] });
     expect(planUp(none, false)).toEqual({ steps: [{ kind: 'compose', args: ['up', '-d'] }], cleanup: [] });
   });
 
   it('primeira subida depois do rename: tira container e rede, o Compose cria o volume e os dados são copiados', () => {
-    const plan = planUp({ legacyContainer: true, legacyNetwork: true, legacyVolume: true, legacyImage: true, dataVolume: false }, true);
+    const plan = planUp({ legacies: [leg(ctDocker, { container: true, network: true, volume: true, image: true })], dataVolume: false }, true);
     expect(plan.steps).toEqual([
-      { kind: 'remove-container', name: 'codetown' },
+      { kind: 'remove-container', name: 'codetown', label: 'CodeTown' },
       { kind: 'remove-network', name: 'codetown_default' },
       { kind: 'compose', args: ['up', '--no-start', '--build'] },
-      { kind: 'copy-volume', from: 'codetown_codetown-data', to: 'habblaud_habblaud-data' },
+      { kind: 'copy-volume', from: 'codetown_codetown-data', to: 'agentforge_agentforge-data', label: 'CodeTown' },
       { kind: 'compose', args: ['up', '-d'] },
     ]);
     // O volume antigo nunca é apagado: só vira dica no fim, junto com a imagem.
     expect(plan.cleanup).toEqual(['docker volume rm codetown_codetown-data', 'docker image rm codetown:local']);
   });
 
+  it('era Habblaud: os mesmos passos, com os nomes dela', () => {
+    const plan = planUp({ legacies: [leg(hbDocker, { container: true, volume: true, image: true })], dataVolume: false }, true);
+    expect(plan.steps).toEqual([
+      { kind: 'remove-container', name: 'habblaud', label: 'Habblaud' },
+      { kind: 'compose', args: ['up', '--no-start', '--build'] },
+      { kind: 'copy-volume', from: 'habblaud_habblaud-data', to: 'agentforge_agentforge-data', label: 'Habblaud' },
+      { kind: 'compose', args: ['up', '-d'] },
+    ]);
+    expect(plan.cleanup).toEqual(['docker volume rm habblaud_habblaud-data', 'docker image rm habblaud:local']);
+  });
+
   it('--no-build e container antigo já derrubado: cria parado sem reconstruir, copia e sobe', () => {
-    expect(planUp({ ...none, legacyVolume: true }, false)).toEqual({
+    expect(planUp({ legacies: [leg(ctDocker, { volume: true })], dataVolume: false }, false)).toEqual({
       steps: [
         { kind: 'compose', args: ['up', '--no-start'] },
-        { kind: 'copy-volume', from: 'codetown_codetown-data', to: 'habblaud_habblaud-data' },
+        { kind: 'copy-volume', from: 'codetown_codetown-data', to: 'agentforge_agentforge-data', label: 'CodeTown' },
         { kind: 'compose', args: ['up', '-d'] },
       ],
       cleanup: ['docker volume rm codetown_codetown-data'],
@@ -162,28 +179,28 @@ describe('docker-up: migração do nome antigo (CodeTown)', () => {
 
   it('volume novo já existe: não copia por cima', () => {
     // Já migrado antes: o volume antigo ficou, mas não há o que fazer nem lembrar.
-    expect(planUp({ ...none, legacyVolume: true, legacyImage: true, dataVolume: true }, true)).toEqual({ steps: [upBuild], cleanup: [] });
+    expect(planUp({ legacies: [leg(ctDocker, { volume: true, image: true })], dataVolume: true }, true)).toEqual({ steps: [upBuild], cleanup: [] });
     // Container antigo de pé com os dois volumes: sai o container, sem cópia.
-    expect(planUp({ ...none, legacyContainer: true, legacyVolume: true, dataVolume: true }, true)).toEqual({
-      steps: [{ kind: 'remove-container', name: 'codetown' }, upBuild],
+    expect(planUp({ legacies: [leg(ctDocker, { container: true, volume: true })], dataVolume: true }, true)).toEqual({
+      steps: [{ kind: 'remove-container', name: 'codetown', label: 'CodeTown' }, upBuild],
       cleanup: ['docker volume rm codetown_codetown-data'],
     });
   });
 
   it('sobra só a rede ou a imagem: tira a rede, sem dica', () => {
-    expect(planUp({ ...none, legacyNetwork: true, legacyImage: true }, true)).toEqual({
+    expect(planUp({ legacies: [leg(ctDocker, { network: true, image: true })], dataVolume: false }, true)).toEqual({
       steps: [{ kind: 'remove-network', name: 'codetown_default' }, upBuild],
       cleanup: [],
     });
   });
 
-  it('cópia: imagem do Habblaud como root, sem rede, volume antigo só leitura', () => {
+  it('cópia: imagem do AgentForge como root, sem rede, volume antigo só leitura', () => {
     const args = copyVolumeArgs('velho', 'novo');
     expect(args[0]).toBe('run');
     expect(args).toContain('--rm');
     expect(args.join(' ')).toContain('--user 0:0 --entrypoint sh');
     expect(args.join(' ')).toContain('--network none');
-    expect(args.join(' ')).toContain('-v velho:/from:ro -v novo:/to habblaud:local -c ');
+    expect(args.join(' ')).toContain('-v velho:/from:ro -v novo:/to agentforge:local -c ');
     const script = args.at(-1)!;
     expect(script).toMatch(/^set -e; cp -a \/from\/\. \/to\/;/);
     expect(script).toContain('chown "$(stat -c %u:%g /from)" /to');
@@ -194,16 +211,16 @@ describe('docker-up: migração do nome antigo (CodeTown)', () => {
       '# CODETOWN_COMENTADA=1',
       'CODETOWN_BIND=0.0.0.0',
       '  export CODETOWN_PORT = 4848',
-      'HABBLAUD_DEMO=1',
+      'AGENTFORGE_DEMO=1',
       '',
       'SEM_IGUAL',
       '1INVALIDA=x',
       'SEGREDO=CODETOWN_X=y\r',
     ].join('\n');
     const keys = envFileKeys(text);
-    expect(keys).toEqual(['CODETOWN_BIND', 'CODETOWN_PORT', 'HABBLAUD_DEMO', 'SEGREDO']);
-    const msg = legacyEnvWarning(keys, 'no .env');
-    expect(msg).toBe('variáveis do nome antigo ignoradas no .env: CODETOWN_BIND → HABBLAUD_BIND, CODETOWN_PORT → HABBLAUD_PORT. Renomeie para valer de novo.');
+    expect(keys).toEqual(['CODETOWN_BIND', 'CODETOWN_PORT', 'AGENTFORGE_DEMO', 'SEGREDO']);
+    const msg = legacyEnvWarning(keys, 'in .env');
+    expect(msg).toBe('old-name variables ignored in .env: CODETOWN_BIND → AGENTFORGE_BIND, CODETOWN_PORT → AGENTFORGE_PORT. Rename to re-enable.');
     expect(msg).not.toContain('0.0.0.0');
     expect(envFileKeys('')).toEqual([]);
   });

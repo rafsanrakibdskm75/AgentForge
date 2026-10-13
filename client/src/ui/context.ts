@@ -12,7 +12,7 @@ export interface UiComponent {
 export type PanelName = 'sidebar' | 'feed';
 
 /**
- * Uma janela de terminal só, por agente: o interativo quando a sessão roda dentro do Habblaud (pty); senão o
+ * Uma janela de terminal só, por agente: o interativo quando a sessão roda dentro do AgentForge (pty); senão o
  * de leitura (com "Assumir daqui" para passar a ser interativo). Montado em ui/index.ts.
  */
 export interface TerminalRouter {

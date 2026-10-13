@@ -2,8 +2,8 @@
 //
 // Pergunta (ou recebe por opção) o usuário, a senha (escondida, duas vezes), o nome do endereço (<nome>.local) e, se
 // quiser, um endereço próprio (ex.: meuclaude.home); e então:
-//   1. cria a CA local e o certificado do servidor (server/remote/tls.ts) em ~/.habblaud/remote-tls;
-//   2. grava no .env SÓ o hash scrypt da senha (nunca a senha), o nome, a porta e HABBLAUD_REMOTE_BIND=0.0.0.0;
+//   1. cria a CA local e o certificado do servidor (server/remote/tls.ts) em ~/.agentforge/remote-tls;
+//   2. grava no .env SÓ o hash scrypt da senha (nunca a senha), o nome, a porta e AGENTFORGE_REMOTE_BIND=0.0.0.0;
 //   3. deixa o anúncio do <nome>.local rodando como serviço (npm run remote:mdns; LaunchAgent/systemd);
 //   4. mostra os endereços, a impressão digital da CA e o passo a passo do celular.
 // Depois: npm run docker:up. Para desligar: npm run remote:setup -- --off.
@@ -23,17 +23,17 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ENV_FILE = join(ROOT, '.env');
 const HOME = process.env.HOME || homedir();
 export const MIN_PASSWORD = 10;
-const SERVICE_LABEL = 'com.habblaud.remote-mdns';
+const SERVICE_LABEL = 'com.agentforge.remote-mdns';
 const REMOTE_KEYS = [
-  'HABBLAUD_REMOTE_USER',
-  'HABBLAUD_REMOTE_PASSWORD',
-  'HABBLAUD_REMOTE_PASSWORD_HASH',
-  'HABBLAUD_REMOTE_BIND',
-  'HABBLAUD_REMOTE_PORT',
-  'HABBLAUD_REMOTE_HTTP_PORT',
-  'HABBLAUD_REMOTE_NAME',
-  'HABBLAUD_REMOTE_DOMAIN',
-  'HABBLAUD_REMOTE_ALLOW',
+  'AGENTFORGE_REMOTE_USER',
+  'AGENTFORGE_REMOTE_PASSWORD',
+  'AGENTFORGE_REMOTE_PASSWORD_HASH',
+  'AGENTFORGE_REMOTE_BIND',
+  'AGENTFORGE_REMOTE_PORT',
+  'AGENTFORGE_REMOTE_HTTP_PORT',
+  'AGENTFORGE_REMOTE_NAME',
+  'AGENTFORGE_REMOTE_DOMAIN',
+  'AGENTFORGE_REMOTE_ALLOW',
 ];
 
 export interface SetupArgs {
@@ -53,7 +53,7 @@ const USAGE = tr(`Uso: npm run remote:setup [-- opções]
 Liga o acesso pelo celular (https://<nome>.local) com usuário, senha e HTTPS.
 
   --user <nome>        usuário do login (padrão: o seu usuário do sistema)
-  --name <nome>        endereço <nome>.local (padrão: habblaud)
+  --name <nome>        endereço <nome>.local (padrão: agentforge)
   --domain <endereço>  endereço próprio, ex.: meuclaude.home (precisa de uma entrada no DNS do roteador)
   --port <n>           porta no computador (padrão: 443 se estiver livre, senão 4748)
   --allow <lista>      o que o celular pode fazer: permissions, messages, terminal, spawn, none (padrão: permissions)
@@ -98,18 +98,18 @@ export function remoteEnv(
   current: string,
   s: { user: string; hash: string; name: string; domain?: string; port: number; httpPort?: number; allow?: string },
 ): string {
-  const hosts = addToList(readEnvValue(current, 'HABBLAUD_ALLOWED_HOSTS'), `${s.name}.local`, ...(s.domain ? [s.domain] : []));
+  const hosts = addToList(readEnvValue(current, 'AGENTFORGE_ALLOWED_HOSTS'), `${s.name}.local`, ...(s.domain ? [s.domain] : []));
   return updateEnv(current, {
-    HABBLAUD_REMOTE_USER: s.user,
-    HABBLAUD_REMOTE_PASSWORD: null,
-    HABBLAUD_REMOTE_PASSWORD_HASH: s.hash,
-    HABBLAUD_REMOTE_BIND: '0.0.0.0',
-    HABBLAUD_REMOTE_PORT: String(s.port),
-    HABBLAUD_REMOTE_HTTP_PORT: s.httpPort ? String(s.httpPort) : null,
-    HABBLAUD_REMOTE_NAME: s.name,
-    HABBLAUD_REMOTE_DOMAIN: s.domain ?? null,
-    HABBLAUD_REMOTE_ALLOW: s.allow ?? readEnvValue(current, 'HABBLAUD_REMOTE_ALLOW') ?? null,
-    HABBLAUD_ALLOWED_HOSTS: hosts,
+    AGENTFORGE_REMOTE_USER: s.user,
+    AGENTFORGE_REMOTE_PASSWORD: null,
+    AGENTFORGE_REMOTE_PASSWORD_HASH: s.hash,
+    AGENTFORGE_REMOTE_BIND: '0.0.0.0',
+    AGENTFORGE_REMOTE_PORT: String(s.port),
+    AGENTFORGE_REMOTE_HTTP_PORT: s.httpPort ? String(s.httpPort) : null,
+    AGENTFORGE_REMOTE_NAME: s.name,
+    AGENTFORGE_REMOTE_DOMAIN: s.domain ?? null,
+    AGENTFORGE_REMOTE_ALLOW: s.allow ?? readEnvValue(current, 'AGENTFORGE_REMOTE_ALLOW') ?? null,
+    AGENTFORGE_ALLOWED_HOSTS: hosts,
   });
 }
 
@@ -191,7 +191,7 @@ function plistPath(): string {
 }
 
 function unitPath(): string {
-  return join(HOME, '.config', 'systemd', 'user', 'habblaud-remote-mdns.service');
+  return join(HOME, '.config', 'systemd', 'user', 'agentforge-remote-mdns.service');
 }
 
 function xml(s: string): string {
@@ -201,7 +201,7 @@ function xml(s: string): string {
 /** Instala (ou reinstala) o anúncio do <nome>.local como serviço. Devolve uma linha de status. */
 function installService(): string {
   const cmd = tsxCommand();
-  const logDir = join(HOME, '.habblaud', 'logs');
+  const logDir = join(HOME, '.agentforge', 'logs');
   mkdirSync(logDir, { recursive: true });
   const pathEnv = [dirname(process.execPath), '/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(':');
   if (process.platform === 'darwin') {
@@ -228,11 +228,11 @@ function installService(): string {
     const domain = `gui/${process.getuid?.() ?? userInfo().uid}`;
     spawnSync('launchctl', ['bootout', `${domain}/${SERVICE_LABEL}`], { stdio: 'ignore' });
     const r = spawnSync('launchctl', ['bootstrap', domain, plistPath()], { encoding: 'utf8' });
-    return r.status === 0 ? tr('serviço {0} ligado (log: ~/.habblaud/logs/remote-mdns.log)', [SERVICE_LABEL]) : tr('não consegui ligar o serviço: {0}', [String(r.stderr).trim()]);
+    return r.status === 0 ? tr('serviço {0} ligado (log: ~/.agentforge/logs/remote-mdns.log)', [SERVICE_LABEL]) : tr('não consegui ligar o serviço: {0}', [String(r.stderr).trim()]);
   }
   if (process.platform === 'linux') {
     const unit = `[Unit]
-Description=${tr('Habblaud: anuncia o endereço .local do acesso pelo celular')}
+Description=${tr('AgentForge: anuncia o endereço .local do acesso pelo celular')}
 After=network-online.target
 
 [Service]
@@ -248,9 +248,9 @@ WantedBy=default.target
     mkdirSync(dirname(unitPath()), { recursive: true });
     writeFileSync(unitPath(), unit);
     spawnSync('systemctl', ['--user', 'daemon-reload'], { stdio: 'ignore' });
-    const r = spawnSync('systemctl', ['--user', 'enable', '--now', 'habblaud-remote-mdns.service'], { encoding: 'utf8' });
+    const r = spawnSync('systemctl', ['--user', 'enable', '--now', 'agentforge-remote-mdns.service'], { encoding: 'utf8' });
     return r.status === 0
-      ? tr('serviço habblaud-remote-mdns ligado (para seguir ligado sem login: loginctl enable-linger)')
+      ? tr('serviço agentforge-remote-mdns ligado (para seguir ligado sem login: loginctl enable-linger)')
       : tr('não consegui ligar o serviço: {0}', [String(r.stderr).trim()]);
   }
   return tr('{0}: sem serviço automático; deixe npm run remote:mdns rodando ou use o IP', [process.platform]);
@@ -262,7 +262,7 @@ function removeService(): void {
     rmSync(plistPath(), { force: true });
   }
   if (process.platform === 'linux' && existsSync(unitPath())) {
-    spawnSync('systemctl', ['--user', 'disable', '--now', 'habblaud-remote-mdns.service'], { stdio: 'ignore' });
+    spawnSync('systemctl', ['--user', 'disable', '--now', 'agentforge-remote-mdns.service'], { stdio: 'ignore' });
     rmSync(unitPath(), { force: true });
   }
 }
@@ -275,11 +275,11 @@ async function main(): Promise<void> {
   if (args.off) {
     writeEnv(updateEnv(current, Object.fromEntries(REMOTE_KEYS.map((k) => [k, null]))));
     removeService();
-    console.log(tr('[remote-setup] Acesso pelo celular desligado (a CA continua em ~/.habblaud/remote-tls). Agora: npm run docker:up'));
+    console.log(tr('[remote-setup] Acesso pelo celular desligado (a CA continua em ~/.agentforge/remote-tls). Agora: npm run docker:up'));
     return;
   }
 
-  const user = args.user ?? (args.passwordStdin ? undefined : await ask(tr('Usuário do login'), readEnvValue(current, 'HABBLAUD_REMOTE_USER') ?? userInfo().username));
+  const user = args.user ?? (args.passwordStdin ? undefined : await ask(tr('Usuário do login'), readEnvValue(current, 'AGENTFORGE_REMOTE_USER') ?? userInfo().username));
   if (!user || /\s/.test(user)) throw new Error(tr('usuário inválido (sem espaços)'));
 
   let password: string;
@@ -303,19 +303,19 @@ async function main(): Promise<void> {
     }
   }
 
-  const name = args.name ?? (args.passwordStdin ? 'habblaud' : await ask(tr('Nome do endereço (vira <nome>.local)'), readEnvValue(current, 'HABBLAUD_REMOTE_NAME') ?? 'habblaud')).toLowerCase();
+  const name = args.name ?? (args.passwordStdin ? 'agentforge' : await ask(tr('Nome do endereço (vira <nome>.local)'), readEnvValue(current, 'AGENTFORGE_REMOTE_NAME') ?? 'agentforge')).toLowerCase();
   if (!isValidName(name)) throw new Error(tr('nome inválido: "{0}" (letras, números e hífen)', [name]));
   const domainAnswer =
     args.domain ??
-    (args.passwordStdin ? '' : await ask(tr('Endereço próprio, opcional (ex.: meuclaude.home; Enter pula)'), readEnvValue(current, 'HABBLAUD_REMOTE_DOMAIN') ?? ''));
+    (args.passwordStdin ? '' : await ask(tr('Endereço próprio, opcional (ex.: meuclaude.home; Enter pula)'), readEnvValue(current, 'AGENTFORGE_REMOTE_DOMAIN') ?? ''));
   const domain = domainAnswer.trim().toLowerCase() || undefined;
   if (domain && !isValidDomain(domain)) throw new Error(tr('endereço inválido: "{0}"', [domain]));
 
-  const existingPort = Number(readEnvValue(current, 'HABBLAUD_REMOTE_PORT'));
+  const existingPort = Number(readEnvValue(current, 'AGENTFORGE_REMOTE_PORT'));
   const port = args.port ?? (Number.isInteger(existingPort) && existingPort > 0 ? existingPort : (await portFree(443)) ? 443 : 4748);
 
   // Na 443, a 80 (se livre) só redireciona para https://: digitar "meuclaude.local" sem https:// também funciona.
-  const existingHttp = Number(readEnvValue(current, 'HABBLAUD_REMOTE_HTTP_PORT'));
+  const existingHttp = Number(readEnvValue(current, 'AGENTFORGE_REMOTE_HTTP_PORT'));
   const httpPort = port !== 443 ? undefined : existingHttp === 80 || (await portFree(80)) ? 80 : undefined;
 
   console.log(tr('[remote-setup] Gerando o hash da senha…'));
@@ -346,7 +346,7 @@ async function main(): Promise<void> {
       '',
       tr('  No celular (mesmo Wi-Fi):'),
       ...urls.map((u) => `    ${u}`),
-      tr('  Primeira vez: aceite o aviso, toque em "Instale o certificado do Habblaud" e confie nele'),
+      tr('  Primeira vez: aceite o aviso, toque em "Instale o certificado do AgentForge" e confie nele'),
       tr('    iPhone:  Ajustes > Perfil Baixado > Instalar; depois Ajustes > Geral > Sobre > Ajustes de Confiança de Certificados'),
       tr('    Android: Configurações > Segurança > Criptografia e credenciais > Instalar certificado > Certificado de CA'),
       tr('  Impressão digital da CA (confira no celular antes de confiar):'),

@@ -185,6 +185,6 @@ describe('HistorySet', () => {
     expect(set.resolve('.codex', 'abc')).toEqual({ path: '/r/rollout.jsonl', createParser: parser });
     expect(set.resolve('.claude', 'abc')).toEqual({ status: 404, error: 'claude:.claude:abc' });
     expect(set.resolve('.outra', 'abc')).toEqual({ status: 404, error: 'claude:.outra:abc' });
-    expect(new HistorySet().resolve('.claude', 'abc')).toEqual({ status: 404, error: 'conta desconhecida' });
+    expect(new HistorySet().resolve('.claude', 'abc')).toEqual({ status: 404, error: 'unknown account' });
   });
 });

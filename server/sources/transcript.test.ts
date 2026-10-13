@@ -40,8 +40,8 @@ describe('parseLine — atividades', () => {
     ]);
     const a = acts(r);
     expect(a.map((x) => x.activity.kind)).toEqual(['prompt', 'think', 'read', 'respond', 'done']);
-    expect(a[2].activity).toMatchObject({ text: 'Lendo Cart.tsx', tool: 'Read', at: T0 + 2000 });
-    expect(a[4].activity).toMatchObject({ text: 'Concluiu em 1min 5s', durationMs: 65_000 });
+    expect(a[2].activity).toMatchObject({ text: 'Reading Cart.tsx', tool: 'Read', at: T0 + 2000 });
+    expect(a[4].activity).toMatchObject({ text: 'Done in 1min 5s', durationMs: 65_000 });
     expect(a.every((x) => x.activity.id.startsWith('acc:1#'))).toBe(true);
     expect(new Set(a.map((x) => x.activity.id)).size).toBe(a.length);
     expect(s.ended).toBe(true);
@@ -92,7 +92,7 @@ describe('parseLine — atividades', () => {
     const a = acts(r);
     const errors = a.filter((x) => x.activity.kind === 'error');
     expect(errors).toHaveLength(2);
-    expect(errors[0]).toMatchObject({ current: false, activity: { text: 'Erro em Bash', detail: 'Exit code 1', error: true } });
+    expect(errors[0]).toMatchObject({ current: false, activity: { text: 'Error in Bash', detail: 'Exit code 1', error: true } });
     expect(errors[1].current).toBe(true);
   });
 
@@ -109,7 +109,7 @@ describe('parseLine — atividades', () => {
         L.result('b', "The user doesn't want to proceed with this tool use. The tool use was rejected", { error: true }),
       ]),
     );
-    expect(a.map((x) => x.activity.text)).toEqual(['Editando a.ts', 'Interrompido por você', 'Escrevendo b.ts', 'Você recusou: Write']);
+    expect(a.map((x) => x.activity.text)).toEqual(['Editing a.ts', 'Interrupted by you', 'Writing b.ts', 'You denied: Write']);
     expect(s.ended).toBe(false);
   });
 
@@ -239,7 +239,7 @@ describe('parseLine — sinais de subagentes', () => {
     expect(r.flatMap((x) => x.signals)).toEqual([]);
     expect(acts(r).map((a) => [a.activity.kind, a.activity.text])).toEqual([
       ['prompt', expect.stringContaining('Desenhe as poses novas')],
-      ['read', 'Lendo a.ts'],
+      ['read', 'Reading a.ts'],
     ]);
     expect(s.stats).toMatchObject({ subagents: 0, toolCalls: 1 });
     expect(s.lastPrompt).toBe('Desenhe as poses novas');
@@ -300,13 +300,13 @@ describe('parseLine — sinais de shells', () => {
       { type: 'notification', taskId: 'bo0ov3q3l', toolUseId: 'toolu_bg', status: 'completed', summary: 'Background command "x" completed (exit code 0)' },
     ]);
     expect(r[3].signals[0]).toMatchObject({ type: 'notification', taskId: 'bo0ov3q3l' });
-    expect(r[3].activities[0].activity.text).toBe('Recebeu resultado em segundo plano');
+    expect(r[3].activities[0].activity.text).toBe('Got a background result');
   });
 
   it('Bash em primeiro plano: início sem segundo plano e resultado sem id; sem description, o rótulo resume o comando', () => {
     const s = createTranscriptState();
     const r = feed(s, [L.assistant([L.tool('fg', 'Bash', { command: 'npm test' })]), L.result('fg', 'ok, 10 testes')]);
-    expect(r[0].signals).toEqual([{ type: 'shellStart', shell: expect.objectContaining({ toolUseId: 'fg', label: 'Rodando testes', background: false }) }]);
+    expect(r[0].signals).toEqual([{ type: 'shellStart', shell: expect.objectContaining({ toolUseId: 'fg', label: 'Running tests', background: false }) }]);
     expect(r[1].signals).toEqual([{ type: 'shellResult', toolUseId: 'fg', error: false }]);
   });
 

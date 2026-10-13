@@ -153,7 +153,7 @@ export function symlinkOrSkip(skip: (note: string) => never, target: string, pat
 }
 
 /** Pasta temporária para um teste (apagada com `cleanup`). */
-export function tempDir(prefix = 'habblaud-'): { dir: string; cleanup: () => void } {
+export function tempDir(prefix = 'agentforge-'): { dir: string; cleanup: () => void } {
   const dir = mkdtempSync(join(tmpdir(), prefix));
   return { dir, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
 }

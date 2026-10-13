@@ -94,7 +94,7 @@ export class PtyPanel implements UiComponent, PtyControl {
     this.el = h('section', { class: 'ui-term ui-pty', role: 'dialog', hidden: true, attrs: { 'aria-label': tr('Terminal') } }, bar, this.tabs.el, this.screen, this.away);
     // Teclas digitadas no terminal são do Claude Code, não dos atalhos do escritório.
     this.el.addEventListener('keydown', (e) => e.stopPropagation());
-    this.movable = new Movable(this.el, bar, { key: 'habblaud.move.term', enabled: () => !ctx.isNarrow(), onMove: () => this.pane?.refit(true) });
+    this.movable = new Movable(this.el, bar, { key: 'agentforge.move.term', enabled: () => !ctx.isNarrow(), onMove: () => this.pane?.refit(true) });
     this.el.addEventListener('keyup', (e) => e.stopPropagation());
   }
 

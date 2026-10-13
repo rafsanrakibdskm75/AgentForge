@@ -1,5 +1,5 @@
 // Publica a versão do package.json no GitHub: confere se o CHANGELOG.md tem a seção dela, cria a tag vX.Y.Z e a
-// release com o texto dessa seção como notas (é o que o Habblaud abre em Configurações › Sobre › Ver o que mudou).
+// release com o texto dessa seção como notas (é o que o AgentForge abre em Configurações › Sobre › Ver o que mudou).
 //   npm run release                -> publica (precisa do gh autenticado)
 //   npm run release -- --dry-run   -> só confere e mostra as notas
 // Antes: suba a versão no package.json (npm version minor --no-git-tag-version), escreva a seção no CHANGELOG.md e
@@ -110,19 +110,19 @@ function main(argv: string[]): void {
   if (tagExists) fail(`a tag ${tag} já existe: suba a versão no package.json antes.`);
   const notes = unwrapMarkdown(section);
 
-  console.log(`Habblaud ${tag}\n\n${notes}\n`);
+  console.log(`AgentForge ${tag}\n\n${notes}\n`);
   if (args.dryRun) {
     console.log('(--dry-run: nada foi publicado)');
     return;
   }
 
-  const dir = mkdtempSync(join(tmpdir(), 'habblaud-release-'));
+  const dir = mkdtempSync(join(tmpdir(), 'agentforge-release-'));
   try {
     const file = join(dir, 'notas.md');
     writeFileSync(file, `${notes}\n`);
-    run('git', ['tag', '-a', tag, '-m', `Habblaud ${tag}`]);
+    run('git', ['tag', '-a', tag, '-m', `AgentForge ${tag}`]);
     run('git', ['push', 'origin', tag]);
-    const url = run('gh', ['release', 'create', tag, '--verify-tag', '--title', `Habblaud ${tag}`, '--notes-file', file]);
+    const url = run('gh', ['release', 'create', tag, '--verify-tag', '--title', `AgentForge ${tag}`, '--notes-file', file]);
     console.log(`✓ Release publicada: ${url}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });

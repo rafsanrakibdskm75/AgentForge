@@ -18,7 +18,7 @@ const DAY_ROUTE = /^\/api\/timeline\/([^/]+)$/;
 export interface TimelineRoutesOptions {
   /** Pasta dos arquivos (<dataDir>/timeline). */
   dir: string;
-  /** O servidor está gravando (HABBLAUD_TIMELINE não desligou). */
+  /** O servidor está gravando (AGENTFORGE_TIMELINE não desligou). */
   recording: boolean;
 }
 

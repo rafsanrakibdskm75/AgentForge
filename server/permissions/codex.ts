@@ -1,4 +1,4 @@
-// Pedidos de aprovação do Codex (hook PermissionRequest de mod/habblaud-codex/hook.mjs): título, resumo e argumentos
+// Pedidos de aprovação do Codex (hook PermissionRequest de mod/agentforge-codex/hook.mjs): título, resumo e argumentos
 // pelos nomes de ferramenta que o Codex manda no hook (0.162):
 // - Bash: {command, description?}. O acesso à rede também chega como Bash, com description "network-access <alvo>";
 // - apply_patch: {command: <o patch>} ("*** Begin Patch", "*** Update File: <caminho>", linhas -/+): vai como diff;
@@ -96,7 +96,7 @@ export function codexToolView(tool: string, input: Rec, cwd?: string): CodexTool
     }
     case 'write_stdin': {
       const chars = typeof input.chars === 'string' ? input.chars : '';
-      const title = chars ? `write_stdin(${chars.length} caractere${chars.length === 1 ? '' : 's'})` : 'write_stdin';
+      const title = chars ? (chars.length === 1 ? tr('write_stdin({0} caractere)', [chars.length]) : tr('write_stdin({0} caracteres)', [chars.length])) : 'write_stdin';
       return { title, text: tr('Digitando num processo do terminal'), icon: '⌨️', ...shown(chars ? escaped(chars) : undefined, 'text') };
     }
     default: {

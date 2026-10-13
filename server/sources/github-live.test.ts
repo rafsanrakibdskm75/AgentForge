@@ -96,7 +96,7 @@ describe('GitHub no escritório (watcher + office)', () => {
     c.poll();
     expect(c.notices.filter((n) => n.text.includes('PR'))).toEqual([]);
     expect(c.room()?.effect).toBeUndefined();
-    expect(c.office.detail(id)?.history.some((a) => a.tool === 'GitHub' && a.text === 'Abriu o PR #7')).toBe(true);
+    expect(c.office.detail(id)?.history.some((a) => a.tool === 'GitHub' && a.text === 'Opened PR #7')).toBe(true);
   });
 
   it('ao vivo: PR mergeado vira aviso, atividade e festa por ~12 s', () => {
@@ -106,9 +106,9 @@ describe('GitHub no escritório (watcher + office)', () => {
       L.result('m1', 'Updating 1a2b3c4..5d6e7f8\nFast-forward', { at: c.now() }),
     ]);
     c.poll();
-    expect(c.notices.map((n) => n.text)).toContainEqual(expect.stringMatching(/^🎉 .+ mergeou o PR #12 em loja$/));
-    expect(c.office.commit().snapshot.agents.find((a) => a.id === id)?.activity).toMatchObject({ tool: 'GitHub', text: 'Mergeou o PR #12', icon: '🎉' });
-    expect(c.room()?.effect).toMatchObject({ kind: 'party', text: 'PR #12 mergeado!', agentId: id });
+    expect(c.notices.map((n) => n.text)).toContainEqual(expect.stringMatching(/^🎉 .+ merged PR #12 in loja$/));
+    expect(c.office.commit().snapshot.agents.find((a) => a.id === id)?.activity).toMatchObject({ tool: 'GitHub', text: 'Merged PR #12', icon: '🎉' });
+    expect(c.room()?.effect).toMatchObject({ kind: 'party', text: 'PR #12 merged!', agentId: id });
     c.advance(PARTY_MS + 100);
     c.poll();
     expect(c.room()?.effect).toBeUndefined();
@@ -122,8 +122,8 @@ describe('GitHub no escritório (watcher + office)', () => {
       L.result('w1', fail, { at: c.now(), error: true }),
     ]);
     c.poll();
-    expect(c.room()?.effect).toMatchObject({ kind: 'alarm', text: 'CI falhou (feat/x)', agentId: id });
-    expect(c.notices.filter((n) => n.text === '🚨 CI falhou em loja (feat/x)')).toHaveLength(1);
+    expect(c.room()?.effect).toMatchObject({ kind: 'alarm', text: 'CI failed (feat/x)', agentId: id });
+    expect(c.notices.filter((n) => n.text === '🚨 CI failed in loja (feat/x)')).toHaveLength(1);
     // o mesmo vermelho visto de novo logo depois (gh run view): sem aviso repetido, alarme segue
     c.advance(20_000);
     appendLines(c.transcript('sess-a'), [
@@ -140,8 +140,8 @@ describe('GitHub no escritório (watcher + office)', () => {
       L.result('w2', '✓ feat/x CI · 56\nTriggered via push about 2 minutes ago', { at: c.now() }),
     ]);
     c.poll();
-    expect(c.room()?.effect).toMatchObject({ kind: 'party', text: 'CI verde de novo!' });
-    expect(c.notices.map((n) => n.text)).toContain('✅ CI passou em loja (feat/x)');
+    expect(c.room()?.effect).toMatchObject({ kind: 'party', text: 'CI green again!' });
+    expect(c.notices.map((n) => n.text)).toContain('✅ CI passed in loja (feat/x)');
   });
 
   it('linha antiga relida (mais de 2 min) não anima nem avisa', () => {
@@ -159,7 +159,7 @@ describe('GitHub no escritório (watcher + office)', () => {
       L.result('p1', 'To github.com:acme/loja.git\n   1a2b3c4..5d6e7f8  main -> main', { at: c.now() }),
     ]);
     c.poll();
-    expect(c.notices.map((n) => n.text)).toContainEqual(expect.stringMatching(/^🚀 .+ enviou commits para main em loja$/));
+    expect(c.notices.map((n) => n.text)).toContainEqual(expect.stringMatching(/^🚀 .+ pushed commits to main in loja$/));
     expect(c.room()?.effect).toBeUndefined();
   });
 
@@ -167,6 +167,6 @@ describe('GitHub no escritório (watcher + office)', () => {
     boot([]);
     c.subFile('sess-a', 'abc123', [L.prompt('Abrir o PR', { at: c.now(), agentId: 'abc123' }), ...prCreate('s1', 31, c.now())]);
     c.poll();
-    expect(c.room()?.effect).toMatchObject({ kind: 'party', text: 'PR #31 aberto!', agentId: 'sess-a:abc123' });
+    expect(c.room()?.effect).toMatchObject({ kind: 'party', text: 'PR #31 opened!', agentId: 'sess-a:abc123' });
   });
 });

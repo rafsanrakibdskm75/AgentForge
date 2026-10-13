@@ -48,8 +48,8 @@ export class Splash implements UiComponent {
     }
     const waited = performance.now() - this.startedAt;
     let text = tr('Conectando ao escritório…');
-    if (waited > DISCONNECTED_BANNER_MS) text = tr('O servidor do Habblaud não responde. Confira se ele está rodando (npm run dev ou npm start); seguimos tentando.');
-    else if (store.connection === 'closed') text = tr('Não foi possível conectar ao servidor do Habblaud. Tentando de novo…');
+    if (waited > DISCONNECTED_BANNER_MS) text = tr('O servidor do AgentForge não responde. Confira se ele está rodando (npm run dev ou npm start); seguimos tentando.');
+    else if (store.connection === 'closed') text = tr('Não foi possível conectar ao servidor do AgentForge. Tentando de novo…');
     setText(this.text, text);
     // Reavalia o texto mesmo sem eventos novos.
     this.tick ??= setTimeout(() => {
@@ -172,8 +172,8 @@ export class ConnectionBanner implements UiComponent {
     setText(
       this.text,
       store.snapshot
-        ? tr('Sem conexão com o servidor do Habblaud há algum tempo. O escritório mostra o último estado conhecido.')
-        : tr('O servidor do Habblaud não responde. Confira se ele está rodando (npm run dev ou npm start).'),
+        ? tr('Sem conexão com o servidor do AgentForge há algum tempo. O escritório mostra o último estado conhecido.')
+        : tr('O servidor do AgentForge não responde. Confira se ele está rodando (npm run dev ou npm start).'),
     );
     const next = store.nextRetryAt;
     const secs = next === null ? 0 : Math.max(1, Math.ceil((next - Date.now()) / 1000));

@@ -97,14 +97,14 @@ describe('fonte do Codex: presença pelos locks', () => {
       account: '.codex',
       sessionId: T,
       roomId: '/projetos/loja',
-      role: 'Agente principal (Codex)',
+      role: 'Main agent (Codex)',
       status: 'working',
       title: 'Rode os testes da loja',
       model: 'gpt-teste-codex',
       gitBranch: 'feat/x',
     });
     expect(a.stats).toMatchObject({ tokensIn: 2_000, tokensOut: 300, toolCalls: 1 });
-    expect(a.activity?.text).toBe('Rodando testes');
+    expect(a.activity?.text).toBe('Running tests');
     expect(ctx.source.sources()).toEqual([{ label: '.codex', provider: 'codex', path: ctx.home.dir, sessions: 1, ok: true }]);
     expect(ctx.source.transcriptPathOf(KEY)).toBe(path);
     expect(ctx.source.terminalParser(KEY)).toBeDefined();
@@ -124,7 +124,7 @@ describe('fonte do Codex: presença pelos locks', () => {
     ctx.advance(2_000);
     ctx.poll();
     expect(ctx.agent()?.status).toBe('offline');
-    expect(ctx.notices.some((n) => n.text.includes('encerrou'))).toBe(true);
+    expect(ctx.notices.some((n) => n.text.includes('ended'))).toBe(true);
   });
 
   it('hook de thread revertido troca o rollout aberto e o caminho do terminal na hora', () => {
@@ -344,7 +344,7 @@ describe('fonte do Codex: subagentes', () => {
     ctx.home.append(sub, [R.agent(C, 's1', 'sa', 'Está em auth.ts', ctx.now()), R.taskComplete('s1', ctx.now() + 1)]);
     ctx.poll();
     expect(ctx.agent(`.codex:${C}`)?.status).toBe('done');
-    expect(ctx.notices.some((n) => n.text.includes('entregou'))).toBe(true);
+    expect(ctx.notices.some((n) => n.text.includes('delivered'))).toBe(true);
     // Volta a trabalhar (o pai mandou outra tarefa).
     ctx.advance(1_000);
     ctx.home.append(sub, [R.taskStarted('s2', ctx.now())]);
@@ -436,9 +436,9 @@ describe('fonte do Codex: eventos de hook', () => {
     expect(ctx.hook(ev('UserPromptSubmit', { prompt: 'rode os testes' }))).toBe(true);
     expect(ctx.agent()?.status).toBe('working');
     expect(ctx.hook(ev('PreToolUse', { tool_name: 'Bash', tool_use_id: 'call_7', tool_input: { command: 'npm test' } }))).toBe(true);
-    expect(ctx.agent()?.activity).toMatchObject({ id: `${KEY}#call_7`, text: 'Rodando testes', tool: 'Bash' });
+    expect(ctx.agent()?.activity).toMatchObject({ id: `${KEY}#call_7`, text: 'Running tests', tool: 'Bash' });
     expect(ctx.hook(ev('PermissionRequest', { tool_name: 'Bash', tool_input: { command: 'npm test', description: 'x' } }))).toBe(true);
-    expect(ctx.agent()).toMatchObject({ status: 'waiting', waitingFor: 'aprovar um comando' });
+    expect(ctx.agent()).toMatchObject({ status: 'waiting', waitingFor: 'approve a command' });
     // O rollout aparece com a linha antiga do turno: não desfaz a espera.
     ctx.advance(10);
     const path = ctx.home.rollout(T, [R.meta(T, { at: ctx.now() - 5_000, cwd: '/projetos/api' }), R.taskStarted('turn1', ctx.now() - 4_000)]);
@@ -461,7 +461,7 @@ describe('fonte do Codex: eventos de hook', () => {
     const ctx = setup();
     ctx.source.boot();
     ctx.hook(ev('PreToolUse', { tool_name: 'apply_patch', tool_use_id: 'c1', tool_input: { command: '*** Begin Patch\n*** Update File: src/app.ts\n@@\n-a\n+b\n*** End Patch' } }));
-    expect(ctx.agent()?.activity).toMatchObject({ text: 'Editando app.ts', tool: 'Edit' });
+    expect(ctx.agent()?.activity).toMatchObject({ text: 'Editing app.ts', tool: 'Edit' });
     ctx.hook(ev('PreToolUse', { tool_name: 'mcp__github__merge_pull_request', tool_use_id: 'c2', tool_input: { pullNumber: 3 } }));
     expect(ctx.agent()?.activity).toMatchObject({ text: 'GitHub: merge pull request', tool: 'mcp__github__merge_pull_request' });
   });
@@ -507,14 +507,14 @@ describe('fonte do Codex: eventos de hook', () => {
     ctx.source.boot();
     ctx.hook(ev('SessionStart'));
     expect(ctx.hook(ev('PermissionRequest', { agent_id: C, agent_type: 'worker', tool_name: 'Bash', tool_input: { command: 'rm -rf build' } }))).toBe(true);
-    expect(ctx.agent(`.codex:${C}`)).toMatchObject({ kind: 'sub', parentId: KEY, status: 'waiting', waitingFor: 'aprovar um comando' });
+    expect(ctx.agent(`.codex:${C}`)).toMatchObject({ kind: 'sub', parentId: KEY, status: 'waiting', waitingFor: 'approve a command' });
   });
 
   it('Docker: o hook roda no host e casa a conta pela pasta do HOST (configDir) ou pelo transcript_path de lá', () => {
     const ctx = setup({
       names: ['.codex', '.codex-b'],
       env: (dirs) => ({
-        HABBLAUD_ACCOUNTS: JSON.stringify([
+        AGENTFORGE_ACCOUNTS: JSON.stringify([
           { id: '.codex', provider: 'codex', configDir: '/Users/host/.codex', mountDir: dirs[0], short: 'CX', name: 'Codex CX', color: '#111111' },
           { id: '.codex-b', provider: 'codex', configDir: '/Users/host/.codex-b', mountDir: dirs[1], short: 'CB', name: 'Codex CB', color: '#222222' },
         ]),
@@ -600,7 +600,7 @@ describe('fonte do Codex: contas', () => {
 
 describe('scanPrefix do Codex', () => {
   it('ignora linha acima do teto e lê as vizinhas', async () => {
-    const dir = join(tmpdir(), `habblaud-codex-prefix-${process.pid}`);
+    const dir = join(tmpdir(), `agentforge-codex-prefix-${process.pid}`);
     mkdirSync(dir, { recursive: true });
     const warn = vi.spyOn(log, 'warnOnce').mockImplementation(() => {});
     try {

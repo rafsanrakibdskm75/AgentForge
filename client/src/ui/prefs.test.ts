@@ -91,7 +91,7 @@ describe('migração do nome antigo (CodeTown)', () => {
     const wallets = JSON.stringify({ v: 1, wallets: { a1: { name: 'Ana', coins: 250 } } });
     const st = listableStorage({ 'codetown:prefs': prefs, 'codetown:update-seen': '0.3.2', 'codetown.wallets.v1': wallets });
     expect(migrateLegacyKeys(st)).toBe(3);
-    expect(Object.fromEntries(st.data)).toEqual({ 'habblaud:prefs': prefs, 'habblaud:update-seen': '0.3.2', 'habblaud.wallets.v1': wallets });
+    expect(Object.fromEntries(st.data)).toEqual({ 'agentforge:prefs': prefs, 'agentforge:update-seen': '0.3.2', 'agentforge.wallets.v1': wallets });
     expect(loadPrefs(st).bubbles).toBe('none');
   });
   it('não sobrescreve a chave nova que já existe, mas apaga a antiga', () => {

@@ -6,7 +6,7 @@ afterEach(() => setAccess(null));
 describe('access', () => {
   it('sem resposta do servidor: a regra antiga (só o próprio computador age)', async () => {
     expect(fallbackAccess('localhost')).toMatchObject({ local: true, permissions: true });
-    expect(fallbackAccess('habblaud.localhost').permissions).toBe(true);
+    expect(fallbackAccess('agentforge.localhost').permissions).toBe(true);
     expect(fallbackAccess('192.168.1.10')).toMatchObject({ local: false, permissions: false, messages: false });
     // O Novo agente é opt-in no servidor: sem resposta, nunca aparece.
     expect(fallbackAccess('localhost').spawn).toBe(false);

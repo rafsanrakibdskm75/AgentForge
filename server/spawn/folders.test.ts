@@ -18,15 +18,15 @@ describe('pastas sugeridas no Novo agente', () => {
     const sessions = [
       { project: '/Users/a/loja', lastAt: 100 },
       { project: '/Users/a/loja/.claude/worktrees/w1', lastAt: 300 },
-      { project: '/Users/a/habblaud', lastAt: 200 },
+      { project: '/Users/a/agentforge', lastAt: 200 },
       { project: '/tmp/x', lastAt: 999 },
       { lastAt: 500 },
     ];
-    const rooms = [{ path: '/Users/a/sala-nova', lastAt: 250 }, { path: '/Users/a/habblaud', lastAt: 50 }];
+    const rooms = [{ path: '/Users/a/sala-nova', lastAt: 250 }, { path: '/Users/a/agentforge', lastAt: 50 }];
     expect(recentFolders(sessions, rooms)).toEqual([
       { path: '/Users/a/loja', name: 'loja', lastAt: 300, sessions: 2 },
       { path: '/Users/a/sala-nova', name: 'sala-nova', lastAt: 250, sessions: 0 },
-      { path: '/Users/a/habblaud', name: 'habblaud', lastAt: 200, sessions: 1 },
+      { path: '/Users/a/agentforge', name: 'agentforge', lastAt: 200, sessions: 1 },
     ]);
     expect(recentFolders(sessions, rooms, 1).map((f) => f.path)).toEqual(['/Users/a/loja']);
   });

@@ -49,7 +49,7 @@ let dir: string;
 let now: number;
 
 beforeEach(() => {
-  tmp = tempDir('habblaud-tl-');
+  tmp = tempDir('agentforge-tl-');
   dir = join(tmp.dir, 'timeline');
   now = T0;
 });

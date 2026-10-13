@@ -32,15 +32,15 @@ describe('novo agente: pedido e link', () => {
     const url = spawnUrl({ folder: '/Users/a/meu proj', prompt: 'rode os testes & conte' });
     expect(url.startsWith('claude://code/new?')).toBe(true);
     const q = new URL(url).searchParams;
-    expect([q.get('folder'), q.get('q'), q.get('source')]).toEqual(['/Users/a/meu proj', 'rode os testes & conte', 'habblaud']);
+    expect([q.get('folder'), q.get('q'), q.get('source')]).toEqual(['/Users/a/meu proj', 'rode os testes & conte', 'agentforge']);
     expect(url).not.toContain('+');
     expect(new URL(spawnUrl({ folder: '/a', prompt: '  ' })).searchParams.has('q')).toBe(false);
   });
 
   it('folderProblem: pasta que não existe ou arquivo', () => {
     expect(folderProblem(process.cwd())).toBeUndefined();
-    expect(folderProblem('/nao/existe/mesmo')).toMatch(/não encontrada/);
-    expect(folderProblem('/x', () => ({ isDirectory: () => false }))).toMatch(/não é uma pasta/);
+    expect(folderProblem('/nao/existe/mesmo')).toMatch(/not found/);
+    expect(folderProblem('/x', () => ({ isDirectory: () => false }))).toMatch(/not a folder/);
   });
 });
 
@@ -55,10 +55,10 @@ describe('SpawnService', () => {
     await new Promise((ok) => setTimeout(ok, 0));
     expect(s.get('a1')?.status).toBe('opened');
     expect(opened).toEqual([spawnUrl({ folder: '/p', prompt: 'oi' })]);
-    const bad = new SpawnService({ opener, folderProblem: () => 'pasta não encontrada neste computador', newId: () => 'b' });
+    const bad = new SpawnService({ opener, folderProblem: () => 'folder not found on this computer', newId: () => 'b' });
     bad.submit({ folder: '/nada', prompt: '' });
     await new Promise((ok) => setTimeout(ok, 0));
-    expect(bad.get('b')).toMatchObject({ status: 'failed', error: 'pasta não encontrada neste computador' });
+    expect(bad.get('b')).toMatchObject({ status: 'failed', error: 'folder not found on this computer' });
   });
 
   it('Docker: sem o auxiliar recusa; com ele, fila → busca → confirmação; e os prazos', () => {
@@ -76,13 +76,13 @@ describe('SpawnService', () => {
     s.submit({ folder: '/p', prompt: 'b' });
     s.poll();
     now += SENT_TIMEOUT_MS + 1;
-    expect(s.get('id2')).toMatchObject({ status: 'failed', error: 'o auxiliar do computador não confirmou' });
+    expect(s.get('id2')).toMatchObject({ status: 'failed', error: 'the computer\'s helper didn\'t confirm' });
     now += HOST_PRESENCE_MS + 1;
     expect(s.available()).toBe(false);
     s.poll();
     s.submit({ folder: '/p', prompt: 'c' });
     now += QUEUED_TIMEOUT_MS + 1;
-    expect(s.get('id3')).toMatchObject({ status: 'failed', error: 'o auxiliar do computador não buscou o pedido' });
+    expect(s.get('id3')).toMatchObject({ status: 'failed', error: 'the computer\'s helper didn\'t fetch the request' });
   });
 
   it('no máximo 5 abrindo ao mesmo tempo', () => {
@@ -108,7 +108,7 @@ describe('SpawnService com anexos', () => {
     expect(s.submit({ folder: '/p', attachments: ['f1'] })).toMatchObject({ error: 'invalid' });
     const bare = new SpawnService({ newId: () => 'z' });
     bare.poll();
-    expect(bare.submit({ folder: '/p', attachments: ['f1'] })).toMatchObject({ error: 'invalid', reason: 'anexos desligados' });
+    expect(bare.submit({ folder: '/p', attachments: ['f1'] })).toMatchObject({ error: 'invalid', reason: 'attachments disabled' });
   });
 
   it('direto: grava os anexos e o link leva os caminhos no pedido', async () => {
@@ -127,7 +127,7 @@ describe('SpawnService com anexos', () => {
     s.submit({ folder: '/p', prompt: 'conserte', attachments: ['f1'] });
     await new Promise((ok) => setTimeout(ok, 0));
     expect(written).toEqual(['s2:print.png']);
-    expect(new URL(opened[0]).searchParams.get('q')).toBe('conserte\n\nAnexo enviado pelo Habblaud (leia antes de começar):\n- /h/att/print.png');
+    expect(new URL(opened[0]).searchParams.get('q')).toBe('conserte\n\nAttachment sent via AgentForge (read it before starting):\n- /h/att/print.png');
     expect(s.get('s2')?.status).toBe('opened');
   });
 
@@ -148,18 +148,18 @@ describe('SpawnService com anexos', () => {
     s.submit({ folder: '/p', attachments: ['f1'] });
     await new Promise((ok) => setTimeout(ok, 0));
     expect(opened).toEqual([]);
-    expect(s.get('s3')).toMatchObject({ status: 'failed', error: 'não deu para gravar os anexos (disco cheio)' });
+    expect(s.get('s3')).toMatchObject({ status: 'failed', error: "couldn't save the attachments (disco cheio)" });
   });
 });
 
 describe('novo agente em segundo plano (claude --bg)', () => {
   it('nome da sessão e argumentos: o pedido vai depois de `--`', () => {
-    expect(sessionName('  \n rode os testes\nsegunda linha')).toBe('Habblaud: rode os testes');
-    expect(sessionName('')).toBe('Habblaud');
-    expect(sessionName('x'.repeat(100))).toHaveLength('Habblaud: '.length + 48);
-    expect(cliArgs({ folder: '/p', prompt: 'doctor' })).toEqual(['--bg', '-n', 'Habblaud: doctor', '--', 'doctor']);
+    expect(sessionName('  \n rode os testes\nsegunda linha')).toBe('AgentForge: rode os testes');
+    expect(sessionName('')).toBe('AgentForge');
+    expect(sessionName('x'.repeat(100))).toHaveLength('AgentForge: '.length + 48);
+    expect(cliArgs({ folder: '/p', prompt: 'doctor' })).toEqual(['--bg', '-n', 'AgentForge: doctor', '--', 'doctor']);
     expect(cliArgs({ folder: '/p', prompt: '--dangerously-skip-permissions' }).slice(-2)).toEqual(['--', '--dangerously-skip-permissions']);
-    expect(cliArgs({ folder: '/p', prompt: '  ' })).toEqual(['--bg', '-n', 'Habblaud']);
+    expect(cliArgs({ folder: '/p', prompt: '  ' })).toEqual(['--bg', '-n', 'AgentForge']);
   });
 
   it('createCliRunner roda o binário na pasta, sem shell, e lê o id; erro vira a 1ª linha', async () => {
@@ -172,12 +172,12 @@ describe('novo agente em segundo plano (claude --bg)', () => {
     chmodSync(bin, 0o755);
     writeFileSync(join(dir, 'trusted'), '');
     expect(runnableClaudeBin({ PATH: `/nao/existe:${dir}` })).toBe(bin);
-    expect(runnableClaudeBin({ HABBLAUD_CLAUDE_BIN: join(dir, 'nada'), PATH: dir })).toBeUndefined();
+    expect(runnableClaudeBin({ AGENTFORGE_CLAUDE_BIN: join(dir, 'nada'), PATH: dir })).toBeUndefined();
     const run = createCliRunner(bin);
     expect(await run({ folder: dir, prompt: 'faça $(rm -rf x) && y' })).toEqual({ ok: true, id: '7eacc670' });
     const args = readFileSync(join(dir, 'args'), 'utf8').trim().split('\n');
     expect(realpathSync(args[0])).toBe(realpathSync(dir));
-    expect(args.slice(1)).toEqual(['--bg', '-n', 'Habblaud: faça $(rm -rf x) && y', '--', 'faça $(rm -rf x) && y']);
+    expect(args.slice(1)).toEqual(['--bg', '-n', 'AgentForge: faça $(rm -rf x) && y', '--', 'faça $(rm -rf x) && y']);
     expect(await run({ folder: tmpdir(), prompt: 'oi' })).toEqual({ ok: false, error: 'Workspace not trusted. Run claude once' });
   });
 
@@ -187,12 +187,12 @@ describe('novo agente em segundo plano (claude --bg)', () => {
     expect(await launch({ folder: '/p', prompt: 'oi' }, open, async () => ({ ok: true, id: 'a' }))).toEqual({ ok: true, how: 'cli' });
     expect(opened).toEqual([]);
     const r = await launch({ folder: '/p', prompt: 'oi' }, open, async () => ({ ok: false, error: 'Workspace not trusted. Run `claude` in /p once' }));
-    expect(r).toMatchObject({ ok: true, how: 'app', note: expect.stringMatching(/ainda não é confiável/) });
+    expect(r).toMatchObject({ ok: true, how: 'app', note: expect.stringMatching(/isn't trusted/) });
     expect(opened).toEqual([spawnUrl({ folder: '/p', prompt: 'oi' })]);
     expect(await launch({ folder: '/p', prompt: 'oi' }, open)).toEqual({ ok: true, how: 'app' });
     expect(await launch({ folder: '/p', prompt: 'oi' }, async () => ({ ok: false, error: 'open: x' }), async () => ({ ok: false, error: 'sem login' }))).toEqual({
       ok: false,
-      error: 'sem login; e o app não abriu (open: x)',
+      error: "sem login; and the app didn't open (open: x)",
     });
   });
 

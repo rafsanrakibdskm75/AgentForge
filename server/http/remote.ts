@@ -6,15 +6,15 @@
 // chegou, nunca o cabeçalho Host (que um cliente da rede imita à vontade).
 //
 // Configuração (escrita por `npm run remote:setup`, scripts/remote-setup.ts):
-//   HABBLAUD_REMOTE_USER + HABBLAUD_REMOTE_PASSWORD_HASH  ligam a porta (o hash é scrypt, ver remote/password.ts;
+//   AGENTFORGE_REMOTE_USER + AGENTFORGE_REMOTE_PASSWORD_HASH  ligam a porta (o hash é scrypt, ver remote/password.ts;
 //                                                         senha em texto puro não é aceita)
-//   HABBLAUD_REMOTE_ALLOW   o que a sessão remota pode fazer além de ver: permissions, messages, terminal ("none" = só
+//   AGENTFORGE_REMOTE_ALLOW   o que a sessão remota pode fazer além de ver: permissions, messages, terminal ("none" = só
 //                           ver). Padrão: permissions.
-//   HABBLAUD_REMOTE_TLS_DIR pasta com server.key, server.crt (e ca.crt, servido em /remote/ca.crt). Padrão:
-//                           /remote-tls no Docker, ~/.habblaud/remote-tls/server no Node. Sem certificado a porta não
-//                           sobe, a menos que HABBLAUD_REMOTE_INSECURE_HTTP=1 (HTTP puro: senha e cookie à vista na rede).
-//   HABBLAUD_REMOTE_PORT / HABBLAUD_REMOTE_HOST  só no Node (padrão 0.0.0.0:4748); no Docker o container escuta sempre
-//                           em 0.0.0.0:4748 e quem decide a exposição é a porta publicada (HABBLAUD_REMOTE_BIND).
+//   AGENTFORGE_REMOTE_TLS_DIR pasta com server.key, server.crt (e ca.crt, servido em /remote/ca.crt). Padrão:
+//                           /remote-tls no Docker, ~/.agentforge/remote-tls/server no Node. Sem certificado a porta não
+//                           sobe, a menos que AGENTFORGE_REMOTE_INSECURE_HTTP=1 (HTTP puro: senha e cookie à vista na rede).
+//   AGENTFORGE_REMOTE_PORT / AGENTFORGE_REMOTE_HOST  só no Node (padrão 0.0.0.0:4748); no Docker o container escuta sempre
+//                           em 0.0.0.0:4748 e quem decide a exposição é a porta publicada (AGENTFORGE_REMOTE_BIND).
 //
 // Sessão: cookie HttpOnly + SameSite=Strict (+ Secure com HTTPS) assinado com HMAC; chave = segredo aleatório em
 // <dataDir>/remote-secret misturado com usuário e hash da senha: trocar a senha derruba todas as sessões.
@@ -48,12 +48,12 @@ export interface RemoteConfig {
   /** Texto do hash como veio do ambiente (entra na chave das sessões). */
   passwordHashText: string;
   allow: ReadonlySet<RemoteFeature>;
-  /** Ausente = HTTP puro (só com HABBLAUD_REMOTE_INSECURE_HTTP=1). */
+  /** Ausente = HTTP puro (só com AGENTFORGE_REMOTE_INSECURE_HTTP=1). */
   tls?: RemoteTls;
 }
 
 export const DEFAULT_REMOTE_PORT = 4748;
-export const COOKIE = 'habblaud_remote';
+export const COOKIE = 'agentforge_remote';
 export const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 /** Prazo para o primeiro byte de uma conexão na porta remota (antes de saber se é HTTPS). */
 const FIRST_BYTE_MS = 15_000;
@@ -63,8 +63,8 @@ function truthy(v: string | undefined): boolean {
 }
 
 export function defaultTlsDir(env: NodeJS.ProcessEnv, inDocker: boolean): string {
-  if (env.HABBLAUD_REMOTE_TLS_DIR?.trim()) return env.HABBLAUD_REMOTE_TLS_DIR.trim();
-  return inDocker ? '/remote-tls' : join(env.HOME || homedir(), '.habblaud', 'remote-tls', 'server');
+  if (env.AGENTFORGE_REMOTE_TLS_DIR?.trim()) return env.AGENTFORGE_REMOTE_TLS_DIR.trim();
+  return inDocker ? '/remote-tls' : join(env.HOME || homedir(), '.agentforge', 'remote-tls', 'server');
 }
 
 /** Liga o acesso remoto a partir do ambiente. `warning` explica por que ficou desligado quando parece intencional. */
@@ -73,24 +73,24 @@ export function parseRemoteConfig(
   inDocker: boolean,
   exists: (path: string) => boolean = existsSync,
 ): { config?: RemoteConfig; warning?: string } {
-  const user = env.HABBLAUD_REMOTE_USER?.trim() ?? '';
-  const hashText = env.HABBLAUD_REMOTE_PASSWORD_HASH?.trim() ?? '';
-  const plain = env.HABBLAUD_REMOTE_PASSWORD ?? '';
+  const user = env.AGENTFORGE_REMOTE_USER?.trim() ?? '';
+  const hashText = env.AGENTFORGE_REMOTE_PASSWORD_HASH?.trim() ?? '';
+  const plain = env.AGENTFORGE_REMOTE_PASSWORD ?? '';
   if (!user && !hashText && !plain) return {};
-  if (plain && !hashText) return { warning: tr('acesso remoto desligado: senha em texto puro (HABBLAUD_REMOTE_PASSWORD) não é aceita; rode npm run remote:setup') };
-  if (!user || !hashText) return { warning: tr('acesso remoto desligado: faltam HABBLAUD_REMOTE_USER e HABBLAUD_REMOTE_PASSWORD_HASH; rode npm run remote:setup') };
+  if (plain && !hashText) return { warning: tr('acesso remoto desligado: senha em texto puro (AGENTFORGE_REMOTE_PASSWORD) não é aceita; rode npm run remote:setup') };
+  if (!user || !hashText) return { warning: tr('acesso remoto desligado: faltam AGENTFORGE_REMOTE_USER e AGENTFORGE_REMOTE_PASSWORD_HASH; rode npm run remote:setup') };
   const passwordHash = parsePasswordHash(hashText);
-  if (!passwordHash) return { warning: tr('acesso remoto desligado: HABBLAUD_REMOTE_PASSWORD_HASH inválido; rode npm run remote:setup') };
+  if (!passwordHash) return { warning: tr('acesso remoto desligado: AGENTFORGE_REMOTE_PASSWORD_HASH inválido; rode npm run remote:setup') };
   const dir = defaultTlsDir(env, inDocker);
   const tls: RemoteTls = { dir, keyFile: join(dir, 'server.key'), certFile: join(dir, 'server.crt'), caFile: join(dir, 'ca.crt') };
   const hasTls = exists(tls.keyFile) && exists(tls.certFile);
-  const insecure = truthy(env.HABBLAUD_REMOTE_INSECURE_HTTP);
+  const insecure = truthy(env.AGENTFORGE_REMOTE_INSECURE_HTTP);
   if (!hasTls && !insecure) return { warning: tr('acesso remoto desligado: sem certificado em {0} (HTTPS é obrigatório); rode npm run remote:setup', [dir]) };
-  const rawPort = Number.parseInt(env.HABBLAUD_REMOTE_PORT ?? '', 10);
+  const rawPort = Number.parseInt(env.AGENTFORGE_REMOTE_PORT ?? '', 10);
   const port = inDocker ? DEFAULT_REMOTE_PORT : Number.isInteger(rawPort) && rawPort > 0 && rawPort < 65536 ? rawPort : DEFAULT_REMOTE_PORT;
-  const host = inDocker ? '0.0.0.0' : env.HABBLAUD_REMOTE_HOST?.trim() || '0.0.0.0';
+  const host = inDocker ? '0.0.0.0' : env.AGENTFORGE_REMOTE_HOST?.trim() || '0.0.0.0';
   return {
-    config: { port, host, user, passwordHash, passwordHashText: hashText, allow: parseAllow(env.HABBLAUD_REMOTE_ALLOW), tls: hasTls ? tls : undefined },
+    config: { port, host, user, passwordHash, passwordHashText: hashText, allow: parseAllow(env.AGENTFORGE_REMOTE_ALLOW), tls: hasTls ? tls : undefined },
   };
 }
 
@@ -301,7 +301,7 @@ function esc(text: string): string {
 
 export function loginPage(opts: { caDownload: boolean }): string {
   const ca = opts.caDownload
-    ? `<p class="ca">${esc(tr('Primeira vez neste celular?'))} <a href="${CA_PATH}" download="habblaud-ca.crt">${esc(tr('Instale o certificado do Habblaud'))}</a> ${esc(tr('para tirar o aviso de segurança (confira a impressão digital que o npm run remote:setup mostrou).'))}</p>`
+    ? `<p class="ca">${esc(tr('Primeira vez neste celular?'))} <a href="${CA_PATH}" download="agentforge-ca.crt">${esc(tr('Instale o certificado do AgentForge'))}</a> ${esc(tr('para tirar o aviso de segurança (confira a impressão digital que o npm run remote:setup mostrou).'))}</p>`
     : '';
   // Dentro do <script>: JSON com "<" escapado, para nenhum texto fechar a tag.
   const js = (text: string) => JSON.stringify(text).replace(/</g, '\\u003c');
@@ -311,12 +311,12 @@ export function loginPage(opts: { caDownload: boolean }): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>${esc(tr('Habblaud · entrar'))}</title>
+<title>${esc(tr('AgentForge · entrar'))}</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Habblaud">
+<meta name="apple-mobile-web-app-title" content="AgentForge">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <style>
   :root { color-scheme: dark; }
@@ -340,7 +340,7 @@ export function loginPage(opts: { caDownload: boolean }): string {
 </head>
 <body>
 <form id="f" autocomplete="on">
-  <h1>Habblaud</h1>
+  <h1>AgentForge</h1>
   <p>${esc(tr('Acesso pelo celular. Entre com o usuário e a senha que você escolheu no npm run remote:setup.'))}</p>
   <label for="u">${esc(tr('Usuário'))}</label>
   <input id="u" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
@@ -361,7 +361,7 @@ export function loginPage(opts: { caDownload: boolean }): string {
       if (r.ok) { location.replace('/'); return; }
       const body = await r.json().catch(() => ({}));
       err.textContent = body.error || ${js(tr('Não deu para entrar.'))};
-    } catch { err.textContent = ${js(tr('Sem conexão com o Habblaud.'))}; }
+    } catch { err.textContent = ${js(tr('Sem conexão com o AgentForge.'))}; }
     b.disabled = false;
   });
 </script>
@@ -476,7 +476,7 @@ export function createRemoteGate(deps: RemoteGateDeps): (req: IncomingMessage, r
         const pem = readFileSync(deps.caFile!);
         res.writeHead(200, {
           'Content-Type': 'application/x-x509-ca-cert',
-          'Content-Disposition': 'attachment; filename="habblaud-ca.crt"',
+          'Content-Disposition': 'attachment; filename="agentforge-ca.crt"',
           'Content-Length': pem.length,
           'Cache-Control': 'no-store',
           'X-Content-Type-Options': 'nosniff',
@@ -507,7 +507,7 @@ export function createRemoteGate(deps: RemoteGateDeps): (req: IncomingMessage, r
 
     req.resume();
     if (path === '/api' || path.startsWith('/api/')) {
-      sendJson(res, 401, { error: tr('faça login: abra o Habblaud por esta porta no navegador e entre com usuário e senha') });
+      sendJson(res, 401, { error: tr('faça login: abra o AgentForge por esta porta no navegador e entre com usuário e senha') });
     } else {
       res.writeHead(302, { Location: '/login', 'Cache-Control': 'no-store' });
       res.end();

@@ -1,4 +1,4 @@
-// Versão do Habblaud: o número na barra superior, o selo "Nova versão" quando o GitHub tem uma release mais
+// Versão do AgentForge: o número na barra superior, o selo "Nova versão" quando o GitHub tem uma release mais
 // nova (quem consulta é o servidor, server/updates/checker.ts), o aviso único por versão e a seção "Sobre"
 // das configurações (estado da verificação, "Verificar agora", novidades e como atualizar).
 import type { Notice, OfficeSnapshot, UpdateStatus } from '../../../shared/types';
@@ -10,7 +10,7 @@ import { safeLocalStorage } from './prefs';
 import { tr } from '../../../shared/i18n';
 
 /** Última versão nova já avisada neste navegador (o aviso sai uma vez por versão). */
-export const UPDATE_SEEN_KEY = 'habblaud:update-seen';
+export const UPDATE_SEEN_KEY = 'agentforge:update-seen';
 
 export const VERSION_ICONS = {
   up: pixelIcon(['...##...', '..####..', '.######.', '########', '..####..', '..####..', '..####..', '..####..']),
@@ -33,13 +33,13 @@ export type UpdateTone = 'new' | 'ok' | 'pending' | 'warn' | 'off';
 /** Linha de estado da seção "Sobre". */
 export function updateStatusLine(version: string, s: UpdateStatus | undefined, now: number): { tone: UpdateTone; text: string } {
   if (!s) return { tone: 'off', text: tr('Este servidor não verifica versões novas.') };
-  const checked = s.checkedAt ? ` · verificado ${relativeTime(s.checkedAt, now)}` : '';
+  const checked = s.checkedAt ? ` · ${tr('verificado {0}', [relativeTime(s.checkedAt, now)])}` : '';
   switch (s.state) {
     case 'off':
       return {
         tone: 'off',
         text: s.repo
-          ? tr('Verificação de versão nova desligada (HABBLAUD_UPDATE_CHECK=0).')
+          ? tr('Verificação de versão nova desligada (AGENTFORGE_UPDATE_CHECK=0).')
           : tr('Verificação de versão nova desligada: o package.json não aponta um repositório no GitHub.'),
       };
     case 'pending':
@@ -57,8 +57,8 @@ export function updateStatusLine(version: string, s: UpdateStatus | undefined, n
 
 /** Dica do número de versão na barra superior. */
 export function versionChipTitle(version: string, s: UpdateStatus | undefined, now: number): string {
-  if (s?.available && s.latest) return tr('Nova versão do Habblaud: v{0} (você usa a v{1}). Clique para ver as novidades e como atualizar.', [s.latest, version]);
-  return tr('Habblaud v{0}. {1} Clique para ver detalhes.', [version, updateStatusLine(version, s, now).text]);
+  if (s?.available && s.latest) return tr('Nova versão do AgentForge: v{0} (você usa a v{1}). Clique para ver as novidades e como atualizar.', [s.latest, version]);
+  return tr('AgentForge v{0}. {1} Clique para ver detalhes.', [version, updateStatusLine(version, s, now).text]);
 }
 
 /** Número da versão na barra superior; vira o selo "Nova versão" quando há release mais nova. */
@@ -114,7 +114,7 @@ export class UpdateToaster implements UiComponent {
     } catch {
       // Sem armazenamento: avisa uma vez por página aberta.
     }
-    this.push({ id: `update:${s.latest}`, level: 'success', text: tr('Nova versão do Habblaud: v{0}. Veja as novidades e como atualizar em Configurações › Sobre.', [s.latest]), at: this.ctx.now() });
+    this.push({ id: `update:${s.latest}`, level: 'success', text: tr('Nova versão do AgentForge: v{0}. Veja as novidades e como atualizar em Configurações › Sobre.', [s.latest]), at: this.ctx.now() });
   }
 }
 
@@ -142,7 +142,7 @@ export class AboutGroup {
       h(
         'p',
         { class: 'ui-set__hint' },
-        tr('Para atualizar, na pasta do Habblaud: '),
+        tr('Para atualizar, na pasta do AgentForge: '),
         h('code', { class: 'ui-usage-setup__cmd', text: 'git pull' }),
         tr(' e de novo '),
         h('code', { class: 'ui-usage-setup__cmd', text: 'npm run docker:up' }),
@@ -156,7 +156,7 @@ export class AboutGroup {
       'div',
       { class: 'ui-set-group ui-about', attrs: { id: 'ui-about' } },
       h('h3', { text: tr('Sobre'), tabIndex: -1 }),
-      h('div', { class: 'ui-about__head' }, h('span', { class: 'ui-about__name' }, 'Habblaud ', this.name), this.checkBtn),
+      h('div', { class: 'ui-about__head' }, h('span', { class: 'ui-about__name' }, 'AgentForge ', this.name), this.checkBtn),
       this.status,
       this.fresh,
       this.repo,
@@ -202,9 +202,9 @@ export class AboutGroup {
     this.failure = undefined;
     this.render();
     try {
-      if (!(await this.ctx.store.checkUpdates())) this.failure = tr('Não deu para falar com o servidor do Habblaud.');
+      if (!(await this.ctx.store.checkUpdates())) this.failure = tr('Não deu para falar com o servidor do AgentForge.');
     } catch {
-      this.failure = tr('Não deu para falar com o servidor do Habblaud.');
+      this.failure = tr('Não deu para falar com o servidor do AgentForge.');
     } finally {
       this.checking = false;
       this.render();

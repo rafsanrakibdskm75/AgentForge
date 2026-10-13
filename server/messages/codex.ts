@@ -1,7 +1,7 @@
 // Mensagens pelo escritório para as sessões do Codex: `codex queue --thread <threadId> --message <texto>` põe a
 // mensagem na fila do thread (ela entra quando a sessão fica ociosa; o dono do thread consulta a fila a cada ~10 s; o
 // turno que ela abre traz turn_trigger "queue"). O comando precisa rodar no Mac (host), com o CODEX_HOME da conta:
-// - modo Node: o próprio servidor roda o comando (binário HABBLAUD_CODEX_BIN ou `codex` do PATH);
+// - modo Node: o próprio servidor roda o comando (binário AGENTFORGE_CODEX_BIN ou `codex` do PATH);
 // - Docker: o auxiliar do host (scripts/codex-bridge.ts, npm run codex:bridge) busca as mensagens em
 //   POST /api/codex/bridge/poll, roda o mesmo comando e confirma em POST /api/codex/bridge/ack.
 // Sem shell (execFile), com prazo, e nunca com -c, --enable, --disable nem --no-daemon (mudariam a configuração ou o
@@ -16,7 +16,7 @@ import { tr } from '../../shared/i18n';
 
 /** Prazo de um `codex queue`. */
 export const QUEUE_TIMEOUT_MS = 20_000;
-/** Id de thread do Codex (UUID; `codex queue --thread` também aceitaria nomes, mas o Habblaud só manda ids). */
+/** Id de thread do Codex (UUID; `codex queue --thread` também aceitaria nomes, mas o AgentForge só manda ids). */
 export const THREAD_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ERROR_MAX = 300;
 
@@ -47,9 +47,9 @@ function canExecute(p: string): boolean {
  */
 export const CODEX_BIN_NAME = process.platform === 'win32' ? 'codex.exe' : 'codex';
 
-/** Binário do Codex: HABBLAUD_CODEX_BIN (caminho de um executável) ou `codex` no PATH. undefined = não achou. */
+/** Binário do Codex: AGENTFORGE_CODEX_BIN (caminho de um executável) ou `codex` no PATH. undefined = não achou. */
 export function findCodexBin(env: NodeJS.ProcessEnv, isExecutable: (p: string) => boolean = canExecute): string | undefined {
-  const explicit = env.HABBLAUD_CODEX_BIN?.trim();
+  const explicit = env.AGENTFORGE_CODEX_BIN?.trim();
   if (explicit) return isExecutable(explicit) ? explicit : undefined;
   for (const dir of (env.PATH ?? '').split(delimiter)) {
     if (!dir || !isAbsolute(dir)) continue;

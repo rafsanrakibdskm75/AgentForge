@@ -53,9 +53,9 @@ describe('statusline-tap.mjs', { timeout: 20_000 }, () => {
   beforeEach(() => {
     tmp = tempDir();
     usageDir = join(tmp.dir, 'usage');
-    // HOME falso e pasta de uso explícita: o teste nunca toca em ~/.habblaud nem em ~/.claude*.
+    // HOME falso e pasta de uso explícita: o teste nunca toca em ~/.agentforge nem em ~/.claude*.
     // CLAUDE_CODE_GIT_BASH_PATH: o mesmo Git Bash de SH também para o comando original (Windows).
-    env = { PATH: process.env.PATH, HOME: join(tmp.dir, 'home'), HABBLAUD_USAGE_DIR: usageDir, CLAUDE_CODE_GIT_BASH_PATH: process.env.CLAUDE_CODE_GIT_BASH_PATH };
+    env = { PATH: process.env.PATH, HOME: join(tmp.dir, 'home'), AGENTFORGE_USAGE_DIR: usageDir, CLAUDE_CODE_GIT_BASH_PATH: process.env.CLAUDE_CODE_GIT_BASH_PATH };
   });
   afterEach(() => tmp.cleanup());
 
@@ -111,9 +111,9 @@ describe('statusline-tap.mjs', { timeout: 20_000 }, () => {
     expect(tap(['--', 'cat'], noLimits).stdout).toBe(noLimits);
     expect(tap(['--', 'cat'], 'isto não é json').stdout).toBe('isto não é json');
     expect(existsSync(usageDir)).toBe(false);
-    // HABBLAUD_USAGE_DIR aponta para um arquivo: a gravação falha em silêncio.
+    // AGENTFORGE_USAGE_DIR aponta para um arquivo: a gravação falha em silêncio.
     writeFileSync(join(tmp.dir, 'arquivo'), 'x');
-    const r = tap(['--', 'echo', 'ok'], statusJson(), { HABBLAUD_USAGE_DIR: join(tmp.dir, 'arquivo') });
+    const r = tap(['--', 'echo', 'ok'], statusJson(), { AGENTFORGE_USAGE_DIR: join(tmp.dir, 'arquivo') });
     expect(r.status).toBe(0);
     expect(r.stdout).toBe('ok\n');
     expect(r.stderr).toBe('');
@@ -170,11 +170,11 @@ describe('statusline-install.ts (funções puras)', () => {
     expect(tildify(resolve('/x/y'), home)).toBe(resolve('/x/y'));
   });
 
-  const tapPath = '/repo/habblaud/scripts/statusline-tap.mjs';
+  const tapPath = '/repo/agentforge/scripts/statusline-tap.mjs';
 
   it('envolve e desembrulha preservando o comando original', () => {
-    expect(wrapCommand('node', tapPath, 'npx -y ccstatusline')).toBe('node "/repo/habblaud/scripts/statusline-tap.mjs" -- npx -y ccstatusline');
-    expect(wrapCommand('node', tapPath)).toBe('node "/repo/habblaud/scripts/statusline-tap.mjs"');
+    expect(wrapCommand('node', tapPath, 'npx -y ccstatusline')).toBe('node "/repo/agentforge/scripts/statusline-tap.mjs" -- npx -y ccstatusline');
+    expect(wrapCommand('node', tapPath)).toBe('node "/repo/agentforge/scripts/statusline-tap.mjs"');
     for (const original of ['npx -y ccstatusline', `bash -c 'echo "oi" | head -1'`, '~/.claude/statusline.sh 2>/dev/null', `echo 'it'"'"'s'`]) {
       const wrapped = wrapCommand('/opt/homebrew/bin/node', tapPath, original);
       expect(unwrapCommand(wrapped)).toEqual({ tapPath, original });
@@ -235,7 +235,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
   const exec = (command: RunOptions['command'], extra: Partial<RunOptions> = {}) =>
     run(
       { command, dryRun: false, nodeCmd: process.execPath, ...extra },
-      { env: { HOME: home, HABBLAUD_USAGE_DIR: join(tmp.dir, 'usage') }, home, now: new Date(2026, 9, 6, 14, 5, 9), tapPath: TAP_SCRIPT, out: (l) => out.push(l) },
+      { env: { HOME: home, AGENTFORGE_USAGE_DIR: join(tmp.dir, 'usage') }, home, now: new Date(2026, 9, 6, 14, 5, 9), tapPath: TAP_SCRIPT, out: (l) => out.push(l) },
     );
   const read = (acc: string) => JSON.parse(readFileSync(join(home, acc, 'settings.json'), 'utf8'));
 
@@ -246,7 +246,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     expect(c.env).toEqual({ FOO: '1' });
     expect(c.statusLine).toEqual({ type: 'command', command: wrapCommand(process.execPath, TAP_SCRIPT, 'npx -y ccstatusline'), padding: 0 });
     if (HAS_POSIX_MODES) expect(statSync(join(home, '.claude', 'settings.json')).mode & 0o777).toBe(0o644);
-    const backup = join(home, '.claude', 'settings.json.habblaud-backup-20261006-140509');
+    const backup = join(home, '.claude', 'settings.json.agentforge-backup-20261006-140509');
     expect(JSON.parse(readFileSync(backup, 'utf8'))).toEqual(original);
     // Conta sem settings.json: cria um só com o statusline do tap (sem backup, não havia nada).
     expect(read('.claude-conta2')).toEqual({ statusLine: { type: 'command', command: wrapCommand(process.execPath, TAP_SCRIPT) } });
@@ -254,7 +254,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
 
     out = [];
     expect(exec('install')).toBe(0);
-    expect(out.join('\n')).toContain('já instalado');
+    expect(out.join('\n')).toContain('already installed');
     expect(readdirSync(join(home, '.claude')).filter((f) => f.includes('backup'))).toHaveLength(1);
   });
 
@@ -263,7 +263,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     const cmd: string = read('.claude').statusLine.command.replace('npx -y ccstatusline', 'cat');
     const usageDir = join(tmp.dir, 'usage');
     const input = statusJson({ transcript_path: join(home, '.claude', 'projects', '-p', 's.jsonl') });
-    const r = spawnSync(SH!, ['-c', cmd], { input, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: home, HABBLAUD_USAGE_DIR: usageDir } });
+    const r = spawnSync(SH!, ['-c', cmd], { input, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: home, AGENTFORGE_USAGE_DIR: usageDir } });
     expect(r.stdout).toBe(input);
     expect(JSON.parse(readFileSync(join(usageDir, '.claude.json'), 'utf8')).five_hour.utilization).toBe(42.5);
   });
@@ -272,33 +272,33 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     exec('install');
     out = [];
     exec('status');
-    expect(out.join('\n')).toMatch(/\.claude \(.*\): instalado \(na frente de: npx -y ccstatusline\); nenhum uso capturado ainda/);
+    expect(out.join('\n')).toMatch(/\.claude \(.*\): installed \(in front of: npx -y ccstatusline\); no usage captured yet/);
     expect(exec('uninstall')).toBe(0);
     expect(read('.claude')).toEqual(original);
     expect(read('.claude-conta2')).toEqual({});
     out = [];
     exec('uninstall');
-    expect(out.join('\n')).toContain('não estava instalado');
+    expect(out.join('\n')).toContain('wasn\'t installed');
   });
 
-  it('nome antigo: o install leva ~/.codetown para ~/.habblaud (mesmo com HABBLAUD_USAGE_DIR em outro lugar); status e uninstall não', () => {
+  it('nome antigo: o install leva ~/.codetown para ~/.agentforge (mesmo com AGENTFORGE_USAGE_DIR em outro lugar); status e uninstall não', () => {
     mkdirSync(join(home, '.codetown', 'usage'), { recursive: true });
     writeFileSync(join(home, '.codetown', 'usage', '.claude.json'), '{"fetchedAt":1}');
     exec('status');
     exec('uninstall');
     exec('install', { dryRun: true });
     expect(existsSync(join(home, '.codetown', 'usage', '.claude.json'))).toBe(true);
-    expect(out.filter((l) => l.includes('nome antigo'))).toEqual(['~ ~/.codetown (nome antigo) vai para ~/.habblaud (simulação: nada movido)']);
+    expect(out.filter((l) => l.includes('old name'))).toEqual(['~ ~/.codetown (old name) goes to ~/.agentforge (dry run: nothing moved)']);
     out = [];
     expect(exec('install')).toBe(0);
-    expect(out[0]).toBe('✓ ~/.codetown (nome antigo) agora é ~/.habblaud.');
+    expect(out[0]).toBe('✓ ~/.codetown (old name) is now ~/.agentforge.');
     expect(existsSync(join(home, '.codetown'))).toBe(false);
-    expect(readFileSync(join(home, '.habblaud', 'usage', '.claude.json'), 'utf8')).toBe('{"fetchedAt":1}');
+    expect(readFileSync(join(home, '.agentforge', 'usage', '.claude.json'), 'utf8')).toBe('{"fetchedAt":1}');
     expect(read('.claude').statusLine.command).toBe(wrapCommand(process.execPath, TAP_SCRIPT, 'npx -y ccstatusline'));
     // Já migrado: nada a dizer.
     out = [];
     exec('install');
-    expect(out.join('\n')).not.toContain('nome antigo');
+    expect(out.join('\n')).not.toContain('old name');
   });
 
   // No Windows o chmod não tira a escrita de uma pasta: o rename passaria.
@@ -311,7 +311,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     } finally {
       chmodSync(home, 0o755);
     }
-    expect(out[0]).toMatch(/^! não consegui levar ~\/\.codetown para ~\/\.habblaud \(.+\); mova a pasta à mão\.$/);
+    expect(out[0]).toMatch(/^! couldn't move ~\/\.codetown to ~\/\.agentforge \(.+\); move the folder by hand\.$/);
     expect(existsSync(join(home, '.codetown', 'usage'))).toBe(true);
     expect(read('.claude').statusLine.command).toContain('statusline-tap.mjs');
   });
@@ -324,7 +324,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     writeFileSync(join(home, '.claude-conta2', 'settings.json'), '{ quebrado');
     expect(exec('install')).toBe(1);
     expect(readFileSync(join(home, '.claude-conta2', 'settings.json'), 'utf8')).toBe('{ quebrado');
-    expect(out.join('\n')).toContain('JSON inválido');
+    expect(out.join('\n')).toContain('invalid JSON');
   });
 
   it('writeSettings: sem corrida, grava e o backup é o conteúdo que o rename substituiu', () => {
@@ -332,7 +332,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     const raw = readFileSync(file, 'utf8');
     const next = { ...original, statusLine: { type: 'command', command: 'tap' } };
     const backup = writeSettings(file, next, raw, new Date(2026, 9, 6, 14, 5, 9));
-    expect(backup).toBe(`${file}.habblaud-backup-20261006-140509`);
+    expect(backup).toBe(`${file}.agentforge-backup-20261006-140509`);
     expect(readFileSync(backup!, 'utf8')).toBe(raw);
     expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual(next);
     if (HAS_POSIX_MODES) expect(statSync(file).mode & 0o777).toBe(0o644);
@@ -352,7 +352,7 @@ describe('statusline-install.ts (arquivos, HOME falso)', () => {
     }
     // A chave gravada no meio fica no arquivo: a instalação aborta e não deixa backup nem temporário.
     expect(readFileSync(file, 'utf8')).toBe(concurrent);
-    expect(message).toMatch(/rode o comando de novo/);
-    expect(readdirSync(join(home, '.claude')).filter((f) => f.includes('habblaud-backup') || f.includes('habblaud-tmp'))).toEqual([]);
+    expect(message).toMatch(/run the command again/);
+    expect(readdirSync(join(home, '.claude')).filter((f) => f.includes('agentforge-backup') || f.includes('agentforge-tmp'))).toEqual([]);
   });
 });

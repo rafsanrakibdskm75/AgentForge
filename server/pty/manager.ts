@@ -1,4 +1,4 @@
-// Terminal interativo: o Habblaud abre o Claude Code num pseudo-terminal (node-pty) e o navegador mostra e
+// Terminal interativo: o AgentForge abre o Claude Code num pseudo-terminal (node-pty) e o navegador mostra e
 // controla esse terminal (xterm.js). Saída via SSE em GET /api/pty/:id/stream; entrada, redimensionamento e
 // encerramento via POST (rotas em http/pty.ts).
 //
@@ -7,7 +7,7 @@
 // ou noutro terminal (só processos que o registro de sessões do Claude Code confirma como sessão e cujo início
 // e executável batem com o registro: pty/procinfo.ts).
 //
-// Segurança: quem controla um terminal destes executa comandos na máquina. O recurso é opt-in (HABBLAUD_PTY=1),
+// Segurança: quem controla um terminal destes executa comandos na máquina. O recurso é opt-in (AGENTFORGE_PTY=1),
 // as rotas só aceitam conexões do próprio computador (ver http/pty.ts) e ele fica desligado no Docker.
 import { chmodSync, readFileSync, statSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -107,7 +107,7 @@ const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 const MAIN_ID = /^(.+):(\d+)$/;
 
 /**
- * Variáveis que o Claude Code põe no ambiente das próprias ferramentas. Se o Habblaud foi iniciado de dentro
+ * Variáveis que o Claude Code põe no ambiente das próprias ferramentas. Se o AgentForge foi iniciado de dentro
  * de uma sessão, o Claude aberto aqui se acharia uma sessão-filha (e desligaria o transcript).
  */
 const INHERITED_SESSION_VARS = [
@@ -374,7 +374,7 @@ export class PtyManager {
     if (!this.opts.spawn) throw new PtyError(503, tr('terminal desligado: {0}', [this.opts.disabledReason ?? tr('indisponível')]));
     // Antes de tudo (o "assumir" encerra a sessão de lá depois daqui): um claude que não roda abriria um terminal que
     // sai na hora.
-    if (!isExecutableFile(this.opts.claudeBin)) throw new PtyError(503, tr('o executável do Claude Code não roda: {0} (confira o HABBLAUD_CLAUDE_BIN)', [this.opts.claudeBin]));
+    if (!isExecutableFile(this.opts.claudeBin)) throw new PtyError(503, tr('o executável do Claude Code não roda: {0} (confira o AGENTFORGE_CLAUDE_BIN)', [this.opts.claudeBin]));
     if (typeof p.cwd !== 'string' || !isAbsolute(p.cwd)) throw new PtyError(400, tr('informe a pasta do projeto (caminho absoluto)'));
     const cwd = resolve(p.cwd);
     let isDir = false;
@@ -443,7 +443,7 @@ export class PtyManager {
   }
 
   /**
-   * Agente principal aberto fora do Habblaud, confirmado pelo registro de sessões da conta (mesma sessão) e pelo
+   * Agente principal aberto fora do AgentForge, confirmado pelo registro de sessões da conta (mesma sessão) e pelo
    * sistema (o processo com esse PID começou quando o registro diz e é o Claude Code).
    */
   private async external(agentId: string): Promise<ExternalProc> {

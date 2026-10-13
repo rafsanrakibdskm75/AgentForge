@@ -1,7 +1,7 @@
 // Responder pelo escritório: cartão do pedido de permissão na gaveta do agente (Aprovar, Recusar com
 // motivo, "sempre permitir" e Responder no terminal) ou das perguntas do AskUserQuestion (opções, "Outro" e
 // Responder), e os atalhos que levam até ele (aviso, contador da barra superior e tecla P). O pedido chega
-// pelo hook PermissionRequest (mod/habblaud-permissoes/hooks/permission-hook.mjs); o diálogo continua no
+// pelo hook PermissionRequest (mod/agentforge-permissoes/hooks/permission-hook.mjs); o diálogo continua no
 // terminal e vale o que for respondido primeiro.
 // Pedido do Codex (`provider: 'codex'`): o hook dele só espera alguns segundos e o terminal só mostra a aprovação
 // depois que você responder aqui ou o prazo acabar; não há "sempre permitir" nem "interromper", e recusar pede um
@@ -17,7 +17,7 @@ import { diffLineKind, moreLabel, previewText, showToolInput, splitToolTitle } f
 import { tr } from '../../../shared/i18n';
 
 /** Evento (em ctx.root) que pede para o cartão de um agente aparecer: rolar até ele e receber o foco. */
-export const PERMISSION_FOCUS_EVENT = 'habblaud:permission-focus';
+export const PERMISSION_FOCUS_EVENT = 'agentforge:permission-focus';
 const PREVIEW_LINES = 12;
 const MESSAGE_MAX = 1_000;
 
@@ -232,7 +232,7 @@ export class PermissionCard {
     this.preview = h('div', { class: 'ui-perm__preview' });
     this.note = h('p', { class: 'ui-perm__note', hidden: true });
     this.queue = h('p', { class: 'ui-perm__queue', hidden: true });
-    this.remote = h('p', { class: 'ui-perm__note', hidden: true, text: tr('Para responder por aqui, abra o Habblaud por http://localhost (ou 127.0.0.1). Por enquanto, responda no terminal.') });
+    this.remote = h('p', { class: 'ui-perm__note', hidden: true, text: tr('Para responder por aqui, abra o AgentForge por http://localhost (ou 127.0.0.1). Por enquanto, responda no terminal.') });
 
     this.approveBtn = h('button', { class: 'ui-btn ui-perm__btn ui-perm__btn--allow', type: 'button', on: { click: () => this.send({ behavior: 'allow' }) } }, tr('✓ Aprovar'));
     this.answerBtn = h('button', { class: 'ui-btn ui-perm__btn ui-perm__btn--allow', type: 'button', hidden: true, on: { click: () => this.sendAnswer() } }, tr('✓ Responder'));
@@ -245,7 +245,7 @@ export class PermissionCard {
     this.denyBtn = h('button', { class: 'ui-btn ui-perm__btn ui-perm__btn--deny', type: 'button', attrs: { 'aria-expanded': 'false' }, on: { click: () => this.toggleDeny() } }, tr('✕ Recusar…'));
     this.terminalBtn = h(
       'button',
-      { class: 'ui-btn ui-perm__btn', type: 'button', title: tr('O Habblaud deixa este pedido de lado: vale o que você responder no terminal'), on: { click: () => this.send({ behavior: 'terminal' }) } },
+      { class: 'ui-btn ui-perm__btn', type: 'button', title: tr('O AgentForge deixa este pedido de lado: vale o que você responder no terminal'), on: { click: () => this.send({ behavior: 'terminal' }) } },
       tr('Responder no terminal'),
     );
 
@@ -343,7 +343,7 @@ export class PermissionCard {
       this.timer,
       codex
         ? tr('Pedido feito às {0}. Sem resposta aqui até {1}, o Codex segue sem a decisão do escritório e pede a aprovação no terminal.', [formatClock(p.createdAt), formatClock(p.expiresAt)])
-        : tr('Pedido feito às {0}. Sem resposta aqui até {1}, o Habblaud devolve o pedido ao terminal.', [formatClock(p.createdAt), formatClock(p.expiresAt)]),
+        : tr('Pedido feito às {0}. Sem resposta aqui até {1}, o AgentForge devolve o pedido ao terminal.', [formatClock(p.createdAt), formatClock(p.expiresAt)]),
     );
 
     // Pergunta: o formulário com as opções no lugar do título da ferramenta e da prévia dos argumentos.
@@ -382,7 +382,7 @@ export class PermissionCard {
     setTitle(this.denyBtn, ask ? tr('Não responder: o agente segue sem a resposta (com o motivo, se você escrever um)') : codex ? tr('Recusar com um motivo (o Codex pede um)') : '');
     setTitle(
       this.terminalBtn,
-      codex ? tr('O Habblaud solta o pedido agora: o Codex mostra a aprovação no terminal') : tr('O Habblaud deixa este pedido de lado: vale o que você responder no terminal'),
+      codex ? tr('O AgentForge solta o pedido agora: o Codex mostra a aprovação no terminal') : tr('O AgentForge deixa este pedido de lado: vale o que você responder no terminal'),
     );
     this.suggestions.sync(opts.always ? (p.suggestions ?? []) : []);
     for (const b of this.suggestions.container.querySelectorAll('button')) b.disabled = busy;
@@ -465,7 +465,7 @@ export class PermissionCard {
     try {
       error = await this.ctx.store.decidePermission(id, d);
     } catch {
-      error = tr('Não foi possível falar com o Habblaud. Responda no terminal.');
+      error = tr('Não foi possível falar com o AgentForge. Responda no terminal.');
     }
     if (this.id !== id) return;
     if (error) {

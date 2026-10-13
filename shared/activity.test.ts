@@ -14,18 +14,18 @@ import {
 
 describe('describeCommand', () => {
   it('só a primeira linha decide (heredoc não confunde)', () => {
-    expect(describeCommand("cat > /tmp/x/notas.md <<'EOF'\nrodar vitest depois\nEOF").text).toBe('Escrevendo notas.md');
-    expect(describeCommand("cat <<'EOF' > server/README.md\n# x\nEOF").text).toBe('Escrevendo README.md');
-    expect(describeCommand("python3 - <<'EOF'\nimport os\nEOF").text).toBe('Executando um script Python');
-    expect(describeCommand("node -e 'console.log(1)'").text).toBe('Executando um script Node');
+    expect(describeCommand("cat > /tmp/x/notas.md <<'EOF'\nrodar vitest depois\nEOF").text).toBe('Writing notas.md');
+    expect(describeCommand("cat <<'EOF' > server/README.md\n# x\nEOF").text).toBe('Writing README.md');
+    expect(describeCommand("python3 - <<'EOF'\nimport os\nEOF").text).toBe('Running a Python script');
+    expect(describeCommand("node -e 'console.log(1)'").text).toBe('Running a Node script');
   });
 
   it('comandos comuns', () => {
-    expect(describeCommand('npx vitest run server').text).toBe('Rodando testes');
-    expect(describeCommand('cd /x && git commit -m "feat"').text).toBe('Fazendo commit');
-    expect(describeCommand('node scripts/shot.mjs http://x out.png').text).toBe('Executando shot.mjs');
-    expect(describeCommand('tail -n 20 server.log').text).toBe('Lendo server.log');
-    expect(describeCommand('tee -a log.txt').text).toBe('Escrevendo log.txt');
+    expect(describeCommand('npx vitest run server').text).toBe('Running tests');
+    expect(describeCommand('cd /x && git commit -m "feat"').text).toBe('Committing');
+    expect(describeCommand('node scripts/shot.mjs http://x out.png').text).toBe('Running shot.mjs');
+    expect(describeCommand('tail -n 20 server.log').text).toBe('Reading server.log');
+    expect(describeCommand('tee -a log.txt').text).toBe('Writing log.txt');
   });
 });
 
@@ -33,55 +33,55 @@ describe('describeCommand em português (casos reais que caíam no inglês)', ()
   const t = (cmd: string, desc?: string) => describeCommand(cmd, desc).text;
 
   it('primeira linha com comando de verdade; prefixos e atribuições não contam', () => {
-    expect(t('S=/tmp/x\nnode scripts/shot.mjs x $S/a.png', 'Screenshot real-data UI on port 4763')).toBe('Executando shot.mjs');
-    expect(t('HABBLAUD_PORT=1 nohup npx tsx server/index.ts --dev > /tmp/s.log 2>&1 &', 'Start real-data server')).toBe('Executando index.ts');
-    expect(t('set -e\nexport A=1\n# comentário\nnpm test')).toBe('Rodando testes');
-    expect(t('sleep 5 && curl -s localhost:4771/')).toBe('Testando o servidor local (:4771/)');
-    expect(t('(cd client && npm test)')).toBe('Rodando testes');
-    expect(t('bash -c "npm run build"')).toBe('Compilando o projeto');
+    expect(t('S=/tmp/x\nnode scripts/shot.mjs x $S/a.png', 'Screenshot real-data UI on port 4763')).toBe('Running shot.mjs');
+    expect(t('AGENTFORGE_PORT=1 nohup npx tsx server/index.ts --dev > /tmp/s.log 2>&1 &', 'Start real-data server')).toBe('Running index.ts');
+    expect(t('set -e\nexport A=1\n# comentário\nnpm test')).toBe('Running tests');
+    expect(t('sleep 5 && curl -s localhost:4771/')).toBe('Testing the local server (:4771/)');
+    expect(t('(cd client && npm test)')).toBe('Running tests');
+    expect(t('bash -c "npm run build"')).toBe('Building the project');
     // Substituição de comando é parte da atribuição, não um comando.
-    expect(t('S=/tmp/x; NOW=$(date +%s); echo "{\\"a\\":$((NOW+1))}" | HOME=$S node scripts/statusline-tap.mjs; ls $S')).toBe('Executando statusline-tap.mjs');
+    expect(t('S=/tmp/x; NOW=$(date +%s); echo "{\\"a\\":$((NOW+1))}" | HOME=$S node scripts/statusline-tap.mjs; ls $S')).toBe('Running statusline-tap.mjs');
   });
 
   it('leitores cortados no primeiro |, ; ou &&', () => {
-    expect(t('sed -n 1,80p rug.ts', 'Read art rug implementation')).toBe('Lendo rug.ts');
-    expect(t("sed -n '140,700p' server/sources/transcript.ts")).toBe('Lendo transcript.ts');
-    expect(t('cat a.ts b.ts | head -700')).toBe('Lendo a.ts e b.ts');
-    expect(t('cat a.ts b.ts c.ts')).toBe('Lendo a.ts e mais 2');
-    expect(t('head -30 x.ts; ls | head')).toBe('Lendo x.ts');
-    expect(t("awk '{print $1}' data.csv")).toBe('Lendo data.csv');
-    expect(t('tail -f /tmp/server.log')).toBe('Acompanhando server.log');
-    expect(t('wc -l server/*.ts shared/*.ts scripts/*')).toBe('Contando linhas de 3 arquivos');
-    expect(t('echo "---"; tail -n 20 server.log')).toBe('Lendo server.log');
+    expect(t('sed -n 1,80p rug.ts', 'Read art rug implementation')).toBe('Reading rug.ts');
+    expect(t("sed -n '140,700p' server/sources/transcript.ts")).toBe('Reading transcript.ts');
+    expect(t('cat a.ts b.ts | head -700')).toBe('Reading a.ts and b.ts');
+    expect(t('cat a.ts b.ts c.ts')).toBe('Reading a.ts and 2 more');
+    expect(t('head -30 x.ts; ls | head')).toBe('Reading x.ts');
+    expect(t("awk '{print $1}' data.csv")).toBe('Reading data.csv');
+    expect(t('tail -f /tmp/server.log')).toBe('Following server.log');
+    expect(t('wc -l server/*.ts shared/*.ts scripts/*')).toBe('Counting lines in 3 files');
+    expect(t('echo "---"; tail -n 20 server.log')).toBe('Reading server.log');
   });
 
   it('processos, rede, busca e edição', () => {
-    expect(t('pkill -f "vite.*4771"', 'Stop preview')).toBe('Parando um processo');
-    expect(t('ps aux | grep vite')).toBe('Conferindo processos');
-    expect(t('lsof -i :4771')).toBe('Conferindo quem usa a porta 4771');
-    expect(t('curl -s localhost:4763/api/snapshot | jq .rev')).toBe('Testando a API local (:4763/api/snapshot)');
-    expect(t('curl http://127.0.0.1:4747/api/health')).toBe('Testando a API local (:4747/api/health)');
-    expect(t('curl -o out.png -sS https://www.example.com/x.png')).toBe('Chamando example.com');
-    expect(t('grep "a\\|b" file.ts')).toBe('Buscando “a | b”');
-    expect(t('sed -i "" "s/a/b/" src/x.ts')).toBe('Editando x.ts');
-    expect(t('echo "oi" > saida.txt')).toBe('Escrevendo saida.txt');
-    expect(t('npx tsc --noEmit -p server/tsconfig.json')).toBe('Conferindo os tipos (TypeScript)');
-    expect(t('VITE_PORT=4771 nohup npx vite --config vite.config.ts --strictPort > x.log 2>&1 &')).toBe('Subindo o servidor de dev');
-    expect(t('git -C /x status --short')).toBe('Conferindo o git status');
-    expect(t('npm run docker:up -- --no-build')).toBe('Rodando o script docker:up');
+    expect(t('pkill -f "vite.*4771"', 'Stop preview')).toBe('Stopping a process');
+    expect(t('ps aux | grep vite')).toBe('Checking processes');
+    expect(t('lsof -i :4771')).toBe("Checking who's using port 4771");
+    expect(t('curl -s localhost:4763/api/snapshot | jq .rev')).toBe('Testing the local API (:4763/api/snapshot)');
+    expect(t('curl http://127.0.0.1:4747/api/health')).toBe('Testing the local API (:4747/api/health)');
+    expect(t('curl -o out.png -sS https://www.example.com/x.png')).toBe('Calling example.com');
+    expect(t('grep "a\\|b" file.ts')).toBe('Searching for “a | b”');
+    expect(t('sed -i "" "s/a/b/" src/x.ts')).toBe('Editing x.ts');
+    expect(t('echo "oi" > saida.txt')).toBe('Writing saida.txt');
+    expect(t('npx tsc --noEmit -p server/tsconfig.json')).toBe('Checking types (TypeScript)');
+    expect(t('VITE_PORT=4771 nohup npx vite --config vite.config.ts --strictPort > x.log 2>&1 &')).toBe('Starting the dev server');
+    expect(t('git -C /x status --short')).toBe('Checking git status');
+    expect(t('npm run docker:up -- --no-build')).toBe('Running script docker:up');
   });
 
   it('laços: o corpo decide', () => {
-    expect(t('for f in a.ts b.ts; do wc -l $f; done')).toBe('Contando linhas');
-    expect(t('for f in *.ts\ndo\n  cat $f\ndone')).toBe('Lendo arquivo');
+    expect(t('for f in a.ts b.ts; do wc -l $f; done')).toBe('Counting lines');
+    expect(t('for f in *.ts\ndo\n  cat $f\ndone')).toBe('Reading a file');
   });
 
   it('description só vira texto em português; senão, texto genérico em PT-BR e description no detalhe', () => {
     expect(t('ffmpeg -i a.mp4 b.gif', 'Converte o vídeo para gif')).toBe('Converte o vídeo para gif');
     const en = describeCommand('ffmpeg -i a.mp4 b.gif', 'Convert video to gif');
-    expect(en.text).toBe('Rodando ffmpeg');
+    expect(en.text).toBe('Running ffmpeg');
     expect(en.detail).toBe('Convert video to gif — ffmpeg -i a.mp4 b.gif');
-    expect(t('$(weird) | x')).toBe('Rodando um comando no terminal');
+    expect(t('$(weird) | x')).toBe('Running a command in the terminal');
     expect(looksPortuguese('Count transcripts containing cost-state lines')).toBe(false);
     expect(looksPortuguese('Roda os testes do servidor')).toBe(true);
   });
@@ -90,7 +90,7 @@ describe('describeCommand em português (casos reais que caíam no inglês)', ()
 describe('segredos mascarados', () => {
   it('comandos com tokens, senhas e chaves', () => {
     const d = describeCommand('curl -sS -H "Authorization: Bearer FAKE_TOKEN_123" https://api.example.com/v1');
-    expect(d.text).toBe('Chamando api.example.com');
+    expect(d.text).toBe('Calling api.example.com');
     expect(d.detail).toBe('curl -sS -H "Authorization: ***" https://api.example.com/v1');
     expect(describeCommand('curl -u admin:s3cr3t https://x.com/api').detail).toBe('curl -u admin:*** https://x.com/api');
     expect(describeCommand('GITHUB_TOKEN=ghp_abcdefghijklmnopqrstuvwxyz123456 gh pr list').detail).toBe('GITHUB_TOKEN=*** gh pr list');
@@ -137,18 +137,18 @@ describe('segredos mascarados', () => {
 
 describe('atividades', () => {
   it('TodoWrite ignora itens que não são objetos e tolera tarefas sem status', () => {
-    expect(describeTool('TodoWrite', { todos: [null] })).toEqual({ kind: 'plan', icon: '🗒️', text: 'Atualizando a lista de tarefas' });
+    expect(describeTool('TodoWrite', { todos: [null] })).toEqual({ kind: 'plan', icon: '🗒️', text: 'Updating the task list' });
     expect(describeTool('TodoWrite', {
       todos: [null, undefined, 'inválido', 42, false, { content: 'Sem status' }, { content: 'Pronta', status: 'completed' }, { content: 'Pendente', status: 'pending' }],
-    }).detail).toBe('1/3 concluídas');
+    }).detail).toBe('1/3 done');
   });
 
   it('ferramentas e especiais em PT-BR', () => {
-    expect(describeTool('Agent', { description: 'Revisar código', subagent_type: 'Explore' })).toMatchObject({ kind: 'delegate', text: 'Delegando: Revisar código' });
-    expect(SPECIAL.rejected('Write').text).toBe('Você recusou: Write');
+    expect(describeTool('Agent', { description: 'Revisar código', subagent_type: 'Explore' })).toMatchObject({ kind: 'delegate', text: 'Delegating: Revisar código' });
+    expect(SPECIAL.rejected('Write').text).toBe('You denied: Write');
     expect(SPECIAL.cleared().kind).toBe('compact');
-    expect(describeWaitingFor('worker request')).toBe('aprovar o pedido de um worker');
-    expect(describeWaitingFor(undefined)).toBe('responder no terminal');
+    expect(describeWaitingFor('worker request')).toBe('approve a worker\'s request');
+    expect(describeWaitingFor(undefined)).toBe('answer in the terminal');
   });
 });
 
@@ -160,7 +160,7 @@ describe('shells', () => {
       kind: 'shell',
     });
     expect(describeShellJob('Bash', { command: 'GITHUB_TOKEN=ghp_0123456789abcdefghij npm run build' })).toEqual({
-      label: 'Compilando o projeto',
+      label: 'Building the project',
       command: 'GITHUB_TOKEN=*** npm run build',
       kind: 'shell',
     });
@@ -169,26 +169,26 @@ describe('shells', () => {
     );
     expect(describeShellJob('Monitor', { description: 'erros no deploy.log', command: 'tail -f deploy.log' })).toMatchObject({ label: 'erros no deploy.log', kind: 'monitor' });
     expect(describeShellJob('Monitor', { ws: { url: 'wss://events.example.com/stream' } })).toEqual({
-      label: 'Escutando events.example.com',
+      label: 'Listening to events.example.com',
       command: 'wss://events.example.com/stream',
       kind: 'monitor',
     });
   });
 
   it('balão de espera e fim do shell (marcadores para o mundo), sempre em até 46 caracteres com a duração inteira', () => {
-    expect(SPECIAL.waitingShell('Rodar a suíte')).toMatchObject({ kind: 'wait', icon: '⏳', text: 'Esperando o shell: Rodar a suíte', tool: 'ShellWait' });
-    expect(SPECIAL.waitingShell('Build', 3).text).toBe('Esperando 3 shells: Build');
-    expect(SPECIAL.waitingShell(undefined).text).toBe('Esperando o shell');
+    expect(SPECIAL.waitingShell('Rodar a suíte')).toMatchObject({ kind: 'wait', icon: '⏳', text: 'Waiting on shell: Rodar a suíte', tool: 'ShellWait' });
+    expect(SPECIAL.waitingShell('Build', 3).text).toBe('Waiting on 3 shells: Build');
+    expect(SPECIAL.waitingShell(undefined).text).toBe('Waiting on shell');
     const ok = SPECIAL.shellDone('Rodar a suíte completa em grupos com phpunit', 'ok', 482_000, 'vendor/bin/phpunit');
-    expect(ok).toEqual({ kind: 'run', icon: '✅', text: 'Shell terminou: Rodar a suíte compl… (8min 2s)', detail: 'vendor/bin/phpunit', tool: 'ShellDone' });
+    expect(ok).toEqual({ kind: 'run', icon: '✅', text: 'Shell finished: Rodar a suíte compl… (8min 2s)', detail: 'vendor/bin/phpunit', tool: 'ShellDone' });
     expect(ok.text.length).toBeLessThanOrEqual(46);
-    expect(SPECIAL.shellDone('Migração', 'failed')).toEqual({ kind: 'run', icon: '❌', text: 'Shell falhou: Migração', tool: 'ShellDone', error: true });
-    expect(SPECIAL.shellDone('Migração', 'killed')).toMatchObject({ icon: '🛑', text: 'Shell interrompido: Migração', error: true });
+    expect(SPECIAL.shellDone('Migração', 'failed')).toEqual({ kind: 'run', icon: '❌', text: 'Shell failed: Migração', tool: 'ShellDone', error: true });
+    expect(SPECIAL.shellDone('Migração', 'killed')).toMatchObject({ icon: '🛑', text: 'Shell interrupted: Migração', error: true });
   });
 });
 
 describe('AskUserQuestion no escritório', () => {
-  it('leva as perguntas completas, com opções, para o cartão "Precisa de você"', () => {
+  it('leva as perguntas completas, com opções, para o cartão "Needs you"', () => {
     const d = describeTool('AskUserQuestion', {
       questions: [
         {
@@ -200,10 +200,10 @@ describe('AskUserQuestion no escritório', () => {
             { label: 'SQLite' },
           ],
         },
-        { question: 'Quais testes rodar?', multiSelect: true, options: [{ label: 'Unidade' }, { label: 'E2E' }] },
+        { question: 'Quais testes rodar?', multiSelect: true, options: [{ label: 'Unit' }, { label: 'E2E' }] },
       ],
     });
-    expect(d).toMatchObject({ kind: 'ask', text: 'Fazendo uma pergunta a você', detail: 'Qual banco usar?' });
+    expect(d).toMatchObject({ kind: 'ask', text: 'Asking you a question', detail: 'Qual banco usar?' });
     expect(d.questions).toEqual([
       {
         index: 0,
@@ -214,7 +214,7 @@ describe('AskUserQuestion no escritório', () => {
           { index: 1, label: 'SQLite' },
         ],
       },
-      { index: 1, question: 'Quais testes rodar?', multiSelect: true, options: [{ index: 0, label: 'Unidade' }, { index: 1, label: 'E2E' }] },
+      { index: 1, question: 'Quais testes rodar?', multiSelect: true, options: [{ index: 0, label: 'Unit' }, { index: 1, label: 'E2E' }] },
     ]);
   });
 

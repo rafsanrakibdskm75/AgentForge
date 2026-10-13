@@ -3,7 +3,7 @@ import { ago, formatBytes, shortPath, spawnFolders } from './spawn';
 import { insertDictation, pickMimeType } from './dictation';
 
 describe('spawnFolders', () => {
-  it('pastas das salas, a mais recente primeiro, sem as do demo nem caminhos relativos', () => {
+  it('room folders, newest first, without demo ones or relative paths', () => {
     const rooms = [
       { id: 'r1', path: '/Users/a/antigo' },
       { id: 'r2', path: '/Users/a/novo' },
@@ -21,27 +21,27 @@ describe('spawnFolders', () => {
   });
 });
 
-describe('Novo agente: lista de projetos e anexos', () => {
-  it('caminho curto com ~ e tempo relativo', () => {
+describe('New agent: project list and attachments', () => {
+  it('short path with ~ and relative time', () => {
     expect(shortPath('/Users/ana/Coding/proj')).toBe('~/Coding/proj');
     expect(shortPath('/home/ana/proj')).toBe('~/proj');
     expect(shortPath('/opt/x')).toBe('/opt/x');
     expect(shortPath('C:\\Users\\ana\\proj')).toBe('~\\proj');
     const now = 10_000_000;
-    expect([ago(0, now), ago(now - 10_000, now), ago(now - 5 * 60_000, now), ago(now - 3 * 3_600_000, now), ago(now - 72 * 3_600_000, now)]).toEqual(['', 'agora', '5 min', '3 h', '3 d']);
+    expect([ago(0, now), ago(now - 10_000, now), ago(now - 5 * 60_000, now), ago(now - 3 * 3_600_000, now), ago(now - 72 * 3_600_000, now)]).toEqual(['', 'now', '5 min', '3 h', '3 d']);
     expect([formatBytes(900), formatBytes(2_048), formatBytes(3_500_000)]).toEqual(['900 B', '2 KB', '3,3 MB']);
   });
 });
 
-describe('ditado no campo', () => {
-  it('insere no cursor com espaço certo dos dois lados', () => {
+describe('dictation in the field', () => {
+  it('inserts at the cursor with the right spacing on both sides', () => {
     expect(insertDictation('', 0, 0, ' Crie um agente ')).toEqual({ value: 'Crie um agente', caret: 14 });
     expect(insertDictation('Revise', 6, 6, 'o relatório')).toEqual({ value: 'Revise o relatório', caret: 18 });
     expect(insertDictation('ab', 1, 1, 'X')).toEqual({ value: 'a X b', caret: 3 });
     expect(insertDictation('troque ISTO aqui', 7, 11, 'isso')).toEqual({ value: 'troque isso aqui', caret: 11 });
     expect(insertDictation('igual', 5, 5, '   ')).toEqual({ value: 'igual', caret: 5 });
   });
-  it('escolhe o formato que o navegador grava (mp4 no iPhone, webm no Chrome)', () => {
+  it('picks the format the browser records (mp4 on iPhone, webm on Chrome)', () => {
     expect(pickMimeType((t) => t === 'audio/mp4')).toBe('audio/mp4');
     expect(pickMimeType((t) => t.startsWith('audio/webm'))).toBe('audio/webm;codecs=opus');
     expect(pickMimeType(() => false)).toBeUndefined();
