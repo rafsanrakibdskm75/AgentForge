@@ -11,7 +11,7 @@
 # ---------------------------------------------------------------------------------------------
 # A imagem base fica presa pelo digest (o mesmo nos dois estágios), para o build ser reproduzível; o Dependabot
 # (.github/dependabot.yml, ecossistema docker) troca a tag e o digest juntos quando sai versão nova.
-FROM node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS builder
+FROM node:24-alpine@sha256:44fce696f38ba8c987c4db89954051000bbd05ffd8d8659ba15ed4a8602e937f AS builder
 WORKDIR /app
 
 # Dependências primeiro: a camada fica em cache enquanto o lockfile não mudar.
@@ -25,7 +25,7 @@ RUN npm run build
 # Estágio 2: runtime enxuto. O servidor não tem dependências de runtime (só módulos node:*),
 # então basta o dist/ e o package.json (nome, versão e "type": "module").
 # ---------------------------------------------------------------------------------------------
-FROM node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS runtime
+FROM node:24-alpine@sha256:44fce696f38ba8c987c4db89954051000bbd05ffd8d8659ba15ed4a8602e937f AS runtime
 
 # AGENTFORGE_USAGE_DIR: onde o docker-up monta (somente leitura) o uso capturado pelo tap de statusline.
 ENV NODE_ENV=production \
